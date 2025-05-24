@@ -6,16 +6,16 @@ package protocol.utils;
 import org.bouncycastle.crypto.digests.SHA3Digest;
 import org.bouncycastle.crypto.digests.SHAKEDigest;
 
-abstract class Symmetric
+public abstract class Symmetric
 {
 
     final int xofBlockBytes;
 
-    abstract void hash_h(byte[] out, byte[] in, int outOffset);
+    public abstract void hash_h(byte[] out, byte[] in, int outOffset);
 
     abstract void hash_g(byte[] out, byte[] in);
 
-    abstract void xofAbsorb(byte[] seed, byte x, byte y);
+    abstract void xofAbsorb(byte[] seed, byte xS, byte y);
 
     abstract void xofSqueezeBlocks(byte[] out, int outOffset, int outLen);
 
@@ -29,7 +29,7 @@ abstract class Symmetric
     }
 
 
-    static class ShakeSymmetric
+    public static class ShakeSymmetric
             extends Symmetric
     {
         private final SHAKEDigest xof;
@@ -37,7 +37,7 @@ abstract class Symmetric
         private final SHA3Digest sha3Digest256;
         private final SHAKEDigest shakeDigest;
 
-        ShakeSymmetric()
+        public ShakeSymmetric()
         {
             super(168);
             this.xof = new SHAKEDigest(128);
@@ -47,7 +47,7 @@ abstract class Symmetric
         }
 
         @Override
-        void hash_h(byte[] out, byte[] in, int outOffset)
+        public void hash_h(byte[] out, byte[] in, int outOffset)
         {
             sha3Digest256.update(in, 0, in.length);
             sha3Digest256.doFinal(out, outOffset);
