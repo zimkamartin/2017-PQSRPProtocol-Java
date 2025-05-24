@@ -1,4 +1,4 @@
-package protocol.utils;
+package protocol;
 
 public class Polynomial {
 

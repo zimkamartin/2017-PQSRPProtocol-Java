@@ -1,7 +1,6 @@
 package protocol;
 
 import org.bouncycastle.crypto.digests.SHA3Digest;
-import protocol.utils.Seeds;
 
 public class Main {
 

@@ -1,4 +1,4 @@
-package protocol.utils;
+package protocol;
 
 public class Seeds {
     public final byte[] seed1;
