@@ -61,7 +61,7 @@ public abstract class Symmetric
         }
 
         @Override
-        void xofAbsorb(byte[] seed, byte a, byte b)
+        public void xofAbsorb(byte[] seed, byte a, byte b)
         {
             xof.reset();
             byte[] buf = new byte[seed.length + 2];
