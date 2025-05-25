@@ -1,7 +1,5 @@
 package protocol;
 
-import protocol.utils.Symmetric;
-
 class Protocol {
     // THIS IS NOT HOW TO DO IT !!! THIS IS JUST FOR PROOF-OF-CONCEPT !!! THIS IS NOT HOW TO DO IT
     private static final String I = "identity123";
@@ -19,7 +17,7 @@ class Protocol {
         this.clientsSeeds = createSeeds();
     }
 
-    private static Seeds createSeeds() {
+    static Seeds createSeeds() {
         // seed1 = SHA3-256(salt||SHA3-256(I||pwd))
         String innerInput = I.concat(PWD);
         byte[] innerHash = new byte[32];

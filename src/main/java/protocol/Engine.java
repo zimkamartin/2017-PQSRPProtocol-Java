@@ -1,7 +1,5 @@
 package protocol;
 
-import protocol.utils.Symmetric;
-
 import java.security.SecureRandom;
 
 // SOURCE: https://github.com/bcgit/bc-java/blob/main/core/src/main/java/org/bouncycastle/pqc/crypto/mlkem/MLKEMEngine.java

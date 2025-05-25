@@ -1,4 +1,4 @@
-package protocol.utils;
+package protocol;
 
 // SOURCE: https://github.com/bcgit/bc-java/blob/2f4d33d57797dcc3fe9bd4ecb07ee0557ff58185/core/src/main/java/org/bouncycastle/pqc/crypto/mlkem/Symmetric.java
 // Had to be copied here since ^^ does not have public access.
@@ -6,12 +6,12 @@ package protocol.utils;
 import org.bouncycastle.crypto.digests.SHA3Digest;
 import org.bouncycastle.crypto.digests.SHAKEDigest;
 
-public abstract class Symmetric
+abstract class Symmetric
 {
 
     final int xofBlockBytes;
 
-    public abstract void hash_h(byte[] out, byte[] in, int outOffset);
+    abstract void hash_h(byte[] out, byte[] in, int outOffset);
 
     abstract void hash_g(byte[] out, byte[] in);
 
@@ -29,7 +29,7 @@ public abstract class Symmetric
     }
 
 
-    public static class ShakeSymmetric
+    static class ShakeSymmetric
             extends Symmetric
     {
         private final SHAKEDigest xof;
@@ -37,7 +37,7 @@ public abstract class Symmetric
         private final SHA3Digest sha3Digest256;
         private final SHAKEDigest shakeDigest;
 
-        public ShakeSymmetric()
+        ShakeSymmetric()
         {
             super(168);
             this.xof = new SHAKEDigest(128);
@@ -47,7 +47,7 @@ public abstract class Symmetric
         }
 
         @Override
-        public void hash_h(byte[] out, byte[] in, int outOffset)
+        void hash_h(byte[] out, byte[] in, int outOffset)
         {
             sha3Digest256.update(in, 0, in.length);
             sha3Digest256.doFinal(out, outOffset);
@@ -61,7 +61,7 @@ public abstract class Symmetric
         }
 
         @Override
-        public void xofAbsorb(byte[] seed, byte a, byte b)
+        void xofAbsorb(byte[] seed, byte a, byte b)
         {
             xof.reset();
             byte[] buf = new byte[seed.length + 2];

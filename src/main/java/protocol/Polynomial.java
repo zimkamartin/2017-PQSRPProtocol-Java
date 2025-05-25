@@ -1,10 +1,10 @@
 package protocol;
 
-public class Polynomial {
+class Polynomial {
 
-    public short[] coefficients;
+    short[] coefficients;
 
-    public Polynomial(short[] coefficients) {
+    Polynomial(short[] coefficients) {
         this.coefficients = coefficients;
     }
 }
