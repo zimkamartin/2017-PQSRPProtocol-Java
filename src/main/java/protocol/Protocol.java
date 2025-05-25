@@ -10,29 +10,36 @@ class Protocol {
     // THIS IS NOT HOW TO DO IT !!! THIS IS JUST FOR PROOF-OF-CONCEPT !!! THIS IS NOT HOW TO DO IT
 
     private Engine engine;
-    private Symmetric symmetric;
+    private static Symmetric symmetric;
+    private Seeds clientsSeeds;
 
     Protocol(Engine engine) {
         this.engine = engine;
-        this.symmetric = this.engine.getSymmetric();
+        symmetric = this.engine.getSymmetric();
+        this.clientsSeeds = createSeeds();
     }
 
-//    private static Seeds createSeeds() {
-//        // seed1 = SHA3-256(salt||SHA3-256(I||pwd))
-//        String innerInput = I.concat(PWD);
-//        byte[] innerHash = new byte[32];
-//        symmetric.hash_h(innerHash, innerInput.getBytes(), 0);
-//        byte[] outerInput = new byte[SALT.length + innerHash.length];
-//        System.arraycopy(SALT, 0, outerInput, 0, SALT.length);
-//        System.arraycopy(innerHash, 0, outerInput, SALT.length, innerHash.length);
-//        byte[] seed1 = new byte[32];
-//        symmetric.hash_h(seed1, outerInput, 0);
-//        // seed2 = SHA3-256(seed1)
-//        byte[] seed2 = new byte[32];
-//        symmetric.hash_h(seed2, seed1, 0);
-//
-//        return new Seeds(seed1, seed2);
-//    }
+    private static Seeds createSeeds() {
+        // seed1 = SHA3-256(salt||SHA3-256(I||pwd))
+        String innerInput = I.concat(PWD);
+        byte[] innerHash = new byte[32];
+        symmetric.hash_h(innerHash, innerInput.getBytes(), 0);
+        byte[] outerInput = new byte[SALT.length + innerHash.length];
+        System.arraycopy(SALT, 0, outerInput, 0, SALT.length);
+        System.arraycopy(innerHash, 0, outerInput, SALT.length, innerHash.length);
+        byte[] seed1 = new byte[32];
+        symmetric.hash_h(seed1, outerInput, 0);
+        // seed2 = SHA3-256(seed1)
+        byte[] seed2 = new byte[32];
+        symmetric.hash_h(seed2, seed1, 0);
 
-    protected void run() {};
+        return new Seeds(seed1, seed2);
+    }
+
+    void run() {
+        // TODO Create public polynomial a.
+        // TODO Phase 0.
+        // TODO Phase 1.
+        // TODO Phase 2.
+    };
 }
