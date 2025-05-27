@@ -2,9 +2,19 @@ package protocol;
 
 class Polynomial {
 
-    short[] coefficients;
+    private int[] coefficients;
 
-    Polynomial(short[] coefficients) {
+    Polynomial(int[] coefficients) {
         this.coefficients = coefficients;
+    }
+
+    public void setCoeffIndex(int i, int val)
+    {
+        this.coefficients[i] = val;
+    }
+
+    public int[] getCoeffs()
+    {
+        return this.coefficients;
     }
 }

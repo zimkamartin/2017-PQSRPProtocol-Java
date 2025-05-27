@@ -1,5 +1,8 @@
 package protocol;
 
+import static protocol.Kyber.generateUniformPolynomial;
+import static protocol.Kyber.generateUniformPolynomialV02;
+
 class Protocol {
     // THIS IS NOT HOW TO DO IT !!! THIS IS JUST FOR PROOF-OF-CONCEPT !!! THIS IS NOT HOW TO DO IT
     private static final String I = "identity123";
@@ -10,14 +13,9 @@ class Protocol {
     private Engine engine;
     private static Symmetric symmetric;
     private Seeds clientsSeeds;
+    public byte[] publicSeed;
 
-    Protocol(Engine engine) {
-        this.engine = engine;
-        symmetric = this.engine.getSymmetric();
-        this.clientsSeeds = createSeeds();
-    }
-
-    static Seeds createSeeds() {
+    private static Seeds createSeeds() {
         // seed1 = SHA3-256(salt||SHA3-256(I||pwd))
         String innerInput = I.concat(PWD);
         byte[] innerHash = new byte[32];
@@ -34,8 +32,24 @@ class Protocol {
         return new Seeds(seed1, seed2);
     }
 
+    Protocol(Engine engine) {
+        this.engine = engine;
+        symmetric = this.engine.getSymmetric();
+        this.clientsSeeds = createSeeds();
+    }
+
+    private Polynomial createUniformPoly() {
+        Polynomial result = new Polynomial(new int[engine.KyberN]);
+        byte[] publicSeed = new byte[33];
+        engine.getRandomBytes(publicSeed);
+        //generateUniformPolynomial(engine, result, publicSeed);
+        generateUniformPolynomialV02(engine, result, publicSeed);
+        return result;
+    }
+
     void run() {
         // TODO Create public polynomial a.
+        Polynomial a = createUniformPoly();
         // TODO Phase 0.
         // TODO Phase 1.
         // TODO Phase 2.

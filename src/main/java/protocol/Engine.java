@@ -11,8 +11,8 @@ class Engine {
     //private MLKEMIndCpa indCpa;
 
     // constant parameters
-    public final static int KyberN = 256;  // !! Changed from 256 to 1024
-    public final static int KyberQ = 3329;  // !! Changed from 3329 to 1073479681
+    public final static int KyberN = 1024;  // !! Changed from 256 to 1024
+    public final static int KyberQ = 1073479681;  // !! Changed from 3329 to 1073479681
     public final static int KyberQinv = 62209;
 
     public final static int KyberSymBytes = 32; // Number of bytes for Hashes and Seeds
