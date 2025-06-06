@@ -36,11 +36,11 @@ class Protocol {
         this.engine = engine;
         symmetric = this.engine.getSymmetric();
         this.clientsSeeds = createSeeds();
+        this.publicSeed = new byte[33];
     }
 
     private Polynomial createUniformPoly() {
         Polynomial result = new Polynomial(new int[engine.KyberN]);
-        byte[] publicSeed = new byte[33];
         engine.getRandomBytes(publicSeed);
         //generateUniformPolynomial(engine, result, publicSeed);
         generateUniformPolynomialV02(engine, result, publicSeed);
