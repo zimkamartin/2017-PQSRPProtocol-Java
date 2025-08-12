@@ -15,7 +15,7 @@ abstract class Symmetric
 
     abstract void hash_g(byte[] out, byte[] in);
 
-    abstract void xofAbsorb(byte[] seed, byte xS);  // !! Changed from (byte[] seed, byte xS, byte y)
+    abstract void xofAbsorb(byte[] seed);  // !! Changed from (byte[] seed, byte xS, byte y)
 
     abstract void xofSqueezeBlocks(byte[] out, int outOffset, int outLen);
 
@@ -61,13 +61,10 @@ abstract class Symmetric
         }
 
         @Override
-        void xofAbsorb(byte[] seed, byte a)  // !! Changed from (byte[] seed, byte a, byte b)
+        void xofAbsorb(byte[] seed)  // !! Changed from (byte[] seed, byte a, byte b)
         {
             xof.reset();
-            byte[] buf = new byte[seed.length + 1];
-            System.arraycopy(seed, 0, buf, 0, seed.length);
-            buf[seed.length] = a;
-            xof.update(buf, 0, seed.length + 1);
+            xof.update(seed, 0, seed.length);
         }
 
         @Override

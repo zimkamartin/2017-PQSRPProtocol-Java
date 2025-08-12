@@ -1,7 +1,6 @@
 package protocol;
 
 import static protocol.Kyber.generateUniformPolynomial;
-import static protocol.Kyber.generateUniformPolynomialV02;
 
 class Protocol {
     // THIS IS NOT HOW TO DO IT !!! THIS IS JUST FOR PROOF-OF-CONCEPT !!! THIS IS NOT HOW TO DO IT
@@ -36,14 +35,13 @@ class Protocol {
         this.engine = engine;
         symmetric = this.engine.getSymmetric();
         this.clientsSeeds = createSeeds();
-        this.publicSeed = new byte[33];
+        this.publicSeed = new byte[34];
     }
 
     private Polynomial createUniformPoly() {
         Polynomial result = new Polynomial(new int[engine.KyberN]);
         engine.getRandomBytes(publicSeed);
-        //generateUniformPolynomial(engine, result, publicSeed);
-        generateUniformPolynomialV02(engine, result, publicSeed);
+        generateUniformPolynomial(engine, result, publicSeed);
         return result;
     }
 
