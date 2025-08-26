@@ -6,6 +6,7 @@ public class ClientImple {
     private final PublicParams publicParams;
     private final byte[] publicSeedForA = new byte[34];  // Size could be changed however you wish.
     private final Engine engine = new EngineImple();
+    private final Mlkem mlkem;
     // THIS IS NOT HOW TO DO IT !!! THIS IS JUST FOR PROOF-OF-CONCEPT !!! THIS IS NOT HOW TO DO IT !!!
     private static final byte[] I = "identity123".getBytes();
     private static final byte[] pwd = "password123".getBytes();
@@ -14,7 +15,8 @@ public class ClientImple {
     public ClientImple(Server server) {
         this.server = server;
         this.publicParams = server.getPublicParams();
-        engine.getRandomBytes(publicSeedForA);
+        this.engine.getRandomBytes(publicSeedForA);
+        this.mlkem = new Mlkem(publicParams.getN(), publicParams.getQ());
     }
 
     public void enrollClient() {
