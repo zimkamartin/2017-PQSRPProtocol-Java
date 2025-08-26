@@ -4,7 +4,7 @@ public class ClientImple {
 
     private final Server server;
     private final PublicParams publicParams;
-    private final byte[] publicSeedForA;
+    private final byte[] publicSeedForA = new byte[34];  // Size could be changed however you wish.
     private final Engine engine = new EngineImple();
     // THIS IS NOT HOW TO DO IT !!! THIS IS JUST FOR PROOF-OF-CONCEPT !!! THIS IS NOT HOW TO DO IT !!!
     private static final byte[] I = "identity123".getBytes();
@@ -14,7 +14,7 @@ public class ClientImple {
     public ClientImple(Server server) {
         this.server = server;
         this.publicParams = server.getPublicParams();
-        this.publicSeedForA = new byte[0];  // TODO: SOLVE!
+        engine.getRandomBytes(publicSeedForA);
     }
 
     public void enrollClient() {
