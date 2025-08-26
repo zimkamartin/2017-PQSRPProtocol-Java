@@ -5,6 +5,7 @@ public class ClientImple {
     private final Server server;
     private final PublicParams publicParams;
     private final byte[] publicSeedForA;
+    private final Engine engine = new EngineImple();
     // THIS IS NOT HOW TO DO IT !!! THIS IS JUST FOR PROOF-OF-CONCEPT !!! THIS IS NOT HOW TO DO IT !!!
     private static final byte[] I = "identity123".getBytes();
     private static final byte[] pwd = "password123".getBytes();

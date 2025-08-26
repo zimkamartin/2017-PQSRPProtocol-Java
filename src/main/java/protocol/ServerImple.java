@@ -6,6 +6,7 @@ import java.util.List;
 public class ServerImple implements Server {
 
     private final PublicParams publicParams;
+    private final Engine engine = new EngineImple();
 
     public ServerImple(int n, BigInteger q, int eta) {
         this.publicParams = new PublicParams(n, q, eta);
