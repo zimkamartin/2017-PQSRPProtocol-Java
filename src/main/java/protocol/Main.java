@@ -9,6 +9,6 @@ public class Main {
     private static final int ETA = 3;
 
     public static void main(String[] args) {
-        System.out.println("Soon :)");
+        Server server = new ServerImple(N, Q, ETA);
     }
 }

@@ -12,15 +12,15 @@ public class SaltEphPublicSignal {
     /**
      * Used on client's side when computing seed1.
      */
-    private byte[] salt;
+    private final byte[] salt;
     /**
      * Polynomial representing ephemeral public key used on both sides.
      */
-    private List<BigInteger> pj;
+    private final List<BigInteger> pj;
     /**
      * Polynomial where coefficients are result of applying Signal function.
      */
-    private List<BigInteger> wj;
+    private final List<BigInteger> wj;
 
     public SaltEphPublicSignal(byte[] salt, List<BigInteger> pj, List<BigInteger> wj) {
         this.salt = salt;
