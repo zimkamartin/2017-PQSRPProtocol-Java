@@ -14,6 +14,5 @@ public class Main {
         client.enrollClient();
         client.computeSharedSecret();
         client.verifyEntities();
-
     }
 }

@@ -16,17 +16,17 @@ import java.security.SecureRandom;
  * </p>
  */
 public class EngineImple implements Engine {
-    private static final int xofBlockBytes = 168;
-    private final SHAKEDigest xof = new SHAKEDigest(128);
-    private final SHA3Digest sha3Digest256 = new SHA3Digest(256);
-    private final SHAKEDigest shakeDigest = new SHAKEDigest(256);
-    private final SecureRandom random = new SecureRandom();
+    private static final int XOFBLOCKBYTES = 168;
+    private static final SHAKEDigest xof = new SHAKEDigest(128);
+    private static final SHA3Digest sha3Digest256 = new SHA3Digest(256);
+    private static final SHAKEDigest shakeDigest = new SHAKEDigest(256);
+    private static final SecureRandom random = new SecureRandom();
 
     public EngineImple() {}
 
     @Override
     public int getXofBlockBytes() {
-        return xofBlockBytes;
+        return XOFBLOCKBYTES;
     }
 
     @Override
@@ -54,11 +54,11 @@ public class EngineImple implements Engine {
 
     @Override
     public void getRandomBytes(byte[] buf) {
-        this.random.nextBytes(buf);
+        random.nextBytes(buf);
     }
 
     @Override
     public int getRandomBit() {
-        return this.random.nextInt(2);
+        return random.nextInt(2);
     }
 }
