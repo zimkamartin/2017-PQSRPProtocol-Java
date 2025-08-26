@@ -79,7 +79,7 @@ class Mlkem {
 
     // TODO: Change it for dynamic n, q.
     // TODO: Solve q.intValue()
-    void generateUniformPolynomialNtt(Engine e, List<BigInteger> a, byte[] seed) {
+    void generateUniformPolynomialNtt(EngineImple e, List<BigInteger> a, byte[] seed) {
         int KyberGenerateMatrixNBlocks = (int)  // its value is 23  // !!! Conversions BigInteger -> int
                 (
                         (
