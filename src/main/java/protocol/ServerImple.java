@@ -7,8 +7,8 @@ public class ServerImple implements Server {
 
     private final PublicParams publicParams;
 
-    public ServerImple(int n, BigInteger q) {
-        this.publicParams = new PublicParams(n, q);
+    public ServerImple(int n, BigInteger q, int eta) {
+        this.publicParams = new PublicParams(n, q, eta);
     }
 
     @Override
