@@ -10,5 +10,9 @@ public class Main {
 
     public static void main(String[] args) {
         Server server = new ServerImple(N, Q, ETA);
+        ClientImple client = new ClientImple(server);
+        client.enrollClient();
+        client.computeSharedSecret();
+        client.verifyEntities();
     }
 }
