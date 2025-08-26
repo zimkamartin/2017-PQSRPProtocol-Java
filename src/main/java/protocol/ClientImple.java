@@ -16,7 +16,7 @@ public class ClientImple {
         this.server = server;
         this.publicParams = server.getPublicParams();
         this.engine.getRandomBytes(publicSeedForA);
-        this.mlkem = new Mlkem(publicParams.getN(), publicParams.getQ());
+        this.mlkem = new MlkemImple(publicParams.getN(), publicParams.getQ());
     }
 
     public void enrollClient() {

@@ -11,7 +11,7 @@ public class ServerImple implements Server {
 
     public ServerImple(int n, BigInteger q, int eta) {
         this.publicParams = new PublicParams(n, q, eta);
-        this.mlkem = new Mlkem(publicParams.getN(), publicParams.getQ());
+        this.mlkem = new MlkemImple(publicParams.getN(), publicParams.getQ());
     }
 
     @Override
