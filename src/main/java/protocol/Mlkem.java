@@ -85,12 +85,12 @@ class Mlkem {
                         (
                                 (float) 30 * n / 8  // how many bytes do I need to sample
                                         * (float) (1 << 30) / q.intValue()  // (probability of success) ^ -1, SO together it is in average how many bytes we need for sampling
-                                        + (float) e.xofBlockBytes
+                                        + (float) e.getXofBlockBytes()
                         )
-                                / e.xofBlockBytes  // thanks to `+ xBB / xBB` we now have the closest needed higher amount of xBB
+                                / e.getXofBlockBytes()  // thanks to `+ xBB / xBB` we now have the closest needed higher amount of xBB
                 );
         int k, ctr, off;
-        int buflen = KyberGenerateMatrixNBlocks * e.xofBlockBytes;  // currently it is not divisible by 15!
+        int buflen = KyberGenerateMatrixNBlocks * e.getXofBlockBytes();  // currently it is not divisible by 15!
         byte[] buf = new byte[buflen];
         e.xofAbsorb(seed);
         e.xofSqueezeBlocks(buf, 0, buflen);

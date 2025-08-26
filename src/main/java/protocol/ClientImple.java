@@ -6,8 +6,8 @@ public class ClientImple {
     private final PublicParams publicParams;
     private final byte[] publicSeedForA;
     // THIS IS NOT HOW TO DO IT !!! THIS IS JUST FOR PROOF-OF-CONCEPT !!! THIS IS NOT HOW TO DO IT !!!
-    private final byte[] I = "identity123".getBytes();
-    private final byte[] pwd = "password123".getBytes();
+    private static final byte[] I = "identity123".getBytes();
+    private static final byte[] pwd = "password123".getBytes();
     // THIS IS NOT HOW TO DO IT !!! THIS IS JUST FOR PROOF-OF-CONCEPT !!! THIS IS NOT HOW TO DO IT !!!
 
     public ClientImple(Server server) {
