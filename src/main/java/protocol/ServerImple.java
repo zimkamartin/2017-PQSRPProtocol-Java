@@ -8,10 +8,12 @@ public class ServerImple implements Server {
     private final PublicParams publicParams;
     private final Engine engine = new EngineImple();
     private final Mlkem mlkem;
+    private final Ntt ntt;
 
     public ServerImple(int n, BigInteger q, int eta) {
         this.publicParams = new PublicParams(n, q, eta);
         this.mlkem = new MlkemImple(publicParams.getN(), publicParams.getQ());
+        this.ntt = new NttImple(publicParams.getN(), publicParams.getQ());
     }
 
     @Override
