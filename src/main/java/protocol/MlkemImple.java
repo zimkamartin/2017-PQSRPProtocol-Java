@@ -70,7 +70,7 @@ class MlkemImple implements Mlkem{
     // TODO: Change it for dynamic n, q.
     // TODO: Solve q.intValue()
     @Override
-    public void generateUniformPolynomialNtt(EngineImple e, List<BigInteger> out, byte[] seed) {
+    public void generateUniformPolynomialNtt(Engine e, List<BigInteger> out, byte[] seed) {
         int KyberGenerateMatrixNBlocks = (int)  // its value is 23  // !!! Conversions BigInteger -> int
                 (
                         (

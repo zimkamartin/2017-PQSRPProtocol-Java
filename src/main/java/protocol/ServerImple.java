@@ -27,7 +27,7 @@ public class ServerImple implements Server {
     }
 
     @Override
-    public void enrollClient(String I, byte[] salt, List<BigInteger> vNtt) {
+    public void enrollClient(byte[] publicSeedForA, byte[] I, byte[] salt, List<BigInteger> vNtt) {
 
     }
 

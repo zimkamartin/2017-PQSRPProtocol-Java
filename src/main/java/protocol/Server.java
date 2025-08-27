@@ -19,11 +19,12 @@ public interface Server {
     byte[] generatePublicSeedForA();
 
     /**
+     * @param publicSeedForA - public seed that will be used to generate public polynomial a
      * @param I - client's identity
      * @param salt - client's salt
      * @param vNtt- polynomial representing client's verifier in NTT form
      */
-    void enrollClient(String I, byte[] salt, List<BigInteger> vNtt);
+    void enrollClient(byte[] publicSeedForA, byte[] I, byte[] salt, List<BigInteger> vNtt);
 
     /**
      * @param I - client's identity

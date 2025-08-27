@@ -20,7 +20,7 @@ public interface Mlkem {
      * @param out - polynomial that will be filled by Ntt representation of a polynomial whose coefficients are sampled from a uniform distribution
      * @param seed - XOF will be seeded by this. Output should be uniform and then sampled to out
      */
-    void generateUniformPolynomialNtt(EngineImple e, List<BigInteger> out, byte[] seed);
+    void generateUniformPolynomialNtt(Engine e, List<BigInteger> out, byte[] seed);
 
     /**
      * @param out - polynomial that will be filled by coefficients are sampled from a central binomial distribution
