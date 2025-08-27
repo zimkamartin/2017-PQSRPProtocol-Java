@@ -2,6 +2,7 @@ package protocol;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Optional;
 
 public class ServerImple implements Server {
 
@@ -9,6 +10,14 @@ public class ServerImple implements Server {
     private final Engine engine = new EngineImple();
     private final Mlkem mlkem;
     private final Ntt ntt;
+
+    // THIS IS NOT HOW TO DO IT ! THIS IS JUST FOR PROOF-OF-CONCEPT ! THIS IS NOT HOW TO DO IT !
+    // DATABASE //
+    private byte[] publicSeedForA = null;
+    private byte[] I = null;
+    private byte[] salt = null;
+    private List<BigInteger> vNtt = null;
+    // THIS IS NOT HOW TO DO IT ! THIS IS JUST FOR PROOF-OF-CONCEPT ! THIS IS NOT HOW TO DO IT !
 
     public ServerImple(int n, BigInteger q, int eta) {
         this.publicParams = new PublicParams(n, q, eta);
@@ -28,7 +37,10 @@ public class ServerImple implements Server {
 
     @Override
     public void enrollClient(byte[] publicSeedForA, byte[] I, byte[] salt, List<BigInteger> vNtt) {
-
+        this.publicSeedForA = publicSeedForA;
+        this.I = I;
+        this.salt = salt;
+        this.vNtt = vNtt;
     }
 
     @Override
