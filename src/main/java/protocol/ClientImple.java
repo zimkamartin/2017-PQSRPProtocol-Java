@@ -125,7 +125,9 @@ public class ClientImple {
         // M2 = SHA3-256(pi || M1 || ski) //
         byte[] m2Prime = server.verifyEntities(m1);
         byte[] m2 = Utils.concatenateThreeByteArraysAndHash(engine, Utils.convertBigIntegerListToByteArray(piNtt), m1, this.ski);
-        // TODO: Verify matches and if all OK, return key.
-        return new byte[0];
+        // VERIFY that M2' == M2. If true, return key.
+        ByteArrayWrapper m2PrimeWrapped = new ByteArrayWrapper(m2Prime);
+        ByteArrayWrapper m2Wrapped = new ByteArrayWrapper(m2Prime);
+        return (m2PrimeWrapped.equals(m2Wrapped)) ? this.ski : null;
     }
 }
