@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -57,8 +58,8 @@ public class ClientImple {
         byte[] seed2 = new byte[32];
         engine.hash(seed2, seed1);
         // Based on seeds (computed from private values) generate sv, ev.
-        List<BigInteger> sv = new ArrayList<>(n);
-        List<BigInteger> ev = new ArrayList<>(n);
+        List<BigInteger> sv = new ArrayList<>(Collections.nCopies(n, null));
+        List<BigInteger> ev = new ArrayList<>(Collections.nCopies(n, null));
         Utils.getEtaNoise(publicParams, mlkem, engine, sv, seed1);
         Utils.getEtaNoise(publicParams, mlkem, engine, ev, seed2);
         List<BigInteger> svNtt = ntt.convertToNtt(sv);
@@ -70,7 +71,7 @@ public class ClientImple {
     public void enrollClient(ClientsSecrets cs) {
         // v = asv + 2ev //
         // Create polynomial a from public seed.
-        List<BigInteger> aNtt = new ArrayList<>(n);
+        List<BigInteger> aNtt = new ArrayList<>(Collections.nCopies(n, null));
         mlkem.generateUniformPolynomialNtt(engine, aNtt, publicSeedForA);
         // Generate salt.
         byte[] salt = new byte[SALTSIZE];
@@ -85,7 +86,7 @@ public class ClientImple {
         List<BigInteger> constantTwoPolyNtt = ntt.generateConstantTwoPolynomialNtt();
         // pi = as1 + 2e1 //
         // Create polynomial a from public seed.
-        List<BigInteger> aNtt = new ArrayList<>(n);
+        List<BigInteger> aNtt = new ArrayList<>(Collections.nCopies(n, null));
         // Compute s1.
         List<BigInteger> s1Ntt = Utils.generateRandomErrorPolyNtt(publicParams, mlkem, engine, ntt);
         // Compute e1.
@@ -106,7 +107,7 @@ public class ClientImple {
         // Compute e1''.
         List<BigInteger> e1DoublePrimeNtt = Utils.generateRandomErrorPolyNtt(publicParams, mlkem, engine, ntt);
         // Compute sv.
-        List<BigInteger> sv = new ArrayList<>(n);
+        List<BigInteger> sv = new ArrayList<>(Collections.nCopies(n, null));
         Utils.getEtaNoise(publicParams, mlkem, engine, sv, computeSeed1(cs, salt));
         List<BigInteger> svNtt = ntt.convertToNtt(sv);
         // Do all the math.

@@ -133,8 +133,8 @@ public class NttImple implements Ntt {
     public NttImple(int n, BigInteger q) {
         this.n = n;
         this.q = q;
-        this.zetas = new ArrayList<>(n - 1);
-        this.zetasInverted = new ArrayList<>(n - 1);
+        this.zetas = new ArrayList<>(Collections.nCopies(n - 1, null));
+        this.zetasInverted = new ArrayList<>(Collections.nCopies(n - 1, null));
         this.nttTree = new ArrayList<>((int) (Math.log(n) / Math.log(2)));  // that is log_2(n)
         computeZetaArrays();
     }
@@ -146,17 +146,17 @@ public class NttImple implements Ntt {
 
     @Override
     public List<BigInteger> addPolys(List<BigInteger> a, List<BigInteger> b) {
-        List<BigInteger> result = new ArrayList<>(n);
+        List<BigInteger> result = new ArrayList<>(Collections.nCopies(n, null));
         for (int i = 0; i < n; i = i + 1) {
-            result.add(a.get(i).add(b.get(i)).mod(q));
+            result.set(i, a.get(i).add(b.get(i)).mod(q));
         }
         return result;
     }
 
     private List<BigInteger> inverse(List<BigInteger> a) {
-        List<BigInteger> result = new ArrayList<>(n);
+        List<BigInteger> result = new ArrayList<>(Collections.nCopies(n, null));
         for (int i = 0; i < n; i = i + 1) {
-            result.add(a.get(i).negate().mod(q));
+            result.set(i, a.get(i).negate().mod(q));
         }
         return result;
     }
@@ -193,9 +193,9 @@ public class NttImple implements Ntt {
 
     @Override
     public List<BigInteger> multiplyNttPolys(List<BigInteger> a, List<BigInteger> b) {
-        List<BigInteger> result = new ArrayList<>(n);
+        List<BigInteger> result = new ArrayList<>(Collections.nCopies(n, null));
         for (int i = 0; i < n; i = i + 1) {
-            result.add(i, a.get(i).multiply(b.get(i)).mod(q));
+            result.set(i, a.get(i).multiply(b.get(i)).mod(q));
         }
         return result;
     }

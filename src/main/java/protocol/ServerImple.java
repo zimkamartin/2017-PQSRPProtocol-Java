@@ -1,10 +1,7 @@
 package protocol;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.IntStream;
 
 import static protocol.Utils.computeUNtt;
@@ -56,7 +53,7 @@ public class ServerImple implements Server {
         byte[] salt = database.get(wrappedIdentity).getSalt();
         // pj = as1' + 2e1' + v //
         // Create polynomial a from public seed.
-        List<BigInteger> aNtt = new ArrayList<>(n);
+        List<BigInteger> aNtt = new ArrayList<>(Collections.nCopies(n, null));
         mlkem.generateUniformPolynomialNtt(engine, aNtt, publicSeedForA);
         // Compute s1'.
         List<BigInteger> s1PrimeNtt = Utils.generateRandomErrorPolyNtt(publicParams, mlkem, engine, ntt);

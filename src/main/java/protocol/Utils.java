@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public final class Utils {
@@ -73,7 +74,7 @@ public final class Utils {
     }
 
     public static List<BigInteger> generateRandomErrorPolyNtt(PublicParams pp, Mlkem mlkem, Engine engine, Ntt ntt) {
-        List<BigInteger> e = new ArrayList<>(pp.getN());
+        List<BigInteger> e = new ArrayList<>(Collections.nCopies(pp.getN(), null));
         byte[] eRandomSeed = new byte[34];
         engine.getRandomBytes(eRandomSeed);
         getEtaNoise(pp, mlkem, engine, e, eRandomSeed);
@@ -83,7 +84,7 @@ public final class Utils {
     public static List<BigInteger> computeUNtt(Engine engine, Mlkem mlkem, int n, List<BigInteger> piNtt, List<BigInteger> pjNtt) {
         byte[] hash = new byte[32];
         engine.hash(hash, Utils.concatBigIntegerListsToByteArray(piNtt, pjNtt));
-        List<BigInteger> uNtt = new ArrayList<>(n);
+        List<BigInteger> uNtt = new ArrayList<>(Collections.nCopies(n, null));
         mlkem.generateUniformPolynomialNtt(engine, uNtt, hash);
         return uNtt;
     }
