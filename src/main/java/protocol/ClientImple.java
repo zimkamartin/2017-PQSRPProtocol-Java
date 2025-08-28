@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import static protocol.Utils.convertBigIntegerListToByteArray;
+
 public class ClientImple {
 
     private static final int PUBLICSEEDFORASIZE = 34;  // Size could be changed however you wish.
@@ -22,10 +24,10 @@ public class ClientImple {
     private final Mlkem mlkem;
     private final Ntt ntt;
     private final Magic magic;
-    // THIS IS NOT HOW TO DO IT ! THIS IS JUST FOR PROOF-OF-CONCEPT ! THIS IS NOT HOW TO DO IT !
     // DATABASE //
     private byte[] ski = null;
-    // THIS IS NOT HOW TO DO IT ! THIS IS JUST FOR PROOF-OF-CONCEPT ! THIS IS NOT HOW TO DO IT !
+    private List<BigInteger> piNtt = null;
+    private List<BigInteger> pjNtt = null;
 
     public ClientImple(Server server) {
         this.server = server;
@@ -39,21 +41,12 @@ public class ClientImple {
         this.magic = new MagicImple(this.q);
     }
 
-    private byte[] concatenateAndHash(byte[] a, byte[] b) {
-        byte[] input = new byte[a.length + b.length];
-        System.arraycopy(a, 0, input, 0, a.length);
-        System.arraycopy(b, 0, input, a.length, b.length);
-        byte[] hashed = new byte[32];
-        engine.hash(hashed, input);
-        return hashed;
-    }
-
     private byte[] computeSeed1(ClientsSecrets cs, byte[] salt) {
         byte[] identity = cs.getIdentity();
         byte[] password = cs.getPassword();
         // seed1 = SHA3-256(salt||SHA3-256(I||pwd)) //
-        byte[] innerHash = concatenateAndHash(identity, password);
-        return concatenateAndHash(salt, innerHash);
+        byte[] innerHash = Utils.concatenateTwoByteArraysAndHash(engine, identity, password);
+        return Utils.concatenateTwoByteArraysAndHash(engine, salt, innerHash);
     }
 
     private List<BigInteger> computeVNttFromANttAndSalt(ClientsSecrets cs, List<BigInteger> aNtt, byte[] salt) {
@@ -89,21 +82,6 @@ public class ClientImple {
         server.enrollClient(publicSeedForA, cs.getIdentity(), salt, vNtt);
     }
 
-    private static byte[] concatBigIntegerListsToByteArray(List<BigInteger> a, List<BigInteger> b) {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try {
-            for (BigInteger coeff : a) {
-                out.write(coeff.toByteArray());
-            }
-            for (BigInteger coeff : b) {
-                out.write(coeff.toByteArray());
-            }
-        } catch (IOException e) {
-            System.out.println("This should not have happened.");
-        }
-        return out.toByteArray();
-    }
-
     public void computeSharedSecret(ClientsSecrets cs) {
         List<BigInteger> constantTwoPolyNtt = ntt.generateConstantTwoPolynomialNtt();
         // pi = as1 + 2e1 //
@@ -117,16 +95,16 @@ public class ClientImple {
         // Do all the math.
         List<BigInteger> aS1Ntt = ntt.multiplyNttPolys(aNtt, s1Ntt);
         List<BigInteger> twoE1Ntt = ntt.multiplyNttPolys(constantTwoPolyNtt, e1Ntt);
-        List<BigInteger> piNtt = ntt.addPolys(aS1Ntt, twoE1Ntt);
+        this.piNtt = ntt.addPolys(aS1Ntt, twoE1Ntt);
         // Send identity and ephemeral public key pi in NTT form to the server. //
         // Receive salt, ephemeral public key pj in NTT form and wj. //
-        SaltEphPublicSignal sPjNttWj = server.computeSharedSecret(cs.getIdentity(), piNtt);
+        SaltEphPublicSignal sPjNttWj = server.computeSharedSecret(cs.getIdentity(), this.piNtt);
         byte[] salt = sPjNttWj.getSalt();
-        List<BigInteger> pjNtt = sPjNttWj.getPjNtt();
+        this.pjNtt = sPjNttWj.getPjNtt();
         List<Integer> wj = sPjNttWj.getWj();
         // u = XOF(H(pi || pj)) //
         byte[] hash = new byte[32];
-        engine.hash(hash, concatBigIntegerListsToByteArray(piNtt, pjNtt));
+        engine.hash(hash, Utils.concatBigIntegerListsToByteArray(this.piNtt, this.pjNtt));
         List<BigInteger> uNtt = new ArrayList<>(n);
         mlkem.generateUniformPolynomialNtt(engine, uNtt, hash);
         // v = asv + 2ev //
@@ -139,7 +117,7 @@ public class ClientImple {
         Utils.getEtaNoise(publicParams, mlkem, engine, sv, computeSeed1(cs, salt));
         List<BigInteger> svNtt = ntt.convertToNtt(sv);
         // Do all the math.
-        List<BigInteger> fstBracket = ntt.subtractPolys(pjNtt, vNtt);
+        List<BigInteger> fstBracket = ntt.subtractPolys(this.pjNtt, vNtt);
         List<BigInteger> sndBracket = ntt.addPolys(svNtt, s1Ntt);
         List<BigInteger> fstMultiNtt = ntt.multiplyNttPolys(fstBracket, sndBracket);
         List<BigInteger> sndMultiNtt = ntt.multiplyNttPolys(uNtt, vNtt);
@@ -160,9 +138,12 @@ public class ClientImple {
     }
 
     public byte[] verifyEntities() {
-        // Compute M1
-        // byte[] m2Prime = server.verifyEntities(m1);
-        // Compute M2
+        // M1 = SHA3-256(pi || pj || ski) //
+        byte[] m1 = Utils.concatenateTwoByteArraysAndHash(engine, Utils.concatBigIntegerListsToByteArray(this.piNtt, this.pjNtt), this.ski);
+        // M2 = SHA3-256(pi || M1 || ski) //
+        byte[] m2Prime = server.verifyEntities(m1);
+        byte[] m2 = Utils.concatenateThreeByteArraysAndHash(engine, Utils.convertBigIntegerListToByteArray(piNtt), m1, this.ski);
+        // TODO: Verify matches and if all OK, return key.
         return new byte[0];
     }
 }
