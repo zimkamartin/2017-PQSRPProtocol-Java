@@ -11,7 +11,7 @@ public class ServerImple implements Server {
     private final Ntt ntt;
 
     // THIS IS NOT HOW TO DO IT ! THIS IS JUST FOR PROOF-OF-CONCEPT ! THIS IS NOT HOW TO DO IT !
-    // DATABASE //
+    // DATABASE // - ak budem mat cas, tak mapu indexovanu Ickom
     private byte[] publicSeedForA = null;
     private byte[] I = null;
     private byte[] salt = null;

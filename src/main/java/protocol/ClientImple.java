@@ -13,6 +13,7 @@ public class ClientImple {
     private static final int SALTSIZE = 34;  // Size could be changed however you wish.
 
     private final Server server;
+    private final PublicParams publicParams;
     private final int n;
     private final BigInteger q;
     private final int eta;
@@ -21,10 +22,6 @@ public class ClientImple {
     private final Mlkem mlkem;
     private final Ntt ntt;
     private final Magic magic;
-    // THIS IS NOT HOW TO DO IT !!! THIS IS JUST FOR PROOF-OF-CONCEPT !!! THIS IS NOT HOW TO DO IT !!!
-    private static final byte[] I = "identity123".getBytes();
-    private static final byte[] PWD = "password123".getBytes();
-    // THIS IS NOT HOW TO DO IT !!! THIS IS JUST FOR PROOF-OF-CONCEPT !!! THIS IS NOT HOW TO DO IT !!!
     // THIS IS NOT HOW TO DO IT ! THIS IS JUST FOR PROOF-OF-CONCEPT ! THIS IS NOT HOW TO DO IT !
     // DATABASE //
     private byte[] ski = null;
@@ -32,56 +29,44 @@ public class ClientImple {
 
     public ClientImple(Server server) {
         this.server = server;
-        PublicParams publicParams = server.getPublicParams();
-        this.n = publicParams.getN();
-        this.q = publicParams.getQ();
-        this.eta = publicParams.getEta();
-        this.engine.getRandomBytes(publicSeedForA);
+        this.publicParams = server.getPublicParams();
+        this.n = this.publicParams.getN();
+        this.q = this.publicParams.getQ();
+        this.eta = this.publicParams.getEta();
+        this.engine.getRandomBytes(this.publicSeedForA);
         this.mlkem = new MlkemImple(this.n, this.q);
         this.ntt = new NttImple(this.n, this.q);
         this.magic = new MagicImple(this.q);
     }
 
-    private byte[] computeSeed1(byte[] salt) {
+    private byte[] concatenateAndHash(byte[] a, byte[] b) {
+        byte[] input = new byte[a.length + b.length];
+        System.arraycopy(a, 0, input, 0, a.length);
+        System.arraycopy(b, 0, input, a.length, b.length);
+        byte[] hashed = new byte[32];
+        engine.hash(hashed, input);
+        return hashed;
+    }
+
+    private byte[] computeSeed1(ClientsSecrets cs, byte[] salt) {
+        byte[] identity = cs.getIdentity();
+        byte[] password = cs.getPassword();
         // seed1 = SHA3-256(salt||SHA3-256(I||pwd)) //
-        byte[] innerInput = new byte[I.length + PWD.length];
-        System.arraycopy(I, 0, innerInput, 0, I.length);
-        System.arraycopy(PWD, 0, innerInput, I.length, PWD.length);
-        byte[] innerHash = new byte[32];
-        engine.hash(innerHash, innerInput);
-        byte[] outerInput = new byte[salt.length + innerHash.length];
-        System.arraycopy(salt, 0, outerInput, 0, salt.length);
-        System.arraycopy(innerHash, 0, outerInput, salt.length, innerHash.length);
-        byte[] seed1 = new byte[32];
-        engine.hash(seed1, outerInput);
-        return seed1;
+        byte[] innerHash = concatenateAndHash(identity, password);
+        return concatenateAndHash(salt, innerHash);
     }
 
-    private void getEtaNoise(List<BigInteger> r, byte[] seed) {
-        byte[] buf = new byte[n * eta / 4];
-        engine.prf(buf, seed);
-        mlkem.generateCbdPolynomial(r, buf, eta);
-    }
-
-    private List<BigInteger> generateRandomErrorPolyNtt() {
-        List<BigInteger> e = new ArrayList<>(n);
-        byte[] eRandomSeed = new byte[34];
-        engine.getRandomBytes(eRandomSeed);
-        getEtaNoise(e, eRandomSeed);
-        return ntt.convertFromNtt(e);
-    }
-
-    private List<BigInteger> computeVNttFromANttAndSalt(List<BigInteger> aNtt, byte[] salt) {
+    private List<BigInteger> computeVNttFromANttAndSalt(ClientsSecrets cs, List<BigInteger> aNtt, byte[] salt) {
         // v = asv + 2ev //
         // Compute seeds.
-        byte[] seed1 = computeSeed1(salt);
+        byte[] seed1 = computeSeed1(cs, salt);
         byte[] seed2 = new byte[32];
         engine.hash(seed2, seed1);
         // Based on seeds (computed from private values) generate sv, ev.
         List<BigInteger> sv = new ArrayList<>(n);
         List<BigInteger> ev = new ArrayList<>(n);
-        getEtaNoise(sv, seed1);
-        getEtaNoise(ev, seed2);
+        Utils.getEtaNoise(publicParams, mlkem, engine, sv, seed1);
+        Utils.getEtaNoise(publicParams, mlkem, engine, ev, seed2);
         List<BigInteger> svNtt = ntt.convertToNtt(sv);
         List<BigInteger> evNtt = ntt.convertFromNtt(ev);
         // Do all the math.
@@ -90,7 +75,7 @@ public class ClientImple {
         return ntt.addPolys(aSvNtt, twoEvNtt);
     }
 
-    public void enrollClient() {
+    public void enrollClient(ClientsSecrets cs) {
         // v = asv + 2ev //
         // Create polynomial a from public seed.
         List<BigInteger> aNtt = new ArrayList<>(n);
@@ -99,9 +84,9 @@ public class ClientImple {
         byte[] salt = new byte[SALTSIZE];
         engine.getRandomBytes(salt);
         // Compute v.
-        List<BigInteger> vNtt = computeVNttFromANttAndSalt(aNtt, salt);
+        List<BigInteger> vNtt = computeVNttFromANttAndSalt(cs, aNtt, salt);
         // Send public seed for a, identity, salt and v in NTT form to the server. //
-        server.enrollClient(publicSeedForA.clone(), I.clone(), salt, List.copyOf(vNtt));  // salt will be forgotten, no need for copy
+        server.enrollClient(publicSeedForA, cs.getIdentity(), salt, vNtt);
     }
 
     private static byte[] concatBigIntegerListsToByteArray(List<BigInteger> a, List<BigInteger> b) {
@@ -119,23 +104,23 @@ public class ClientImple {
         return out.toByteArray();
     }
 
-    public void computeSharedSecret() {
+    public void computeSharedSecret(ClientsSecrets cs) {
         List<BigInteger> constantTwoPolyNtt = ntt.generateConstantTwoPolynomialNtt();
         // pi = as1 + 2e1 //
         // Create polynomial a from public seed.
         List<BigInteger> aNtt = new ArrayList<>(n);
         mlkem.generateUniformPolynomialNtt(engine, aNtt, publicSeedForA);
         // Compute s1.
-        List<BigInteger> s1Ntt = generateRandomErrorPolyNtt();
+        List<BigInteger> s1Ntt = Utils.generateRandomErrorPolyNtt(publicParams, mlkem, engine, ntt);
         // Compute e1.
-        List<BigInteger> e1Ntt = generateRandomErrorPolyNtt();
+        List<BigInteger> e1Ntt = Utils.generateRandomErrorPolyNtt(publicParams, mlkem, engine, ntt);
         // Do all the math.
         List<BigInteger> aS1Ntt = ntt.multiplyNttPolys(aNtt, s1Ntt);
         List<BigInteger> twoE1Ntt = ntt.multiplyNttPolys(constantTwoPolyNtt, e1Ntt);
         List<BigInteger> piNtt = ntt.addPolys(aS1Ntt, twoE1Ntt);
         // Send identity and ephemeral public key pi in NTT form to the server. //
         // Receive salt, ephemeral public key pj in NTT form and wj. //
-        SaltEphPublicSignal sPjNttWj = server.computeSharedSecret(I.clone(), List.copyOf(piNtt));
+        SaltEphPublicSignal sPjNttWj = server.computeSharedSecret(cs.getIdentity(), piNtt);
         byte[] salt = sPjNttWj.getSalt();
         List<BigInteger> pjNtt = sPjNttWj.getPjNtt();
         List<Integer> wj = sPjNttWj.getWj();
@@ -145,13 +130,13 @@ public class ClientImple {
         List<BigInteger> uNtt = new ArrayList<>(n);
         mlkem.generateUniformPolynomialNtt(engine, uNtt, hash);
         // v = asv + 2ev //
-        List<BigInteger> vNtt = computeVNttFromANttAndSalt(aNtt, salt);
+        List<BigInteger> vNtt = computeVNttFromANttAndSalt(cs, aNtt, salt);
         // ki = (pj − v)(sv + s1) + uv + 2e1'' //
         // Compute e1''.
-        List<BigInteger> e1DoublePrimeNtt = generateRandomErrorPolyNtt();
+        List<BigInteger> e1DoublePrimeNtt = Utils.generateRandomErrorPolyNtt(publicParams, mlkem, engine, ntt);
         // Compute sv.
         List<BigInteger> sv = new ArrayList<>(n);
-        getEtaNoise(sv, computeSeed1(salt));
+        Utils.getEtaNoise(publicParams, mlkem, engine, sv, computeSeed1(cs, salt));
         List<BigInteger> svNtt = ntt.convertToNtt(sv);
         // Do all the math.
         List<BigInteger> fstBracket = ntt.subtractPolys(pjNtt, vNtt);
@@ -174,9 +159,10 @@ public class ClientImple {
         this.ski = ski;
     }
 
-    public void verifyEntities() {
+    public byte[] verifyEntities() {
         // Compute M1
         // byte[] m2Prime = server.verifyEntities(m1);
         // Compute M2
+        return new byte[0];
     }
 }
