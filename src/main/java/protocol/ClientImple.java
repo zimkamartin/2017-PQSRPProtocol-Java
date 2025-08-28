@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 public class ClientImple {
 
@@ -19,6 +20,7 @@ public class ClientImple {
     private final Engine engine = new EngineImple();
     private final Mlkem mlkem;
     private final Ntt ntt;
+    private final Magic magic;
     // THIS IS NOT HOW TO DO IT !!! THIS IS JUST FOR PROOF-OF-CONCEPT !!! THIS IS NOT HOW TO DO IT !!!
     private static final byte[] I = "identity123".getBytes();
     private static final byte[] PWD = "password123".getBytes();
@@ -37,6 +39,7 @@ public class ClientImple {
         this.engine.getRandomBytes(publicSeedForA);
         this.mlkem = new MlkemImple(this.n, this.q);
         this.ntt = new NttImple(this.n, this.q);
+        this.magic = new MagicImple(this.q);
     }
 
     private byte[] computeSeed1(byte[] salt) {
@@ -135,7 +138,7 @@ public class ClientImple {
         SaltEphPublicSignal sPjNttWj = server.computeSharedSecret(I, piNtt);
         byte[] salt = sPjNttWj.getSalt();
         List<BigInteger> pjNtt = sPjNttWj.getPjNtt();
-        List<BigInteger> wj = sPjNttWj.getWj();
+        List<Integer> wj = sPjNttWj.getWj();
         // u = XOF(H(pi || pj)) //
         byte[] hash = new byte[32];
         engine.hash(hash, concatBigIntegerListsToByteArray(piNtt, pjNtt));
@@ -160,19 +163,14 @@ public class ClientImple {
         List<BigInteger> kiNtt = ntt.addPolys(addedFstTwoNtt, trdMultiNtt);
         List<BigInteger> ki = ntt.convertFromNtt(kiNtt);
         // sigmai = Mod_2(ki, wj) //
-        List<BigInteger> sigmai = new ArrayList<>(n);  // TODO put here magic
+        List<Integer> sigmai = IntStream.range(0, n).mapToObj(i -> magic.robustExtractor(ki.get(i), wj.get(i))).toList();
         // ski = SHA3-256(sigmai) //
         byte[] ski = new byte[32];
-        // TODO extract conversion List<BigInteger> -> byte[]
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try {
-            for (BigInteger coeff : sigmai) {
-                out.write(coeff.toByteArray());
-            }
-        } catch (IOException e) {
-            System.out.println("This should not have happened.");
+        byte[] sigmaiByteArray = new byte[n];
+        for (int i = 0; i < n; i++) {
+            sigmaiByteArray[i] = sigmai.get(i).byteValue();
         }
-        engine.hash(ski, out.toByteArray());
+        engine.hash(ski, sigmaiByteArray);
         this.ski = ski;
     }
 

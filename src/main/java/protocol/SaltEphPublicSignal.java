@@ -20,9 +20,9 @@ public class SaltEphPublicSignal {
     /**
      * Polynomial where coefficients are result of applying Signal function.
      */
-    private final List<BigInteger> wj;
+    private final List<Integer> wj;
 
-    public SaltEphPublicSignal(byte[] salt, List<BigInteger> pjNtt, List<BigInteger> wj) {
+    public SaltEphPublicSignal(byte[] salt, List<BigInteger> pjNtt, List<Integer> wj) {
         this.salt = salt;
         this.pjNtt = pjNtt;
         this.wj = wj;
@@ -36,7 +36,7 @@ public class SaltEphPublicSignal {
         return pjNtt;
     }
 
-    public List<BigInteger> getWj() {
+    public List<Integer> getWj() {
         return wj;
     }
 }
