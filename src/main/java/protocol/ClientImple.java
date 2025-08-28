@@ -101,7 +101,7 @@ public class ClientImple {
         // Compute v.
         List<BigInteger> vNtt = computeVNttFromANttAndSalt(aNtt, salt);
         // Send public seed for a, identity, salt and v in NTT form to the server. //
-        server.enrollClient(publicSeedForA, I, salt, vNtt);
+        server.enrollClient(publicSeedForA.clone(), I.clone(), salt, List.copyOf(vNtt));  // salt will be forgotten, no need for copy
     }
 
     private static byte[] concatBigIntegerListsToByteArray(List<BigInteger> a, List<BigInteger> b) {
@@ -135,7 +135,7 @@ public class ClientImple {
         List<BigInteger> piNtt = ntt.addPolys(aS1Ntt, twoE1Ntt);
         // Send identity and ephemeral public key pi in NTT form to the server. //
         // Receive salt, ephemeral public key pj in NTT form and wj. //
-        SaltEphPublicSignal sPjNttWj = server.computeSharedSecret(I, piNtt);
+        SaltEphPublicSignal sPjNttWj = server.computeSharedSecret(I.clone(), List.copyOf(piNtt));
         byte[] salt = sPjNttWj.getSalt();
         List<BigInteger> pjNtt = sPjNttWj.getPjNtt();
         List<Integer> wj = sPjNttWj.getWj();
