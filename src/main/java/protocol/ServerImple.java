@@ -83,7 +83,10 @@ public class ServerImple implements Server {
     }
 
     @Override
-    public byte[] verifyEntities(byte[] m1) {
-        return new byte[0];
+    public byte[] verifyEntities(byte[] m1) {  // TODO: Verify matches.
+        // M1' = SHA3-256(pi || pj || skj) //
+        byte[] m1Prime = Utils.concatenateTwoByteArraysAndHash(engine, Utils.concatBigIntegerListsToByteArray(this.piNtt, this.pjNtt), this.skj);
+        // M2' = SHA3-256(pi || M1' || skj) //
+        return Utils.concatenateThreeByteArraysAndHash(engine, Utils.convertBigIntegerListToByteArray(piNtt), m1Prime, this.skj);
     }
 }
