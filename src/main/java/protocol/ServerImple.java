@@ -42,15 +42,15 @@ public class ServerImple implements Server {
 
     @Override
     public void enrollClient(byte[] publicSeedForA, byte[] I, byte[] salt, List<BigInteger> vNtt) {
-        database.put(new ByteArrayWrapper(I), new ClientsPublics(publicSeedForA, salt, vNtt));
+        database.put(new ByteArrayWrapper(I.clone()), new ClientsPublics(publicSeedForA.clone(), salt.clone(), List.copyOf(vNtt)));
     }
 
     @Override
     public SaltEphPublicSignal computeSharedSecret(byte[] I, List<BigInteger> piNtt) {
-        this.piNtt = piNtt;
+        ByteArrayWrapper wrappedIdentity = new ByteArrayWrapper(I.clone());
+        this.piNtt = List.copyOf(piNtt);
         List<BigInteger> constantTwoPolyNtt = ntt.generateConstantTwoPolynomialNtt();
         // Extract database. //  // TODO: handle when key is not there
-        ByteArrayWrapper wrappedIdentity = new ByteArrayWrapper(I);
         byte[] publicSeedForA = database.get(wrappedIdentity).getPublicSeedForA();
         List<BigInteger> vNtt = database.get(wrappedIdentity).getVerifierNtt();
         byte[] salt = database.get(wrappedIdentity).getSalt();
@@ -79,7 +79,7 @@ public class ServerImple implements Server {
         // skj = SHA3-256(sigmaj) //
         this.skj = Utils.hashConvertIntegerListToByteArray(n, engine, sigmaj);
 
-        return new SaltEphPublicSignal(salt, pjNtt, wj);
+        return new SaltEphPublicSignal(salt.clone(), List.copyOf(pjNtt), List.copyOf(wj));
     }
 
     @Override
