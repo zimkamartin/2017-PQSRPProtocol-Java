@@ -127,7 +127,7 @@ public class ClientImple {
         byte[] m2Prime = server.verifyEntities(m1);
         byte[] m2 = Utils.concatenateThreeByteArraysAndHash(engine, Utils.convertBigIntegerListToByteArray(piNtt), m1, this.ski);
         // VERIFY that M2 == M2'. If true, return key.
-        ByteArrayWrapper m2Wrapped = new ByteArrayWrapper(m2Prime);
+        ByteArrayWrapper m2Wrapped = new ByteArrayWrapper(m2);
         ByteArrayWrapper m2PrimeWrapped = new ByteArrayWrapper(m2Prime);
         return (m2Wrapped.equals(m2PrimeWrapped)) ? this.ski : new byte[0];
     }
