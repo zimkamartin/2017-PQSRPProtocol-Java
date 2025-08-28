@@ -87,6 +87,7 @@ public class ClientImple {
         // pi = as1 + 2e1 //
         // Create polynomial a from public seed.
         List<BigInteger> aNtt = new ArrayList<>(Collections.nCopies(n, null));
+        mlkem.generateUniformPolynomialNtt(engine, aNtt, publicSeedForA);
         // Compute s1.
         List<BigInteger> s1Ntt = Utils.generateRandomErrorPolyNtt(publicParams, mlkem, engine, ntt);
         // Compute e1.

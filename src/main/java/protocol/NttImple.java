@@ -133,8 +133,8 @@ public class NttImple implements Ntt {
     public NttImple(int n, BigInteger q) {
         this.n = n;
         this.q = q;
-        this.zetas = new ArrayList<>(Collections.nCopies(n - 1, null));
-        this.zetasInverted = new ArrayList<>(Collections.nCopies(n - 1, null));
+        this.zetas = new ArrayList<>(n - 1);
+        this.zetasInverted = new ArrayList<>(n - 1);
         this.nttTree = new ArrayList<>((int) (Math.log(n) / Math.log(2)));  // that is log_2(n)
         computeZetaArrays();
     }
