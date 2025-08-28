@@ -83,9 +83,15 @@ public class ServerImple implements Server {
     }
 
     @Override
-    public byte[] verifyEntities(byte[] m1) {  // TODO: Verify matches.
+    public byte[] verifyEntities(byte[] m1) {
         // M1' = SHA3-256(pi || pj || skj) //
         byte[] m1Prime = Utils.concatenateTwoByteArraysAndHash(engine, Utils.concatBigIntegerListsToByteArray(this.piNtt, this.pjNtt), this.skj);
+        // VERIFY that M1 == M1'. If true, return M2', else return empty byte array.
+        ByteArrayWrapper m1Wrapped = new ByteArrayWrapper(m1);
+        ByteArrayWrapper m1PrimeWrapped = new ByteArrayWrapper(m1Prime);
+        if (!m1Wrapped.equals(m1PrimeWrapped)) {
+            return new byte[0];
+        }
         // M2' = SHA3-256(pi || M1' || skj) //
         return Utils.concatenateThreeByteArraysAndHash(engine, Utils.convertBigIntegerListToByteArray(piNtt), m1Prime, this.skj);
     }
