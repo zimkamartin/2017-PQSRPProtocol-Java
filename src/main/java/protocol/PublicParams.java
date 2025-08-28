@@ -14,6 +14,7 @@ public class PublicParams {
     private final int n;
     /**
      * Must hold q ≡ 1 mod 2n because of NTT.
+     * Must be prime so that generator exists, and we can compute n-root of one in NTT.
      */
     private final BigInteger q;
     /**
