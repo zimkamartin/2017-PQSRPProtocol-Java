@@ -1,5 +1,7 @@
 package protocol;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +23,10 @@ public class ClientImple {
     private static final byte[] I = "identity123".getBytes();
     private static final byte[] PWD = "password123".getBytes();
     // THIS IS NOT HOW TO DO IT !!! THIS IS JUST FOR PROOF-OF-CONCEPT !!! THIS IS NOT HOW TO DO IT !!!
+    // THIS IS NOT HOW TO DO IT ! THIS IS JUST FOR PROOF-OF-CONCEPT ! THIS IS NOT HOW TO DO IT !
+    // DATABASE //
+    private byte[] ski = null;
+    // THIS IS NOT HOW TO DO IT ! THIS IS JUST FOR PROOF-OF-CONCEPT ! THIS IS NOT HOW TO DO IT !
 
     public ClientImple(Server server) {
         this.server = server;
@@ -54,14 +60,17 @@ public class ClientImple {
         mlkem.generateCbdPolynomial(r, buf, eta);
     }
 
-    public void enrollClient() {
+    private List<BigInteger> generateRandomErrorPolyNtt() {
+        List<BigInteger> e = new ArrayList<>(n);
+        byte[] eRandomSeed = new byte[34];
+        engine.getRandomBytes(eRandomSeed);
+        getEtaNoise(e, eRandomSeed);
+        return ntt.convertFromNtt(e);
+    }
+
+    private List<BigInteger> computeVNttFromANttAndSalt(List<BigInteger> aNtt, byte[] salt) {
         // v = asv + 2ev //
-        // Create polynomial a from public seed.
-        List<BigInteger> aNtt = new ArrayList<>(n);
-        mlkem.generateUniformPolynomialNtt(engine, aNtt, publicSeedForA);
-        // Generate salt and compute seeds.
-        byte[] salt = new byte[SALTSIZE];
-        engine.getRandomBytes(salt);
+        // Compute seeds.
         byte[] seed1 = computeSeed1(salt);
         byte[] seed2 = new byte[32];
         engine.hash(seed2, seed1);
@@ -75,17 +84,96 @@ public class ClientImple {
         // Do all the math.
         List<BigInteger> aSvNtt = ntt.multiplyNttPolys(aNtt, svNtt);
         List<BigInteger> twoEvNtt = ntt.multiplyNttPolys(ntt.generateConstantTwoPolynomialNtt(), evNtt);
-        List<BigInteger> vNtt = ntt.addPolys(aSvNtt, twoEvNtt);
-        // Send it to the server //
+        return ntt.addPolys(aSvNtt, twoEvNtt);
+    }
+
+    public void enrollClient() {
+        // v = asv + 2ev //
+        // Create polynomial a from public seed.
+        List<BigInteger> aNtt = new ArrayList<>(n);
+        mlkem.generateUniformPolynomialNtt(engine, aNtt, publicSeedForA);
+        // Generate salt.
+        byte[] salt = new byte[SALTSIZE];
+        engine.getRandomBytes(salt);
+        // Compute v.
+        List<BigInteger> vNtt = computeVNttFromANttAndSalt(aNtt, salt);
+        // Send public seed for a, identity, salt and v in NTT form to the server. //
         server.enrollClient(publicSeedForA, I, salt, vNtt);
     }
 
+    private static byte[] concatBigIntegerListsToByteArray(List<BigInteger> a, List<BigInteger> b) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            for (BigInteger coeff : a) {
+                out.write(coeff.toByteArray());
+            }
+            for (BigInteger coeff : b) {
+                out.write(coeff.toByteArray());
+            }
+        } catch (IOException e) {
+            System.out.println("This should not have happened.");
+        }
+        return out.toByteArray();
+    }
+
     public void computeSharedSecret() {
-        // Compute pi
-        // SaltEphPublicSignal sPjNttWj = server.computeSharedSecret(I, pi);
-        // Compute u
-        // ...
-        // Compute Shared secret - save it as an attribute of this Class  - is it the best way? Where to save secret? Or return it in some way?
+        List<BigInteger> constantTwoPolyNtt = ntt.generateConstantTwoPolynomialNtt();
+        // pi = as1 + 2e1 //
+        // Create polynomial a from public seed.
+        List<BigInteger> aNtt = new ArrayList<>(n);
+        mlkem.generateUniformPolynomialNtt(engine, aNtt, publicSeedForA);
+        // Compute s1.
+        List<BigInteger> s1Ntt = generateRandomErrorPolyNtt();
+        // Compute e1.
+        List<BigInteger> e1Ntt = generateRandomErrorPolyNtt();
+        // Do all the math.
+        List<BigInteger> aS1Ntt = ntt.multiplyNttPolys(aNtt, s1Ntt);
+        List<BigInteger> twoE1Ntt = ntt.multiplyNttPolys(constantTwoPolyNtt, e1Ntt);
+        List<BigInteger> piNtt = ntt.addPolys(aS1Ntt, twoE1Ntt);
+        // Send identity and ephemeral public key pi in NTT form to the server. //
+        // Receive salt, ephemeral public key pj in NTT form and wj. //
+        SaltEphPublicSignal sPjNttWj = server.computeSharedSecret(I, piNtt);
+        byte[] salt = sPjNttWj.getSalt();
+        List<BigInteger> pjNtt = sPjNttWj.getPjNtt();
+        List<BigInteger> wj = sPjNttWj.getWj();
+        // u = XOF(H(pi || pj)) //
+        byte[] hash = new byte[32];
+        engine.hash(hash, concatBigIntegerListsToByteArray(piNtt, pjNtt));
+        List<BigInteger> uNtt = new ArrayList<>(n);
+        mlkem.generateUniformPolynomialNtt(engine, uNtt, hash);
+        // v = asv + 2ev //
+        List<BigInteger> vNtt = computeVNttFromANttAndSalt(aNtt, salt);
+        // ki = (pj − v)(sv + s1) + uv + 2e1'' //
+        // Compute e1''.
+        List<BigInteger> e1DoublePrimeNtt = generateRandomErrorPolyNtt();
+        // Compute sv.
+        List<BigInteger> sv = new ArrayList<>(n);
+        getEtaNoise(sv, computeSeed1(salt));
+        List<BigInteger> svNtt = ntt.convertToNtt(sv);
+        // Do all the math.
+        List<BigInteger> fstBracket = ntt.subtractPolys(pjNtt, vNtt);
+        List<BigInteger> sndBracket = ntt.addPolys(svNtt, s1Ntt);
+        List<BigInteger> fstMultiNtt = ntt.multiplyNttPolys(fstBracket, sndBracket);
+        List<BigInteger> sndMultiNtt = ntt.multiplyNttPolys(uNtt, vNtt);
+        List<BigInteger> trdMultiNtt = ntt.multiplyNttPolys(constantTwoPolyNtt, e1DoublePrimeNtt);
+        List<BigInteger> addedFstTwoNtt = ntt.addPolys(fstMultiNtt, sndMultiNtt);
+        List<BigInteger> kiNtt = ntt.addPolys(addedFstTwoNtt, trdMultiNtt);
+        List<BigInteger> ki = ntt.convertFromNtt(kiNtt);
+        // sigmai = Mod_2(ki, wj) //
+        List<BigInteger> sigmai = new ArrayList<>(n);  // TODO put here magic
+        // ski = SHA3-256(sigmai) //
+        byte[] ski = new byte[32];
+        // TODO extract conversion List<BigInteger> -> byte[]
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            for (BigInteger coeff : sigmai) {
+                out.write(coeff.toByteArray());
+            }
+        } catch (IOException e) {
+            System.out.println("This should not have happened.");
+        }
+        engine.hash(ski, out.toByteArray());
+        this.ski = ski;
     }
 
     public void verifyEntities() {

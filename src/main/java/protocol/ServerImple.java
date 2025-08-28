@@ -2,7 +2,6 @@ package protocol;
 
 import java.math.BigInteger;
 import java.util.List;
-import java.util.Optional;
 
 public class ServerImple implements Server {
 
@@ -31,11 +30,6 @@ public class ServerImple implements Server {
     }
 
     @Override
-    public byte[] generatePublicSeedForA() {
-        return new byte[0];
-    }
-
-    @Override
     public void enrollClient(byte[] publicSeedForA, byte[] I, byte[] salt, List<BigInteger> vNtt) {
         this.publicSeedForA = publicSeedForA;
         this.I = I;
@@ -44,7 +38,7 @@ public class ServerImple implements Server {
     }
 
     @Override
-    public SaltEphPublicSignal computeSharedSecret(String I, BigInteger[] pi) {
+    public SaltEphPublicSignal computeSharedSecret(byte[] I, List<BigInteger> piNtt) {
         return null;
     }
 

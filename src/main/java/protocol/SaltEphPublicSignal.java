@@ -14,17 +14,17 @@ public class SaltEphPublicSignal {
      */
     private final byte[] salt;
     /**
-     * Polynomial representing ephemeral public key used on both sides.
+     * Polynomial representing server's ephemeral public key in NTT form.
      */
-    private final List<BigInteger> pj;
+    private final List<BigInteger> pjNtt;
     /**
      * Polynomial where coefficients are result of applying Signal function.
      */
     private final List<BigInteger> wj;
 
-    public SaltEphPublicSignal(byte[] salt, List<BigInteger> pj, List<BigInteger> wj) {
+    public SaltEphPublicSignal(byte[] salt, List<BigInteger> pjNtt, List<BigInteger> wj) {
         this.salt = salt;
-        this.pj = pj;
+        this.pjNtt = pjNtt;
         this.wj = wj;
     }
 
@@ -32,8 +32,8 @@ public class SaltEphPublicSignal {
         return salt;
     }
 
-    public List<BigInteger> getPj() {
-        return pj;
+    public List<BigInteger> getPjNtt() {
+        return pjNtt;
     }
 
     public List<BigInteger> getWj() {

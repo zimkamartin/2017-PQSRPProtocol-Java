@@ -14,11 +14,6 @@ public interface Server {
     PublicParams getPublicParams();
 
     /**
-     * @return public seed used to generate public polynomial a
-     */
-    byte[] generatePublicSeedForA();
-
-    /**
      * @param publicSeedForA - public seed that will be used to generate public polynomial a
      * @param I - client's identity
      * @param salt - client's salt
@@ -28,10 +23,10 @@ public interface Server {
 
     /**
      * @param I - client's identity
-     * @param pi - polynomial representing client's ephemeral public key
+     * @param piNtt - polynomial representing client's ephemeral public key in NTT form
      * @return client's salt, polynomial representing server's ephemeral public key, polynomial where coefficients are result of applying Signal function
      */
-    SaltEphPublicSignal computeSharedSecret(String I, BigInteger[] pi);
+    SaltEphPublicSignal computeSharedSecret(byte[] I, List<BigInteger> piNtt);
 
     /**
      * @param m1 - hash of concatenated client's ephemeral key with server's ephemeral key and with client's shared secret key
