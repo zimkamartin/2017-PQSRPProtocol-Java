@@ -1,7 +1,9 @@
 package protocol;
 
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ServerImple implements Server {
 
@@ -9,14 +11,7 @@ public class ServerImple implements Server {
     private final Engine engine = new EngineImple();
     private final Mlkem mlkem;
     private final Ntt ntt;
-
-    // THIS IS NOT HOW TO DO IT ! THIS IS JUST FOR PROOF-OF-CONCEPT ! THIS IS NOT HOW TO DO IT !
-    // DATABASE // - ak budem mat cas, tak mapu indexovanu Ickom
-    private byte[] publicSeedForA = null;
-    private byte[] I = null;
-    private byte[] salt = null;
-    private List<BigInteger> vNtt = null;
-    // THIS IS NOT HOW TO DO IT ! THIS IS JUST FOR PROOF-OF-CONCEPT ! THIS IS NOT HOW TO DO IT !
+    private final Map<ByteArrayWrapper, ClientsPublics> database = new HashMap<>();
 
     public ServerImple(int n, BigInteger q, int eta) {
         this.publicParams = new PublicParams(n, q, eta);
@@ -31,10 +26,7 @@ public class ServerImple implements Server {
 
     @Override
     public void enrollClient(byte[] publicSeedForA, byte[] I, byte[] salt, List<BigInteger> vNtt) {
-        this.publicSeedForA = publicSeedForA;
-        this.I = I;
-        this.salt = salt;
-        this.vNtt = vNtt;
+        database.put(new ByteArrayWrapper(I), new ClientsPublics(publicSeedForA, salt, vNtt));
     }
 
     @Override
