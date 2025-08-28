@@ -22,6 +22,16 @@ public final class Utils {
         return out.toByteArray();
     }
 
+    public static byte[] hashConvertIntegerListToByteArray(int n, Engine engine, List<Integer> inp) {
+        byte[] hash = new byte[32];
+        byte[] inpByteArray = new byte[n];
+        for (int i = 0; i < n; i++) {
+            inpByteArray[i] = inp.get(i).byteValue();
+        }
+        engine.hash(hash, inpByteArray);
+        return hash;
+    }
+
     public static byte[] concatBigIntegerListsToByteArray(List<BigInteger> a, List<BigInteger> b) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
@@ -68,5 +78,32 @@ public final class Utils {
         engine.getRandomBytes(eRandomSeed);
         getEtaNoise(pp, mlkem, engine, e, eRandomSeed);
         return ntt.convertFromNtt(e);
+    }
+
+    public static List<BigInteger> computeUNtt(Engine engine, Mlkem mlkem, int n, List<BigInteger> piNtt, List<BigInteger> pjNtt) {
+        byte[] hash = new byte[32];
+        engine.hash(hash, Utils.concatBigIntegerListsToByteArray(piNtt, pjNtt));
+        List<BigInteger> uNtt = new ArrayList<>(n);
+        mlkem.generateUniformPolynomialNtt(engine, uNtt, hash);
+        return uNtt;
+    }
+
+    /**
+     * @return ab + cd, where each polynomial is in NTT form
+     */
+    public static List<BigInteger> multiply2NttTuplesAndAddThemTogetherNtt(Ntt ntt, List<BigInteger> aNtt, List<BigInteger> bNtt, List<BigInteger> cNtt, List<BigInteger> dNtt) {
+        List<BigInteger> abNtt = ntt.multiplyNttPolys(aNtt, bNtt);
+        List<BigInteger> cdNtt = ntt.multiplyNttPolys(cNtt, dNtt);
+        return ntt.addPolys(abNtt, cdNtt);
+    }
+
+    /**
+     * @return convertFromNtt(ab + cd + ef), where each polynomial is in NTT form
+     */
+    public static List<BigInteger> multiply3NttTuplesAndAddThemTogether(Ntt ntt, List<BigInteger> aNtt, List<BigInteger> bNtt, List<BigInteger> cNtt, List<BigInteger> dNtt, List<BigInteger> eNtt, List<BigInteger> fNtt) {
+        List<BigInteger> addedFstTwoNtt = multiply2NttTuplesAndAddThemTogetherNtt(ntt, aNtt, bNtt, cNtt, dNtt);
+        List<BigInteger> efNtt = ntt.multiplyNttPolys(eNtt, fNtt);
+        List<BigInteger> resultNtt = ntt.addPolys(addedFstTwoNtt, efNtt);
+        return ntt.convertFromNtt(resultNtt);
     }
 }

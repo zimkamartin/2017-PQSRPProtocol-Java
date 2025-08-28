@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import static protocol.Utils.computeUNtt;
 import static protocol.Utils.convertBigIntegerListToByteArray;
 
 public class ClientImple {
@@ -24,7 +25,7 @@ public class ClientImple {
     private final Mlkem mlkem;
     private final Ntt ntt;
     private final Magic magic;
-    // DATABASE //
+    // TODO figure out what to do with these 3 vars //
     private byte[] ski = null;
     private List<BigInteger> piNtt = null;
     private List<BigInteger> pjNtt = null;
@@ -63,9 +64,7 @@ public class ClientImple {
         List<BigInteger> svNtt = ntt.convertToNtt(sv);
         List<BigInteger> evNtt = ntt.convertFromNtt(ev);
         // Do all the math.
-        List<BigInteger> aSvNtt = ntt.multiplyNttPolys(aNtt, svNtt);
-        List<BigInteger> twoEvNtt = ntt.multiplyNttPolys(ntt.generateConstantTwoPolynomialNtt(), evNtt);
-        return ntt.addPolys(aSvNtt, twoEvNtt);
+        return Utils.multiply2NttTuplesAndAddThemTogetherNtt(ntt, aNtt, svNtt, ntt.generateConstantTwoPolynomialNtt(), evNtt);
     }
 
     public void enrollClient(ClientsSecrets cs) {
@@ -87,15 +86,12 @@ public class ClientImple {
         // pi = as1 + 2e1 //
         // Create polynomial a from public seed.
         List<BigInteger> aNtt = new ArrayList<>(n);
-        mlkem.generateUniformPolynomialNtt(engine, aNtt, publicSeedForA);
         // Compute s1.
         List<BigInteger> s1Ntt = Utils.generateRandomErrorPolyNtt(publicParams, mlkem, engine, ntt);
         // Compute e1.
         List<BigInteger> e1Ntt = Utils.generateRandomErrorPolyNtt(publicParams, mlkem, engine, ntt);
         // Do all the math.
-        List<BigInteger> aS1Ntt = ntt.multiplyNttPolys(aNtt, s1Ntt);
-        List<BigInteger> twoE1Ntt = ntt.multiplyNttPolys(constantTwoPolyNtt, e1Ntt);
-        this.piNtt = ntt.addPolys(aS1Ntt, twoE1Ntt);
+        this.piNtt = Utils.multiply2NttTuplesAndAddThemTogetherNtt(ntt, aNtt, s1Ntt, constantTwoPolyNtt, e1Ntt);
         // Send identity and ephemeral public key pi in NTT form to the server. //
         // Receive salt, ephemeral public key pj in NTT form and wj. //
         SaltEphPublicSignal sPjNttWj = server.computeSharedSecret(cs.getIdentity(), this.piNtt);
@@ -103,10 +99,7 @@ public class ClientImple {
         this.pjNtt = sPjNttWj.getPjNtt();
         List<Integer> wj = sPjNttWj.getWj();
         // u = XOF(H(pi || pj)) //
-        byte[] hash = new byte[32];
-        engine.hash(hash, Utils.concatBigIntegerListsToByteArray(this.piNtt, this.pjNtt));
-        List<BigInteger> uNtt = new ArrayList<>(n);
-        mlkem.generateUniformPolynomialNtt(engine, uNtt, hash);
+        List<BigInteger> uNtt = computeUNtt(engine, mlkem, n, piNtt, pjNtt);
         // v = asv + 2ev //
         List<BigInteger> vNtt = computeVNttFromANttAndSalt(cs, aNtt, salt);
         // ki = (pj − v)(sv + s1) + uv + 2e1'' //
@@ -119,22 +112,11 @@ public class ClientImple {
         // Do all the math.
         List<BigInteger> fstBracket = ntt.subtractPolys(this.pjNtt, vNtt);
         List<BigInteger> sndBracket = ntt.addPolys(svNtt, s1Ntt);
-        List<BigInteger> fstMultiNtt = ntt.multiplyNttPolys(fstBracket, sndBracket);
-        List<BigInteger> sndMultiNtt = ntt.multiplyNttPolys(uNtt, vNtt);
-        List<BigInteger> trdMultiNtt = ntt.multiplyNttPolys(constantTwoPolyNtt, e1DoublePrimeNtt);
-        List<BigInteger> addedFstTwoNtt = ntt.addPolys(fstMultiNtt, sndMultiNtt);
-        List<BigInteger> kiNtt = ntt.addPolys(addedFstTwoNtt, trdMultiNtt);
-        List<BigInteger> ki = ntt.convertFromNtt(kiNtt);
+        List<BigInteger> ki = Utils.multiply3NttTuplesAndAddThemTogether(ntt, fstBracket, sndBracket, uNtt, vNtt, constantTwoPolyNtt, e1DoublePrimeNtt);
         // sigmai = Mod_2(ki, wj) //
         List<Integer> sigmai = IntStream.range(0, n).mapToObj(i -> magic.robustExtractor(ki.get(i), wj.get(i))).toList();
         // ski = SHA3-256(sigmai) //
-        byte[] ski = new byte[32];
-        byte[] sigmaiByteArray = new byte[n];
-        for (int i = 0; i < n; i++) {
-            sigmaiByteArray[i] = sigmai.get(i).byteValue();
-        }
-        engine.hash(ski, sigmaiByteArray);
-        this.ski = ski;
+        this.ski = Utils.hashConvertIntegerListToByteArray(n, engine, sigmai);
     }
 
     public byte[] verifyEntities() {

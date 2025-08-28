@@ -7,12 +7,12 @@ public class ClientsPublics {
 
     private final byte[] publicSeedForA;
     private final byte[] salt;
-    private final List<BigInteger> verifier;
+    private final List<BigInteger> verifierNtt;
 
-    public ClientsPublics(byte[] publicSeedForA, byte[] salt, List<BigInteger> verifier) {
+    public ClientsPublics(byte[] publicSeedForA, byte[] salt, List<BigInteger> verifierNtt) {
         this.publicSeedForA = publicSeedForA;
         this.salt = salt;
-        this.verifier = verifier;
+        this.verifierNtt = verifierNtt;
     }
 
     public byte[] getPublicSeedForA() {
@@ -23,7 +23,7 @@ public class ClientsPublics {
         return this.salt;
     }
 
-    public List<BigInteger> getVerifier() {
-        return this.verifier;
+    public List<BigInteger> getVerifierNtt() {
+        return this.verifierNtt;
     }
 }
