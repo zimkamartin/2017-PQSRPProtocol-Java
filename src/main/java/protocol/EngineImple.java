@@ -3,6 +3,7 @@ package protocol;
 import org.bouncycastle.crypto.digests.SHA3Digest;
 import org.bouncycastle.crypto.digests.SHAKEDigest;
 import java.security.SecureRandom;
+import java.util.Random;
 
 /**
  * Represents engine of the protocol, so all functions that must have some internal state during the run of the protocol.
@@ -20,9 +21,11 @@ public class EngineImple implements Engine {
     private static final SHAKEDigest xof = new SHAKEDigest(128);
     private static final SHA3Digest sha3Digest256 = new SHA3Digest(256);
     private static final SHAKEDigest shakeDigest = new SHAKEDigest(256);
-    private static final SecureRandom random = new SecureRandom();
+    private final Random random;
 
-    public EngineImple() {}
+    public EngineImple(Random random) {
+        this.random = random;
+    }
 
     @Override
     public int getXofBlockBytes() {

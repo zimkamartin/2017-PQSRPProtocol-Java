@@ -33,23 +33,23 @@ public interface Engine {
 
     /**
      * @param out - byte array where hashed will be put
-     * @param in - input for the hash function
+     * @param in - input for the hash function (SHA3-256)
      */
     void hash(byte[] out, byte[] in);
 
     /**
      * @param out - byte array where the output from pseudo-random function will be put
-     * @param seed - seed for the pseudo-random function
+     * @param seed - seed for the pseudo-random function (SHAKE256)
      */
     void prf(byte[] out, byte[] seed);
 
     /**
      * @param buf - byte array which will be filed by random bytes
      */
-    public void getRandomBytes(byte[] buf);
+    void getRandomBytes(byte[] buf);
 
     /**
      * @return random bit
      */
-    public int getRandomBit();
+    int getRandomBit();
 }
