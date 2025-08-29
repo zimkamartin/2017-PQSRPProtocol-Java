@@ -14,9 +14,16 @@ import java.util.*;
 public interface Ntt {
 
     /**
-     * Based on n and q generates arrays Zeta and Zeta inverted. These are filled with constants used for conversion from and to Ntt representations.
+     * @return attribute zetasArray, so all precomputed coefficients used to convert polynomial to its NTT form.
+     * It is needed for test.
      */
-    void computeZetaArrays();
+    List<BigInteger> getZetasArray();
+
+    /**
+     * @return attribute zetasInvertedArray, so all precomputed coefficients used to convert polynomial back from its NTT form.
+     * It is needed for test.
+     */
+    List<BigInteger> getZetasInvertedArray();
 
     /**
      * @return polynomial in Ntt form representing constant 2

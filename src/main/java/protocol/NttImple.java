@@ -60,10 +60,7 @@ public class NttImple implements Ntt {
     private void generateArrays(BigInteger zeta) {
         BigInteger nRoot = BigInteger.TWO.multiply(BigInteger.valueOf(n));
         for (List<ModuloPoly> layer: nttTree) {
-            for (int i = 0; i < layer.size(); i++) {
-                if (i % 2 == 1) {  // There is still + zeta, - zeta. So save it just as one zeta (the plus one).
-                    continue;
-                }
+            for (int i = 0; i < layer.size(); i = i + 2) {  // There is still + zeta, - zeta. So save it just as one zeta (the plus one).
                 ModuloPoly poly = layer.get(i);
                 BigInteger power = poly.getPowerZeta();
                 BigInteger index = poly.getIndexZeta();
@@ -123,8 +120,7 @@ public class NttImple implements Ntt {
         return BigInteger.valueOf(-1);
     }
 
-    @Override
-    public void computeZetaArrays() {
+    private void computeZetaArrays() {
         computeNttTree();
         BigInteger zeta = computePrimitiveRoot();
         generateArrays(zeta);
@@ -137,6 +133,14 @@ public class NttImple implements Ntt {
         this.zetasInverted = new ArrayList<>(n - 1);
         this.nttTree = new ArrayList<>((int) (Math.log(n) / Math.log(2)));  // that is log_2(n)
         computeZetaArrays();
+    }
+
+    public List<BigInteger> getZetasArray() {
+        return List.copyOf(this.zetas);
+    }
+
+    public List<BigInteger> getZetasInvertedArray() {
+        return List.copyOf(this.zetasInverted);
     }
 
     @Override
