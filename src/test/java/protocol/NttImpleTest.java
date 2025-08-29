@@ -37,7 +37,7 @@ class NttImpleTest {
         BigInteger q = BigInteger.valueOf(17);
         Ntt ntt = new NttImple(n, q);
         List<BigInteger> output = ntt.generateConstantTwoPolynomialNtt();
-        List<BigInteger> expected = Arrays.asList(BigInteger.valueOf(2), BigInteger.valueOf(2), BigInteger.valueOf(2), BigInteger.valueOf(2));
+        List<BigInteger> expected = Arrays.asList(BigInteger.TWO, BigInteger.TWO, BigInteger.TWO, BigInteger.TWO);
         assertEquals(expected, output);
     }
 
@@ -108,7 +108,7 @@ class NttImpleTest {
         int n = 4;
         BigInteger q = BigInteger.valueOf(17);
         Ntt ntt = new NttImple(n, q);
-        List<BigInteger> aNtt = ntt.generateConstantTwoPolynomialNtt();
+        List<BigInteger> aNtt = Arrays.asList(BigInteger.TWO, BigInteger.TWO, BigInteger.TWO, BigInteger.TWO);
         List<BigInteger> b = generateIncrementingList(n);
         List<BigInteger> bNtt = ntt.convertToNtt(b);
         List<BigInteger> sumNtt = ntt.addPolys(aNtt, bNtt);

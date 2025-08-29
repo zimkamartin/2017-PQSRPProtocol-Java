@@ -23,7 +23,7 @@ public final class Utils {
         return out.toByteArray();
     }
 
-    public static byte[] hashConvertIntegerListToByteArray(int n, Engine engine, List<Integer> inp) {
+    public static byte[] convertIntegerListToByteArrayAndHashIt(int n, Engine engine, List<Integer> inp) {
         byte[] hash = new byte[32];
         byte[] inpByteArray = new byte[n];
         for (int i = 0; i < n; i++) {
