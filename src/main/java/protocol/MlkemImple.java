@@ -1,96 +1,79 @@
 package protocol;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.List;
+
+import static java.math.RoundingMode.CEILING;
+import static java.math.RoundingMode.HALF_UP;
 
 class MlkemImple implements Mlkem{
 
     private final int n;
     private final BigInteger q;
+    private final int unifNeededNumOfBits;  // the number of needed bits for generating 1 coefficient by Uniform distribution
+    private final int unifNeededNumOfBytes;
+    private final BigInteger unifMask;  // used when sampling coefficient for Uniform distribution
 
     MlkemImple(int n, BigInteger q) {
         this.n = n;
         this.q = q;
+        this.unifNeededNumOfBits = this.q.subtract(BigInteger.ONE).bitLength();
+        this.unifNeededNumOfBytes = (this.unifNeededNumOfBits + 7) / 8;
+        this.unifMask = BigInteger.ONE.shiftLeft(this.unifNeededNumOfBits).subtract(BigInteger.ONE);
     }
 
-    // TODO: Change it for dynamic n, q.
     private int rejectionSampling(List<BigInteger> outputBuffer, int coeffOff, int len, byte[] inpBuf, int inpBufLen) {
-        // zahadzovat
         int ctr, pos;  // number of sampled coeffs and possition in inpBuf
-        BigInteger val0, val1, val2, val3;  // candidates for coefficients
+        BigInteger val;  // candidate for coefficient
         ctr = pos = 0;
-        while (ctr < len && pos + 15 <= inpBufLen) {
-            // The following should look like this:
-            // val0 = 00C[0]1.1/4 C[01]1.1/2 C[01]2.1/2 C[02]1.1/2 C[02]2.1/2 C[03]1.1/2 C[03]2.1/2 C[13]1.1/2
-            // val1 = 00C[0]2.1/4 C[04]1.1/2 C[04]2.1/2 C[05]1.1/2 C[05]2.1/2 C[06]1.1/2 C[06]2.1/2 C[13]2.1/2
-            // val2 = 00C[0]3.1/4 C[07]1.1/2 C[07]2.1/2 C[08]1.1/2 C[08]2.1/2 C[09]1.1/2 C[09]2.1/2 C[14]1.1/2
-            // val3 = 00C[0]4.1/4 C[10]1.1/2 C[10]2.1/2 C[11]1.1/2 C[11]2.1/2 C[12]1.1/2 C[12]2.1/2 C[14]2.1/2,
-            // where each block is precisely 4 bits
-            // and 00C[0]1.1/4 stands for 2 zero bits followed by first fourth from byte on position 0 in inpBuf.
-            val0 = BigInteger.valueOf(((((int)(inpBuf[pos +  0] & 0xFF)) << 22) & 0x30000000) |
-                    ((((int)(inpBuf[pos +  1] & 0xFF)) << 20) & 0x0FF00000) |
-                    ((((int)(inpBuf[pos +  2] & 0xFF)) << 12) & 0x000FF000) |
-                    ((((int)(inpBuf[pos +  3] & 0xFF)) <<  4) & 0x00000FF0) |
-                    ((((int)(inpBuf[pos + 13] & 0xFF)) >>  4) & 0x0000000F));
-            val1 = BigInteger.valueOf(((((int)(inpBuf[pos +  0] & 0xFF)) << 24) & 0x30000000) |
-                    ((((int)(inpBuf[pos +  4] & 0xFF)) << 20) & 0x0FF00000) |
-                    ((((int)(inpBuf[pos +  5] & 0xFF)) << 12) & 0x000FF000) |
-                    ((((int)(inpBuf[pos +  6] & 0xFF)) <<  4) & 0x00000FF0) |
-                    ((((int)(inpBuf[pos + 13] & 0xFF)) >>  0) & 0x0000000F));
-            val2 = BigInteger.valueOf(((((int)(inpBuf[pos +  0] & 0xFF)) << 26) & 0x30000000) |
-                    ((((int)(inpBuf[pos +  7] & 0xFF)) << 20) & 0x0FF00000) |
-                    ((((int)(inpBuf[pos +  8] & 0xFF)) << 12) & 0x000FF000) |
-                    ((((int)(inpBuf[pos +  9] & 0xFF)) <<  4) & 0x00000FF0) |
-                    ((((int)(inpBuf[pos + 14] & 0xFF)) >>  4) & 0x0000000F));
-            val3 = BigInteger.valueOf(((((int)(inpBuf[pos +  0] & 0xFF)) << 28) & 0x30000000) |
-                    ((((int)(inpBuf[pos + 10] & 0xFF)) << 20) & 0x0FF00000) |
-                    ((((int)(inpBuf[pos + 11] & 0xFF)) << 12) & 0x000FF000) |
-                    ((((int)(inpBuf[pos + 12] & 0xFF)) <<  4) & 0x00000FF0) |
-                    ((((int)(inpBuf[pos + 14] & 0xFF)) >>  0) & 0x0000000F));
-            pos = pos + 15;
-            if (val0.compareTo(q) < 0) {
-                outputBuffer.set(coeffOff + ctr, val0);
-                ctr++;
-            }
-            if (ctr < len && val1.compareTo(q) < 0) {
-                outputBuffer.set(coeffOff + ctr, val1);
-                ctr++;
-            }
-            if (ctr < len && val2.compareTo(q) < 0) {
-                outputBuffer.set(coeffOff + ctr, val2);
-                ctr++;
-            }
-            if (ctr < len && val3.compareTo(q) < 0) {
-                outputBuffer.set(coeffOff + ctr, val3);
+        while (ctr < len && pos + unifNeededNumOfBytes <= inpBufLen) {  // while I need coefficient and while I have enough bytes for next coefficient
+            byte[] bufBytes = Arrays.copyOfRange(inpBuf, pos, pos + unifNeededNumOfBytes);
+            BigInteger bufBI = new BigInteger(1, bufBytes);
+            val = bufBI.and(unifMask);
+            pos += unifNeededNumOfBytes;
+            if (val.compareTo(q) < 0) {
+                outputBuffer.set(coeffOff + ctr, val);
                 ctr++;
             }
         }
         return ctr;
     }
 
-    // TODO: Change it for dynamic n, q.
-    // TODO: Solve q.intValue()
+    /**
+     * Compute the lowest amount of XOF block bytes needed for sampling.
+     * <p>
+     * Should be: ((number of bytes needed for 1 coefficient) * (Probability of correct coefficient sampled) ^ -1 + xBB) / xBB
+     * where xBB is xofBlockBytes.
+     * </p>
+     */
+    private int getKyberGenerateMatrixNBlocks(Engine e) {
+        BigDecimal numerator = BigDecimal.valueOf(n)
+                .multiply(BigDecimal.valueOf(unifNeededNumOfBytes))
+                .multiply(new BigDecimal(unifMask));
+        BigDecimal denominator = new BigDecimal(q.subtract(BigInteger.ONE));
+        BigDecimal fraction = numerator.divide(denominator, 11, HALF_UP);  // choose precision, currently set to 11 decimal places
+        BigDecimal result = fraction
+                .add(BigDecimal.valueOf(e.getXofBlockBytes()))
+                .divide(BigDecimal.valueOf(e.getXofBlockBytes()), 11, HALF_UP);
+        return result.setScale(0, CEILING).intValueExact();  // = the closest needed higher amount of xBB to generate for sampling
+    }
+    
     @Override
     public void generateUniformPolynomialNtt(Engine e, List<BigInteger> out, byte[] seed) {
-        int KyberGenerateMatrixNBlocks = (int)  // its value is 23  // !!! Conversions BigInteger -> int
-                (
-                        (
-                                (float) 30 * n / 8  // how many bytes do I need to sample
-                                        * (float) (1 << 30) / q.intValue()  // (probability of success) ^ -1, SO together it is in average how many bytes we need for sampling
-                                        + (float) e.getXofBlockBytes()
-                        )
-                                / e.getXofBlockBytes()  // thanks to `+ xBB / xBB` we now have the closest needed higher amount of xBB
-                );
+        int KyberGenerateMatrixNBlocks = getKyberGenerateMatrixNBlocks(e);
+
         int k, ctr, off;
-        int buflen = KyberGenerateMatrixNBlocks * e.getXofBlockBytes();  // currently it is not divisible by 15!
+        int buflen = KyberGenerateMatrixNBlocks * e.getXofBlockBytes();
         byte[] buf = new byte[buflen];
         e.xofAbsorb(seed);
         e.xofSqueezeBlocks(buf, 0, buflen);
 
-        ctr = rejectionSampling(out, 0, n, buf, buflen);  // number of samples coefficients
+        ctr = rejectionSampling(out, 0, n, buf, buflen);  // number of sampled coefficients
 
         while (ctr < n) {  // we did not sample enough coeffs
-            off = buflen % 15;  // how many unused bytes is in buf?
+            off = buflen % unifNeededNumOfBytes;  // how many unused bytes is in buf?
             for (k = 0; k < off; k++) {  // move unused bytes to the beginning of the buf
                 buf[k] = buf[buflen - off + k];
             }
