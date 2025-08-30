@@ -3,7 +3,9 @@ package protocol;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -22,7 +24,7 @@ public class ClientImple {
     private final BigInteger q;
     private final int eta;
     private final byte[] publicSeedForA = new byte[PUBLICSEEDFORASIZE];
-    private final Engine engine = new EngineImple();
+    private final Engine engine = new EngineImple(new SecureRandom());
     private final Mlkem mlkem;
     private final Ntt ntt;
     private final Magic magic;
@@ -47,8 +49,8 @@ public class ClientImple {
         byte[] identity = cs.getIdentity();
         byte[] password = cs.getPassword();
         // seed1 = SHA3-256(salt||SHA3-256(I||pwd)) //
-        byte[] innerHash = Utils.concatenateTwoByteArraysAndHash(engine, identity, password);
-        return Utils.concatenateTwoByteArraysAndHash(engine, salt, innerHash);
+        byte[] innerHash = Utils.concatenateTwoByteArraysAndHashThem(engine, identity, password);
+        return Utils.concatenateTwoByteArraysAndHashThem(engine, salt, innerHash);
     }
 
     private List<BigInteger> computeVNttFromANttAndSalt(ClientsSecrets cs, List<BigInteger> aNtt, byte[] salt) {
@@ -63,7 +65,7 @@ public class ClientImple {
         Utils.getEtaNoise(publicParams, mlkem, engine, sv, seed1);
         Utils.getEtaNoise(publicParams, mlkem, engine, ev, seed2);
         List<BigInteger> svNtt = ntt.convertToNtt(sv);
-        List<BigInteger> evNtt = ntt.convertFromNtt(ev);
+        List<BigInteger> evNtt = ntt.convertToNtt(ev);
         // Do all the math.
         return Utils.multiply2NttTuplesAndAddThemTogetherNtt(ntt, aNtt, svNtt, ntt.generateConstantTwoPolynomialNtt(), evNtt);
     }
@@ -118,12 +120,13 @@ public class ClientImple {
         // sigmai = Mod_2(ki, wj) //
         List<Integer> sigmai = IntStream.range(0, n).mapToObj(i -> magic.robustExtractor(ki.get(i), wj.get(i))).toList();
         // ski = SHA3-256(sigmai) //
-        this.ski = Utils.hashConvertIntegerListToByteArray(n, engine, sigmai);
+        //System.out.println(sigmai);
+        this.ski = Utils.convertIntegerListToByteArrayAndHashIt(n, engine, sigmai);
     }
 
     public byte[] verifyEntities() {
         // M1 = SHA3-256(pi || pj || ski) //
-        byte[] m1 = Utils.concatenateTwoByteArraysAndHash(engine, Utils.concatBigIntegerListsToByteArray(this.piNtt, this.pjNtt), this.ski);
+        byte[] m1 = Utils.concatenateTwoByteArraysAndHashThem(engine, Utils.concatBigIntegerListsToByteArray(this.piNtt, this.pjNtt), this.ski);
         // M2 = SHA3-256(pi || M1 || ski) //
         byte[] m2Prime = server.verifyEntities(m1);
         byte[] m2 = Utils.concatenateThreeByteArraysAndHash(engine, Utils.convertBigIntegerListToByteArray(piNtt), m1, this.ski);

@@ -1,6 +1,7 @@
 package protocol;
 
 import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -12,7 +13,7 @@ public class ServerImple implements Server {
     private final BigInteger q;
     private final int eta;
     private final PublicParams publicParams;
-    private final Engine engine = new EngineImple();
+    private final Engine engine = new EngineImple(new SecureRandom());
     private final Mlkem mlkem;
     private final Ntt ntt;
     private final Magic magic;
@@ -67,14 +68,15 @@ public class ServerImple implements Server {
         // Compute e1'''.
         List<BigInteger> e1TriplePrimeNtt = Utils.generateRandomErrorPolyNtt(publicParams, mlkem, engine, ntt);
         // Do all the math.
-        List<BigInteger> fstBracket = ntt.addPolys(vNtt, piNtt);
-        List<BigInteger> kj = Utils.multiply3NttTuplesAndAddThemTogether(ntt, fstBracket, s1PrimeNtt, uNtt, vNtt, constantTwoPolyNtt, e1TriplePrimeNtt);
+        List<BigInteger> bracket = ntt.addPolys(vNtt, piNtt);
+        List<BigInteger> kj = Utils.multiply3NttTuplesAndAddThemTogether(ntt, bracket, s1PrimeNtt, uNtt, vNtt, constantTwoPolyNtt, e1TriplePrimeNtt);
         // wj = Cha(kj) //
         List<Integer> wj = IntStream.range(0, n).mapToObj(i -> magic.signalFunction(engine, kj.get(i))).toList();
         // sigmaj = Mod_2(kj, wj) //
         List<Integer> sigmaj = IntStream.range(0, n).mapToObj(i -> magic.robustExtractor(kj.get(i), wj.get(i))).toList();
         // skj = SHA3-256(sigmaj) //
-        this.skj = Utils.hashConvertIntegerListToByteArray(n, engine, sigmaj);
+        //System.out.println(sigmaj);
+        this.skj = Utils.convertIntegerListToByteArrayAndHashIt(n, engine, sigmaj);
 
         return new SaltEphPublicSignal(salt.clone(), List.copyOf(pjNtt), List.copyOf(wj));
     }
@@ -82,7 +84,7 @@ public class ServerImple implements Server {
     @Override
     public byte[] verifyEntities(byte[] m1) {
         // M1' = SHA3-256(pi || pj || skj) //
-        byte[] m1Prime = Utils.concatenateTwoByteArraysAndHash(engine, Utils.concatBigIntegerListsToByteArray(this.piNtt, this.pjNtt), this.skj);
+        byte[] m1Prime = Utils.concatenateTwoByteArraysAndHashThem(engine, Utils.concatBigIntegerListsToByteArray(this.piNtt, this.pjNtt), this.skj);
         // VERIFY that M1 == M1'. If true, return M2', else return empty byte array.
         ByteArrayWrapper m1Wrapped = new ByteArrayWrapper(m1);
         ByteArrayWrapper m1PrimeWrapped = new ByteArrayWrapper(m1Prime);

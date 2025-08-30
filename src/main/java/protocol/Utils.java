@@ -23,6 +23,9 @@ public final class Utils {
         return out.toByteArray();
     }
 
+    /**
+     * Enough for our case, so when inp contains only ones and zeros.
+     */
     public static byte[] convertIntegerListToByteArrayAndHashIt(int n, Engine engine, List<Integer> inp) {
         byte[] hash = new byte[32];
         byte[] inpByteArray = new byte[n];
@@ -48,7 +51,7 @@ public final class Utils {
         return out.toByteArray();
     }
 
-    public static byte[] concatenateTwoByteArraysAndHash(Engine engine, byte[] a, byte[] b) {
+    public static byte[] concatenateTwoByteArraysAndHashThem(Engine engine, byte[] a, byte[] b) {
         byte[] input = new byte[a.length + b.length];
         System.arraycopy(a, 0, input, 0, a.length);
         System.arraycopy(b, 0, input, a.length, b.length);
@@ -78,7 +81,7 @@ public final class Utils {
         byte[] eRandomSeed = new byte[34];
         engine.getRandomBytes(eRandomSeed);
         getEtaNoise(pp, mlkem, engine, e, eRandomSeed);
-        return ntt.convertFromNtt(e);
+        return ntt.convertToNtt(e);
     }
 
     public static List<BigInteger> computeUNtt(Engine engine, Mlkem mlkem, int n, List<BigInteger> piNtt, List<BigInteger> pjNtt) {

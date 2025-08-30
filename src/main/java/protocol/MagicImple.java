@@ -33,6 +33,8 @@ public class MagicImple implements Magic {
     @Override
     public int robustExtractor(BigInteger x, int w) {
         x = symmetricModulo(x);  // Make sure that x is result of a symmetric modulo.
-        return symmetricModulo(x.add(BigInteger.valueOf(w).multiply((q.subtract(BigInteger.ONE)).divide(BigInteger.TWO)))).mod(BigInteger.TWO).intValue();
+        BigInteger multiplied = BigInteger.valueOf(w).multiply((q.subtract(BigInteger.ONE)).divide(BigInteger.TWO));
+        BigInteger added = x.add(multiplied);
+        return symmetricModulo(added).mod(BigInteger.TWO).intValue();
     }
 }

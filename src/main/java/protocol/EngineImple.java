@@ -2,7 +2,6 @@ package protocol;
 
 import org.bouncycastle.crypto.digests.SHA3Digest;
 import org.bouncycastle.crypto.digests.SHAKEDigest;
-import java.security.SecureRandom;
 import java.util.Random;
 
 /**

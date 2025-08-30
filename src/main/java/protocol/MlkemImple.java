@@ -15,6 +15,7 @@ class MlkemImple implements Mlkem{
 
     // TODO: Change it for dynamic n, q.
     private int rejectionSampling(List<BigInteger> outputBuffer, int coeffOff, int len, byte[] inpBuf, int inpBufLen) {
+        // zahadzovat
         int ctr, pos;  // number of sampled coeffs and possition in inpBuf
         BigInteger val0, val1, val2, val3;  // candidates for coefficients
         ctr = pos = 0;
@@ -111,7 +112,8 @@ class MlkemImple implements Mlkem{
     public void generateCbdPolynomial(List<BigInteger> out, byte[] bytes, int eta) {
         long t, d;
         int a, b;
-
+        // urobit to be trikov, potom s
+        // aj s random etou
         for (int i = 0; i < n / 4; i++) {  // When eta is equal to 3.
             t = convertByteTo24BitUnsignedInt(bytes, 3 * i);
             d = t & 0x00249249;

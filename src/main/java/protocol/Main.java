@@ -1,6 +1,7 @@
 package protocol;
 
 import java.math.BigInteger;
+import java.util.Arrays;
 
 public class Main {
 
@@ -20,5 +21,6 @@ public class Main {
         client.enrollClient(cs);
         client.computeSharedSecret(cs);
         byte[] clientsKey = client.verifyEntities();
+        System.out.println(Arrays.toString(clientsKey));
     }
 }
