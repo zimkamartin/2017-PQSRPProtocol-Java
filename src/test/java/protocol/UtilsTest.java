@@ -11,6 +11,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class UtilsTest {
 
+    private static final int N = 4;
+    private static final BigInteger Q = BigInteger.valueOf(17);
+
     // Be sure that n < q.
     private List<BigInteger> generateIncrementingList(int n) {
         List<BigInteger> result = new ArrayList<>(n);
@@ -34,10 +37,8 @@ class UtilsTest {
 
     @Test
     void multiply2NttTuplesAndAddThemTogetherNtt() {
-        int n = 4;
-        BigInteger q = BigInteger.valueOf(17);
-        Ntt ntt = new NttImple(n, q);
-        List<BigInteger> aNtt = generateIncrementingList(n);
+        Ntt ntt = new NttImple(N, Q);
+        List<BigInteger> aNtt = generateIncrementingList(N);
         List<BigInteger> bNtt = Arrays.asList(BigInteger.ONE, BigInteger.ONE, BigInteger.ONE, BigInteger.ONE);
         List<BigInteger> cNtt = Arrays.asList(BigInteger.TWO, BigInteger.TWO, BigInteger.TWO, BigInteger.TWO);
         List<BigInteger> dNtt = Arrays.asList(BigInteger.TEN, BigInteger.TEN, BigInteger.TEN, BigInteger.TEN);
@@ -48,10 +49,8 @@ class UtilsTest {
 
     @Test
     void multiply3NttTuplesAndAddThemTogether() {
-        int n = 4;
-        BigInteger q = BigInteger.valueOf(17);
-        Ntt ntt = new NttImple(n, q);
-        List<BigInteger> aNtt = generateIncrementingList(n);
+        Ntt ntt = new NttImple(N, Q);
+        List<BigInteger> aNtt = generateIncrementingList(N);
         List<BigInteger> bNtt = Arrays.asList(BigInteger.ONE, BigInteger.ONE, BigInteger.ONE, BigInteger.ONE);
         List<BigInteger> cNtt = Arrays.asList(BigInteger.TWO, BigInteger.TWO, BigInteger.TWO, BigInteger.TWO);
         List<BigInteger> dNtt = Arrays.asList(BigInteger.TEN, BigInteger.TEN, BigInteger.TEN, BigInteger.TEN);
