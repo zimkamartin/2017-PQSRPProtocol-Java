@@ -5,6 +5,7 @@ import protocol.exceptions.NotEnrolledClientException;
 import protocol.exceptions.ServerNotAuthenticatedException;
 
 import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.Arrays;
 
 public class Main {
@@ -20,8 +21,8 @@ public class Main {
 
     public static void main(String[] args) throws NotEnrolledClientException, ServerNotAuthenticatedException, ClientNotAuthenticatedException {
         ClientsSecrets cs = new ClientsSecrets(I, PWD);
-        Server server = new ServerImple(N, Q, ETA);
-        ClientImple client = new ClientImple(server);
+        Server server = new ServerImple(new SecureRandom(), N, Q, ETA);
+        ClientImple client = new ClientImple(new SecureRandom(), server);
         client.enrollClient(cs);
         client.computeSharedSecret(cs);
         byte[] clientsKey = client.verifyEntities();

@@ -16,7 +16,7 @@ public class ServerImple implements Server {
     private final BigInteger q;
     private final int eta;
     private final PublicParams publicParams;
-    private final Engine engine = new EngineImple(new SecureRandom());
+    private final Engine engine;
     private final Mlkem mlkem;
     private final Ntt ntt;
     private final Magic magic;
@@ -26,10 +26,11 @@ public class ServerImple implements Server {
     private List<BigInteger> piNtt = null;
     private List<BigInteger> pjNtt = null;
 
-    public ServerImple(int n, BigInteger q, int eta) {
+    public ServerImple(Random random, int n, BigInteger q, int eta) {
         this.n = n;
         this.q = q;
         this.eta = eta;
+        this.engine = new EngineImple(random);
         this.publicParams = new PublicParams(this.n, this.q, this.eta);
         this.mlkem = new MlkemImple(this.n, this.q);
         this.ntt = new NttImple(this.n, this.q);

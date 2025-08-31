@@ -9,6 +9,7 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.IntStream;
 
 import static protocol.Utils.computeUNtt;
@@ -24,7 +25,7 @@ public class ClientImple {
     private final BigInteger q;
     private final int eta;
     private final byte[] publicSeedForA = new byte[PUBLICSEEDFORASIZE];
-    private final Engine engine = new EngineImple(new SecureRandom());
+    private final Engine engine;
     private final Mlkem mlkem;
     private final Ntt ntt;
     private final Magic magic;
@@ -33,12 +34,13 @@ public class ClientImple {
     private List<BigInteger> piNtt = null;
     private List<BigInteger> pjNtt = null;
 
-    public ClientImple(Server server) {
+    public ClientImple(Random random, Server server) {
         this.server = server;
         this.publicParams = server.getPublicParams();
         this.n = this.publicParams.getN();
         this.q = this.publicParams.getQ();
         this.eta = this.publicParams.getEta();
+        this.engine = new EngineImple(random);
         this.engine.getRandomBytes(this.publicSeedForA);
         this.mlkem = new MlkemImple(this.n, this.q);
         this.ntt = new NttImple(this.n, this.q);

@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import protocol.exceptions.NotEnrolledClientException;
 
 import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.List;
 
@@ -24,8 +25,8 @@ class ClientImpleTest {
     @Test
     void computeSharedSecretClientExists() {
         ClientsSecrets cs = new ClientsSecrets(I, PWD);
-        Server server = new ServerImple(N, Q, ETA);
-        ClientImple client = new ClientImple(server);
+        Server server = new ServerImple(new SecureRandom(), N, Q, ETA);
+        ClientImple client = new ClientImple(new SecureRandom(), server);
         client.enrollClient(cs);
         assertDoesNotThrow(() -> client.computeSharedSecret(cs));
     }
@@ -34,8 +35,8 @@ class ClientImpleTest {
     void computeSharedSecretClientDoesNotExist() {
         byte[] notEnrolledI = "notEnrolledI".getBytes();
         ClientsSecrets cs = new ClientsSecrets(I, PWD);
-        Server server = new ServerImple(N, Q, ETA);
-        ClientImple client = new ClientImple(server);
+        Server server = new ServerImple(new SecureRandom(), N, Q, ETA);
+        ClientImple client = new ClientImple(new SecureRandom(), server);
         client.enrollClient(cs);
         assertThrows(NotEnrolledClientException.class,
                 () -> client.computeSharedSecret(new ClientsSecrets(notEnrolledI, PWD)));
