@@ -71,7 +71,7 @@ public final class Utils {
     }
 
     public static void getEtaNoise(PublicParams pp, MlkemImple mlkem, EngineImple engine, List<BigInteger> r, byte[] seed) {
-        byte[] buf = new byte[pp.getN() * pp.getEta() / 4];
+        byte[] buf = new byte[(int) Math.ceil((pp.getN() * 2.0 * pp.getEta()) / 8.0)];
         engine.prf(buf, seed);
         mlkem.generateCbdPolynomial(r, buf, pp.getEta());
     }

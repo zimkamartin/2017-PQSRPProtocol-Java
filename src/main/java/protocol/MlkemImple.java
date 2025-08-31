@@ -34,7 +34,7 @@ class MlkemImple {
     }
 
     private int rejectionSampling(List<BigInteger> outputBuffer, int coeffOff, int len, byte[] inpBuf, int inpBufLen) {
-        int ctr, pos;  // number of sampled coeffs and possition in inpBuf
+        int ctr, pos;  // number of sampled coeffs and position in inpBuf
         BigInteger val;  // candidate for coefficient
         ctr = pos = 0;
         while (ctr < len && pos + unifNeededNumOfBytes <= inpBufLen) {  // while I need coefficient and while I have enough bytes for next coefficient
@@ -95,38 +95,41 @@ class MlkemImple {
         }
     }
 
-    private static long convertByteTo24BitUnsignedInt(byte[] x, int offset) {
-        long r = (long)(x[offset] & 0xFF);
-        r = r | (long)((long)(x[offset + 1] & 0xFF) << 8);
-        r = r | (long)((long)(x[offset + 2] & 0xFF) << 16);
-        return r;
+    private int bitCountOfMUnusedBits(byte[] bytes, int byteIndex, int bitIndex, int m) {
+        int inp = bytes[byteIndex] & 0xFF;  // get the unsigned value of a current byte
+        int shifted = inp << bitIndex;  // get rid of already used bits
+        int mask = (1 << m) - 1;  // create mask for m bits
+        return Integer.bitCount(shifted & mask);  // add to a number of bits 1 in masked result
     }
 
-    // TODO: Change it for dynamic eta.
-    // TODO: Figure out suitable eta value for given n and q.
     /**
-     * @param out - polynomial that will be filled by coefficients are sampled from a central binomial distribution
-     * @param bytes - bytes used in specific way to obtain from them coefficients sampled from CBD
-     * @param eta - parameter of CBD. Coefficients will be from [-eta; eta] modulo Q
+     * @param out - polynomial that will have coefficients sampled from a centered binomial distribution
+     * @param bytes - input from which coefficients will be sampled from
+     * @param eta - each coefficient will be from -eta to eta (both inclusive)
      */
     public void generateCbdPolynomial(List<BigInteger> out, byte[] bytes, int eta) {
-        long t, d;
-        int a, b;
-        // urobit to be trikov, potom s
-        // aj s random etou
-        for (int i = 0; i < n / 4; i++) {  // When eta is equal to 3.
-            t = convertByteTo24BitUnsignedInt(bytes, 3 * i);
-            d = t & 0x00249249;
-            d = d + ((t >> 1) & 0x00249249);
-            d = d + ((t >> 2) & 0x00249249);
-            for (int j = 0; j < 4; j++)
-            {
-                a = (short)((d >> (6 * j + 0)) & 0x7);
-                b = (short)((d >> (6 * j + 3)) & 0x7);
-                short diffShort = (short)(a - b);
-                BigInteger diffBI = BigInteger.valueOf(diffShort);
-                out.set(4 * i + j, diffBI.mod(q));
+        int bitIndex = 0;
+        int byteIndex = 0;
+        for (int i = 0; i < n; i++) {
+            int a = 0;
+            int b = 0;
+            int count = 0;  // how many bits do I already have?
+            while (count < eta) {
+                int m = Math.min(eta - count, 8 - bitIndex);  // how many bits will we take from the byte
+                a += bitCountOfMUnusedBits(bytes, byteIndex, bitIndex, m);  // add to a number of bits 1 in masked result
+                count += m;  // update number of bits that we already have
+                byteIndex += (bitIndex + m == 8) ? 1 : 0;  // change byte and bit index accordingly
+                bitIndex = (bitIndex + m) % 8;
             }
+            count = 0;
+            while (count < eta) {
+                int m = Math.min(eta - count, 8 - bitIndex);  // how many bits will we take from the byte
+                b += bitCountOfMUnusedBits(bytes, byteIndex, bitIndex, m);  // add to a number of bits 1 in masked result
+                count += m;  // update number of bits that we already have
+                byteIndex += (bitIndex + m == 8) ? 1 : 0;  // change byte and bit index accordingly
+                bitIndex = (bitIndex + m) % 8;
+            }
+            out.set(i, BigInteger.valueOf(a - b));
         }
     }
 }
