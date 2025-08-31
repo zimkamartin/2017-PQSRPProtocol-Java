@@ -21,57 +21,57 @@ class MagicImpleTest {
 
     @Test
     void hintFunction00L() {
-        Magic magic = new MagicImple(Q);
+        MagicImple magic = new MagicImple(Q);
         assertEquals(0, magic.hintFunction(BigInteger.valueOf(13), 0));
     }
 
     @Test
     void hintFunction01L() {
-        Magic magic = new MagicImple(Q);
+        MagicImple magic = new MagicImple(Q);
         assertEquals(1, magic.hintFunction(BigInteger.valueOf(12), 0));
     }
 
     @Test
     void hintFunction10L() {
-        Magic magic = new MagicImple(Q);
+        MagicImple magic = new MagicImple(Q);
         assertEquals(0, magic.hintFunction(BigInteger.valueOf(14), 1));
 
     }
 
     @Test
     void hintFunction11L() {
-        Magic magic = new MagicImple(Q);
+        MagicImple magic = new MagicImple(Q);
         assertEquals(1, magic.hintFunction(BigInteger.valueOf(13), 1));
     }
 
     @Test
     void hintFunction00R() {
-        Magic magic = new MagicImple(Q);
+        MagicImple magic = new MagicImple(Q);
         assertEquals(0, magic.hintFunction(BigInteger.valueOf(4), 0));
     }
 
     @Test
     void hintFunction01R() {
-        Magic magic = new MagicImple(Q);
+        MagicImple magic = new MagicImple(Q);
         assertEquals(1, magic.hintFunction(BigInteger.valueOf(5), 0));
     }
 
     @Test
     void hintFunction10R() {
-        Magic magic = new MagicImple(Q);
+        MagicImple magic = new MagicImple(Q);
         assertEquals(0, magic.hintFunction(BigInteger.valueOf(5), 1));
     }
 
     @Test
     void hintFunction11R() {
-        Magic magic = new MagicImple(Q);
+        MagicImple magic = new MagicImple(Q);
         assertEquals(1, magic.hintFunction(BigInteger.valueOf(6), 1));
     }
 
     @Test
     void signalFunction() {
-        Magic magic = new MagicImple(Q);
-        Engine engine = new EngineImple(new Random(123));
+        MagicImple magic = new MagicImple(Q);
+        EngineImple engine = new EngineImple(new Random(123));
         assertEquals(0, magic.signalFunction(engine, BigInteger.valueOf(14)));  // .getRandomBit() = 1
         assertEquals(0, magic.signalFunction(engine, BigInteger.valueOf(13)));  // .getRandomBit() = 0
         assertEquals(1, magic.signalFunction(engine, BigInteger.valueOf(13)));  // .getRandomBit() = 1
@@ -93,32 +93,32 @@ class MagicImpleTest {
 
     @Test
     void symmetricModuloZF() {
-        Magic magic = new MagicImple(Q);
+        MagicImple magic = new MagicImple(Q);
         assertEquals(BigInteger.valueOf(0), magic.symmetricModulo(BigInteger.valueOf(0)));
     }
 
     @Test
     void symmetricModuloZT() {
-        Magic magic = new MagicImple(Q);
+        MagicImple magic = new MagicImple(Q);
         assertEquals(BigInteger.valueOf(-1), magic.symmetricModulo(BigInteger.valueOf(16)));
     }
 
     @Test
     void symmetricModuloHF() {
-        Magic magic = new MagicImple(Q);
+        MagicImple magic = new MagicImple(Q);
         assertEquals(BigInteger.valueOf(8), magic.symmetricModulo(BigInteger.valueOf(8)));
     }
 
     @Test
     void symmetricModuloHT() {
-        Magic magic = new MagicImple(Q);
+        MagicImple magic = new MagicImple(Q);
         assertEquals(BigInteger.valueOf(-8), magic.symmetricModulo(BigInteger.valueOf(9)));
     }
 
     // Trying just tuples that can occur in the input with high probability.
     @Test
     void robustExtractor() {
-        Magic magic = new MagicImple(Q);
+        MagicImple magic = new MagicImple(Q);
         assertEquals(0, magic.robustExtractor(BigInteger.valueOf(4), 0));
         assertEquals(1, magic.robustExtractor(BigInteger.valueOf(8), 1));
     }

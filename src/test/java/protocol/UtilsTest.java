@@ -37,7 +37,7 @@ class UtilsTest {
 
     @Test
     void multiply2NttTuplesAndAddThemTogetherNtt() {
-        Ntt ntt = new NttImple(N, Q);
+        NttImple ntt = new NttImple(N, Q);
         List<BigInteger> aNtt = generateIncrementingList(N);
         List<BigInteger> bNtt = Arrays.asList(BigInteger.ONE, BigInteger.ONE, BigInteger.ONE, BigInteger.ONE);
         List<BigInteger> cNtt = Arrays.asList(BigInteger.TWO, BigInteger.TWO, BigInteger.TWO, BigInteger.TWO);
@@ -49,7 +49,7 @@ class UtilsTest {
 
     @Test
     void multiply3NttTuplesAndAddThemTogether() {
-        Ntt ntt = new NttImple(N, Q);
+        NttImple ntt = new NttImple(N, Q);
         List<BigInteger> aNtt = generateIncrementingList(N);
         List<BigInteger> bNtt = Arrays.asList(BigInteger.ONE, BigInteger.ONE, BigInteger.ONE, BigInteger.ONE);
         List<BigInteger> cNtt = Arrays.asList(BigInteger.TWO, BigInteger.TWO, BigInteger.TWO, BigInteger.TWO);

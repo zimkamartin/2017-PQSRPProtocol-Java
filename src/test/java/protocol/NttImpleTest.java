@@ -23,7 +23,7 @@ class NttImpleTest {
 
     @org.junit.jupiter.api.Test
     void computeZetaArrays() {
-        Ntt ntt = new NttImple(N, Q);
+        NttImple ntt = new NttImple(N, Q);
         List<BigInteger> zetas = ntt.getZetasArray();
         List<BigInteger> zetasInverted = ntt.getZetasInvertedArray();
         List<BigInteger> zetasExpected = Arrays.asList(BigInteger.valueOf(13), BigInteger.valueOf(15), BigInteger.valueOf(9));
@@ -34,7 +34,7 @@ class NttImpleTest {
 
     @org.junit.jupiter.api.Test
     void generateConstantTwoPolynomialNtt() {
-        Ntt ntt = new NttImple(N, Q);
+        NttImple ntt = new NttImple(N, Q);
         List<BigInteger> output = ntt.generateConstantTwoPolynomialNtt();
         List<BigInteger> expected = Arrays.asList(BigInteger.TWO, BigInteger.TWO, BigInteger.TWO, BigInteger.TWO);
         assertEquals(expected, output);
@@ -42,7 +42,7 @@ class NttImpleTest {
 
     @org.junit.jupiter.api.Test
     void addPolys() {
-        Ntt ntt = new NttImple(N, Q);
+        NttImple ntt = new NttImple(N, Q);
         List<BigInteger> a = generateIncrementingList(N);
         List<BigInteger> b = Arrays.asList(BigInteger.valueOf(0), BigInteger.valueOf(5), BigInteger.valueOf(11), BigInteger.valueOf(16));;
         List<BigInteger> output = ntt.addPolys(a, b);
@@ -52,7 +52,7 @@ class NttImpleTest {
 
     @org.junit.jupiter.api.Test
     void subtractPolys() {
-        Ntt ntt = new NttImple(N, Q);
+        NttImple ntt = new NttImple(N, Q);
         List<BigInteger> a = generateIncrementingList(N);
         List<BigInteger> b = Arrays.asList(BigInteger.valueOf(0), BigInteger.valueOf(5), BigInteger.valueOf(11), BigInteger.valueOf(16));;
         List<BigInteger> output = ntt.subtractPolys(a, b);
@@ -62,7 +62,7 @@ class NttImpleTest {
 
     @org.junit.jupiter.api.Test
     void convertToNtt() {
-        Ntt ntt = new NttImple(N, Q);
+        NttImple ntt = new NttImple(N, Q);
         List<BigInteger> input = generateIncrementingList(N);
         List<BigInteger> output = ntt.convertToNtt(input);
         List<BigInteger> expected = Arrays.asList(BigInteger.valueOf(0), BigInteger.valueOf(16), BigInteger.valueOf(6), BigInteger.valueOf(12));
@@ -71,7 +71,7 @@ class NttImpleTest {
 
     @org.junit.jupiter.api.Test
     void multiplyNttPolys() {
-        Ntt ntt = new NttImple(N, Q);
+        NttImple ntt = new NttImple(N, Q);
         List<BigInteger> a = generateIncrementingList(N);
         List<BigInteger> b = Arrays.asList(BigInteger.valueOf(0), BigInteger.valueOf(5), BigInteger.valueOf(11), BigInteger.valueOf(16));;
         List<BigInteger> output = ntt.multiplyNttPolys(a, b);
@@ -81,7 +81,7 @@ class NttImpleTest {
 
     @org.junit.jupiter.api.Test
     void convertFromNtt() {
-        Ntt ntt = new NttImple(N, Q);
+        NttImple ntt = new NttImple(N, Q);
         List<BigInteger> input = Arrays.asList(BigInteger.valueOf(0), BigInteger.valueOf(16), BigInteger.valueOf(6), BigInteger.valueOf(12));
         List<BigInteger> converted = ntt.convertFromNtt(input);
         List<BigInteger> expected = generateIncrementingList(N);
@@ -94,7 +94,7 @@ class NttImpleTest {
      */
     @org.junit.jupiter.api.Test
     void testEverything() {
-        Ntt ntt = new NttImple(N, Q);
+        NttImple ntt = new NttImple(N, Q);
         List<BigInteger> aNtt = Arrays.asList(BigInteger.TWO, BigInteger.TWO, BigInteger.TWO, BigInteger.TWO);
         List<BigInteger> b = generateIncrementingList(N);
         List<BigInteger> bNtt = ntt.convertToNtt(b);

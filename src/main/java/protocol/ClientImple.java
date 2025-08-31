@@ -5,7 +5,6 @@ import protocol.exceptions.NotEnrolledClientException;
 import protocol.exceptions.ServerNotAuthenticatedException;
 
 import java.math.BigInteger;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,10 +24,10 @@ public class ClientImple {
     private final BigInteger q;
     private final int eta;
     private final byte[] publicSeedForA = new byte[PUBLICSEEDFORASIZE];
-    private final Engine engine;
-    private final Mlkem mlkem;
-    private final Ntt ntt;
-    private final Magic magic;
+    private final EngineImple engine;
+    private final MlkemImple mlkem;
+    private final NttImple ntt;
+    private final MagicImple magic;
     // TODO figure out what to do with these 3 vars //
     private byte[] ski = null;
     private List<BigInteger> piNtt = null;

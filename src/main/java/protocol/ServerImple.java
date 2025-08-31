@@ -4,7 +4,6 @@ import protocol.exceptions.ClientNotAuthenticatedException;
 import protocol.exceptions.NotEnrolledClientException;
 
 import java.math.BigInteger;
-import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -16,10 +15,10 @@ public class ServerImple implements Server {
     private final BigInteger q;
     private final int eta;
     private final PublicParams publicParams;
-    private final Engine engine;
-    private final Mlkem mlkem;
-    private final Ntt ntt;
-    private final Magic magic;
+    private final EngineImple engine;
+    private final MlkemImple mlkem;
+    private final NttImple ntt;
+    private final MagicImple magic;
     private final Map<ByteArrayWrapper, ClientsPublics> database = new HashMap<>();
     // TODO figure out what to do with these 3 vars //
     private byte[] skj = null;

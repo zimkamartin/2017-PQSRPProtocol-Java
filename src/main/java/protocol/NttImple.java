@@ -11,7 +11,7 @@ import java.util.*;
  * NTT stuff heavily inspired by https://electricdusk.com/ntt.html
  * </p>
  */
-public class NttImple implements Ntt {
+public class NttImple {
 
     private final int n;
     private final BigInteger q;
@@ -135,20 +135,34 @@ public class NttImple implements Ntt {
         computeZetaArrays();
     }
 
+    /**
+     * @return attribute zetasArray, so all precomputed coefficients used to convert polynomial to its NTT form.
+     * It is needed for test.
+     */
     public List<BigInteger> getZetasArray() {
         return List.copyOf(this.zetas);
     }
 
+    /**
+     * @return attribute zetasInvertedArray, so all precomputed coefficients used to convert polynomial back from its NTT form.
+     * It is needed for test.
+     */
     public List<BigInteger> getZetasInvertedArray() {
         return List.copyOf(this.zetasInverted);
     }
 
-    @Override
+    /**
+     * @return polynomial in Ntt form representing constant 2
+     */
     public List<BigInteger> generateConstantTwoPolynomialNtt() {
         return Collections.nCopies(n, BigInteger.TWO);
     }
 
-    @Override
+    /**
+     * @param a - polynomial in the Ntt form
+     * @param b - polynomial in the Ntt form
+     * @return Ntt form of the addition a + b (although work also for polynomials in classic form)
+     */
     public List<BigInteger> addPolys(List<BigInteger> a, List<BigInteger> b) {
         List<BigInteger> result = new ArrayList<>(Collections.nCopies(n, null));
         for (int i = 0; i < n; i = i + 1) {
@@ -165,12 +179,19 @@ public class NttImple implements Ntt {
         return result;
     }
 
-    @Override
+    /**
+     * @param a - polynomial in the Ntt form
+     * @param b - polynomial in the Ntt form
+     * @return Ntt form of the substraction a - b (although work also for polynomials in classic form)
+     */
     public List<BigInteger> subtractPolys(List<BigInteger> a, List<BigInteger> b) {
         return addPolys(a, inverse(b));
     }
 
-    @Override
+    /**
+     * @param inputPoly - polynomial in classic form
+     * @return inputPoly in Ntt form
+     */
     public List<BigInteger> convertToNtt(List<BigInteger> inputPoly) {
         List<BigInteger> polyNtt = new ArrayList<>(inputPoly);
         int zetaIndex = 0;
@@ -195,7 +216,11 @@ public class NttImple implements Ntt {
         return polyNtt;
     }
 
-    @Override
+    /**
+     * @param a - polynomial in the Ntt form
+     * @param b - polynomial in the Ntt form
+     * @return Ntt form of the multiplication a * b (! works only for ntt polynomials !)
+     */
     public List<BigInteger> multiplyNttPolys(List<BigInteger> a, List<BigInteger> b) {
         List<BigInteger> result = new ArrayList<>(Collections.nCopies(n, null));
         for (int i = 0; i < n; i = i + 1) {
@@ -204,7 +229,10 @@ public class NttImple implements Ntt {
         return result;
     }
 
-    @Override
+    /**
+     * @param inputPoly - polynomial in Ntt form
+     * @return inputPoly in classic form
+     */
     public List<BigInteger> convertFromNtt(List<BigInteger> inputPoly) {
         List<BigInteger> poly = new ArrayList<>(inputPoly);
         int zetaIndex = zetasInverted.size() - 1;

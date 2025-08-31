@@ -15,7 +15,7 @@ import java.util.Random;
  * https://github.com/bcgit/bc-java/blob/main/core/src/main/java/org/bouncycastle/pqc/crypto/mlkem/MLKEMEngine.java
  * </p>
  */
-public class EngineImple implements Engine {
+public class EngineImple {
     private static final int XOFBLOCKBYTES = 168;
     private static final SHAKEDigest xof = new SHAKEDigest(128);
     private static final SHA3Digest sha3Digest256 = new SHA3Digest(256);
@@ -26,40 +26,58 @@ public class EngineImple implements Engine {
         this.random = random;
     }
 
-    @Override
+    /**
+     * @return the output block size of the underlying XOF (SHAKE128), in bytes
+     */
     public int getXofBlockBytes() {
         return XOFBLOCKBYTES;
     }
 
-    @Override
+    /**
+     * @param seed - used for seeding XOF (SHAKE128)
+     */
     public void xofAbsorb(byte[] seed) {
         xof.reset();
         xof.update(seed, 0, seed.length);
     }
 
-    @Override
+    /**
+     * @param out - byte array where hash will be squeezed to
+     * @param outOffset - position from which hash will be squeezed to
+     * @param outLen - how many bytes to squeeze
+     */
     public void xofSqueezeBlocks(byte[] out, int outOffset, int outLen) {
         xof.doOutput(out, outOffset, outLen);
     }
 
-    @Override
+    /**
+     * @param out - byte array where hashed will be put
+     * @param in - input for the hash function (SHA3-256)
+     */
     public void hash(byte[] out, byte[] in) {
         sha3Digest256.update(in, 0, in.length);
         sha3Digest256.doFinal(out, 0);
     }
 
-    @Override
+    /**
+     * @param out - byte array where the output from pseudo-random function will be put
+     * @param seed - seed for the pseudo-random function (SHAKE256)
+     */
     public void prf(byte[] out, byte[] seed) {
         shakeDigest.update(seed, 0, seed.length);
         shakeDigest.doFinal(out, 0, out.length);
     }
 
-    @Override
+    /**
+     * @param buf - byte array which will be filed by random bytes
+     */
     public void getRandomBytes(byte[] buf) {
         random.nextBytes(buf);
     }
 
-    @Override
+    /**
+     * @return random bit
+     */
     public int getRandomBit() {
         return random.nextInt(2);
     }
