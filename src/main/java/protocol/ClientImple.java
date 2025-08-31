@@ -4,18 +4,14 @@ import protocol.exceptions.ClientNotAuthenticatedException;
 import protocol.exceptions.NotEnrolledClientException;
 import protocol.exceptions.ServerNotAuthenticatedException;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
 import static protocol.Utils.computeUNtt;
-import static protocol.Utils.convertBigIntegerListToByteArray;
 
 public class ClientImple {
 

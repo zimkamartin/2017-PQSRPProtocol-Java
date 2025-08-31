@@ -2,7 +2,6 @@ package protocol;
 
 import protocol.exceptions.ClientNotAuthenticatedException;
 import protocol.exceptions.NotEnrolledClientException;
-import protocol.exceptions.ServerNotAuthenticatedException;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
