@@ -1,5 +1,8 @@
 package protocol;
 
+import protocol.exceptions.ClientNotAuthenticatedException;
+import protocol.exceptions.NotEnrolledClientException;
+
 import java.math.BigInteger;
 import java.util.List;
 
@@ -26,11 +29,11 @@ public interface Server {
      * @param piNtt - polynomial representing client's ephemeral public key in NTT form
      * @return client's salt, polynomial representing server's ephemeral public key, polynomial where coefficients are result of applying Signal function
      */
-    SaltEphPublicSignal computeSharedSecret(byte[] I, List<BigInteger> piNtt);
+    SaltEphPublicSignal computeSharedSecret(byte[] I, List<BigInteger> piNtt) throws NotEnrolledClientException;
 
     /**
      * @param m1 - hash of concatenated client's ephemeral key with server's ephemeral key and with client's shared secret key
      * @return hash of concatenated client's ephemeral key with m1 with server's shared secret key
      */
-    byte[] verifyEntities(byte[] m1);
+    byte[] verifyEntities(byte[] m1) throws ClientNotAuthenticatedException;
 }

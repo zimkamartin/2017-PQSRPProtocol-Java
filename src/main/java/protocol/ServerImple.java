@@ -1,5 +1,9 @@
 package protocol;
 
+import protocol.exceptions.ClientNotAuthenticatedException;
+import protocol.exceptions.NotEnrolledClientException;
+import protocol.exceptions.ServerNotAuthenticatedException;
+
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.*;
@@ -44,11 +48,14 @@ public class ServerImple implements Server {
     }
 
     @Override
-    public SaltEphPublicSignal computeSharedSecret(byte[] I, List<BigInteger> piNtt) {
+    public SaltEphPublicSignal computeSharedSecret(byte[] I, List<BigInteger> piNtt) throws NotEnrolledClientException {
         ByteArrayWrapper wrappedIdentity = new ByteArrayWrapper(I.clone());
         this.piNtt = List.copyOf(piNtt);
         List<BigInteger> constantTwoPolyNtt = ntt.generateConstantTwoPolynomialNtt();
-        // Extract database. //  // TODO: handle when key is not there
+        // Extract database. //
+        if (!database.containsKey(wrappedIdentity)) {
+            throw new NotEnrolledClientException("Identity " + Arrays.toString(I) + " not found in the database.");
+        }
         byte[] publicSeedForA = database.get(wrappedIdentity).getPublicSeedForA();
         List<BigInteger> vNtt = database.get(wrappedIdentity).getVerifierNtt();
         byte[] salt = database.get(wrappedIdentity).getSalt();
@@ -82,14 +89,14 @@ public class ServerImple implements Server {
     }
 
     @Override
-    public byte[] verifyEntities(byte[] m1) {
+    public byte[] verifyEntities(byte[] m1) throws ClientNotAuthenticatedException {
         // M1' = SHA3-256(pi || pj || skj) //
         byte[] m1Prime = Utils.concatenateTwoByteArraysAndHashThem(engine, Utils.concatBigIntegerListsToByteArray(this.piNtt, this.pjNtt), this.skj);
         // VERIFY that M1 == M1'. If true, return M2', else return empty byte array.
         ByteArrayWrapper m1Wrapped = new ByteArrayWrapper(m1);
         ByteArrayWrapper m1PrimeWrapped = new ByteArrayWrapper(m1Prime);
         if (!m1Wrapped.equals(m1PrimeWrapped)) {
-            return new byte[0];
+            throw new ClientNotAuthenticatedException("M1 does not equal to M1'.");
         }
         // M2' = SHA3-256(pi || M1' || skj) //
         return Utils.concatenateThreeByteArraysAndHash(engine, Utils.convertBigIntegerListToByteArray(piNtt), m1Prime, this.skj);

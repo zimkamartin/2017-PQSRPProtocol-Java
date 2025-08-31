@@ -12,16 +12,15 @@ class MlkemImple implements Mlkem{
 
     private final int n;
     private final BigInteger q;
-    private final int unifNeededNumOfBits;  // the number of needed bits for generating 1 coefficient by Uniform distribution
     private final int unifNeededNumOfBytes;
     private final BigInteger unifMask;  // used when sampling coefficient for Uniform distribution
 
     MlkemImple(int n, BigInteger q) {
         this.n = n;
         this.q = q;
-        this.unifNeededNumOfBits = this.q.subtract(BigInteger.ONE).bitLength();
-        this.unifNeededNumOfBytes = (this.unifNeededNumOfBits + 7) / 8;
-        this.unifMask = BigInteger.ONE.shiftLeft(this.unifNeededNumOfBits).subtract(BigInteger.ONE);
+        int unifNeededNumOfBits = this.q.subtract(BigInteger.ONE).bitLength();  // the number of needed bits for generating 1 coefficient by Uniform distribution
+        this.unifNeededNumOfBytes = (unifNeededNumOfBits + 7) / 8;
+        this.unifMask = BigInteger.ONE.shiftLeft(unifNeededNumOfBits).subtract(BigInteger.ONE);
     }
 
     private int rejectionSampling(List<BigInteger> outputBuffer, int coeffOff, int len, byte[] inpBuf, int inpBufLen) {

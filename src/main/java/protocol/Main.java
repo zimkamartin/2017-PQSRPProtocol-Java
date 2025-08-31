@@ -1,5 +1,9 @@
 package protocol;
 
+import protocol.exceptions.ClientNotAuthenticatedException;
+import protocol.exceptions.NotEnrolledClientException;
+import protocol.exceptions.ServerNotAuthenticatedException;
+
 import java.math.BigInteger;
 import java.util.Arrays;
 
@@ -14,7 +18,7 @@ public class Main {
     private static final byte[] PWD = "password123".getBytes();
     // THIS IS NOT HOW TO DO IT !!! THIS IS JUST FOR PROOF-OF-CONCEPT !!! THIS IS NOT HOW TO DO IT !!!
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws NotEnrolledClientException, ServerNotAuthenticatedException, ClientNotAuthenticatedException {
         ClientsSecrets cs = new ClientsSecrets(I, PWD);
         Server server = new ServerImple(N, Q, ETA);
         ClientImple client = new ClientImple(server);

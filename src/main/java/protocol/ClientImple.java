@@ -1,5 +1,9 @@
 package protocol;
 
+import protocol.exceptions.ClientNotAuthenticatedException;
+import protocol.exceptions.NotEnrolledClientException;
+import protocol.exceptions.ServerNotAuthenticatedException;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -84,7 +88,7 @@ public class ClientImple {
         server.enrollClient(publicSeedForA, cs.getIdentity(), salt, vNtt);
     }
 
-    public void computeSharedSecret(ClientsSecrets cs) {
+    public void computeSharedSecret(ClientsSecrets cs) throws NotEnrolledClientException {
         List<BigInteger> constantTwoPolyNtt = ntt.generateConstantTwoPolynomialNtt();
         // pi = as1 + 2e1 //
         // Create polynomial a from public seed.
@@ -124,7 +128,7 @@ public class ClientImple {
         this.ski = Utils.convertIntegerListToByteArrayAndHashIt(n, engine, sigmai);
     }
 
-    public byte[] verifyEntities() {
+    public byte[] verifyEntities() throws ServerNotAuthenticatedException, ClientNotAuthenticatedException {
         // M1 = SHA3-256(pi || pj || ski) //
         byte[] m1 = Utils.concatenateTwoByteArraysAndHashThem(engine, Utils.concatBigIntegerListsToByteArray(this.piNtt, this.pjNtt), this.ski);
         // M2 = SHA3-256(pi || M1 || ski) //
@@ -133,6 +137,9 @@ public class ClientImple {
         // VERIFY that M2 == M2'. If true, return key.
         ByteArrayWrapper m2Wrapped = new ByteArrayWrapper(m2);
         ByteArrayWrapper m2PrimeWrapped = new ByteArrayWrapper(m2Prime);
-        return (m2Wrapped.equals(m2PrimeWrapped)) ? this.ski : new byte[0];
+        if (!m2Wrapped.equals(m2PrimeWrapped)) {
+            throw new ServerNotAuthenticatedException("M2 does not equal to M2'.");
+        }
+        return this.ski;
     }
 }
