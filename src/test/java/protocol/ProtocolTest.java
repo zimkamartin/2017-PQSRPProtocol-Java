@@ -52,7 +52,7 @@ class ProtocolTest {
         assertEquals(1, keys.size());
 
         // Test that it is the correct key. //
-        int[] keyIntArray = {114, 88, 85, -57, 42, 90, -20, 11, 15, -75, 103, 25, 59, 66, -62, 109, 101, -98, 19, -66, 30, -97, 127, -97, -112, -83, -102, -33, 93, -126, 96, -27};
+        int[] keyIntArray = {31, 41, -100, -114, 89, 36, -83, -10, 50, 119, -102, -11, -78, -21, -75, -110, -95, -64, 16, 106, 16, -70, 89, -111, 118, -102, 89, -42, 104, 95, -88, 2};
         byte[] keyByteArray = new byte[keyIntArray.length];
         for (int i = 0; i < keyIntArray.length; i++) {
             keyByteArray[i] = (byte) keyIntArray[i];
