@@ -71,21 +71,7 @@ public class ClientImple {
         return Utils.multiply2NttTuplesAndAddThemTogetherNtt(ntt, aNtt, svNtt, ntt.generateConstantTwoPolynomialNtt(), evNtt);
     }
 
-    public void enrollClient(ClientsSecrets cs) {
-        // v = asv + 2ev //
-        // Create polynomial a from public seed.
-        List<BigInteger> aNtt = new ArrayList<>(Collections.nCopies(n, null));
-        mlkem.generateUniformPolynomialNtt(engine, aNtt, publicSeedForA);
-        // Generate salt.
-        byte[] salt = new byte[SALTSIZE];
-        engine.getRandomBytes(salt);
-        // Compute v.
-        List<BigInteger> vNtt = computeVNttFromANttAndSalt(cs, aNtt, salt);
-        // Send public seed for a, identity, salt and v in NTT form to the server. //
-        server.enrollClient(publicSeedForA, cs.getIdentity(), salt, vNtt);
-    }
-
-    public void computeSharedSecret(ClientsSecrets cs) throws NotEnrolledClientException {
+    private void computeSharedSecret(ClientsSecrets cs) throws NotEnrolledClientException {
         List<BigInteger> constantTwoPolyNtt = ntt.generateConstantTwoPolynomialNtt();
         // pi = as1 + 2e1 //
         // Create polynomial a from public seed.
@@ -125,7 +111,7 @@ public class ClientImple {
         this.ski = Utils.convertIntegerListToByteArrayAndHashIt(n, engine, sigmai);
     }
 
-    public byte[] verifyEntities() throws ServerNotAuthenticatedException, ClientNotAuthenticatedException {
+    private byte[] verifyEntities() throws ServerNotAuthenticatedException, ClientNotAuthenticatedException {
         // M1 = SHA3-256(pi || pj || ski) //
         byte[] m1 = Utils.concatenateTwoByteArraysAndHashThem(engine, Utils.concatBigIntegerListsToByteArray(this.piNtt, this.pjNtt), this.ski);
         // M2 = SHA3-256(pi || M1 || ski) //
@@ -138,5 +124,27 @@ public class ClientImple {
             throw new ServerNotAuthenticatedException("M2 does not equal to M2'.");
         }
         return this.ski;
+    }
+
+    public void enroll(ClientsSecrets cs) {
+        // PHASE 0 //
+        // v = asv + 2ev //
+        // Create polynomial a from public seed.
+        List<BigInteger> aNtt = new ArrayList<>(Collections.nCopies(n, null));
+        mlkem.generateUniformPolynomialNtt(engine, aNtt, publicSeedForA);
+        // Generate salt.
+        byte[] salt = new byte[SALTSIZE];
+        engine.getRandomBytes(salt);
+        // Compute v.
+        List<BigInteger> vNtt = computeVNttFromANttAndSalt(cs, aNtt, salt);
+        // Send public seed for a, identity, salt and v in NTT form to the server. //
+        server.enrollClient(publicSeedForA, cs.getIdentity(), salt, vNtt);
+    }
+
+    public byte[] login(ClientsSecrets cs) throws NotEnrolledClientException, ServerNotAuthenticatedException, ClientNotAuthenticatedException {
+        // PHASE 1 //
+        computeSharedSecret(cs);
+        // PHASE 2 //
+        return verifyEntities();
     }
 }

@@ -23,9 +23,8 @@ public class Main {
         ClientsSecrets cs = new ClientsSecrets(I, PWD);
         Server server = new ServerImple(new SecureRandom(), N, Q, ETA);
         ClientImple client = new ClientImple(new SecureRandom(), server);
-        client.enrollClient(cs);
-        client.computeSharedSecret(cs);
-        byte[] clientsKey = client.verifyEntities();
+        client.enroll(cs);
+        byte[] clientsKey = client.login(cs);
         System.out.println(Arrays.toString(clientsKey));
     }
 }

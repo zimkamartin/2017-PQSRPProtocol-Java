@@ -11,11 +11,11 @@ public class ByteArrayWrapper {
     private final byte[] data;
 
     public ByteArrayWrapper(byte[] data) {
-        this.data = data;
+        this.data = data.clone();
     }
 
     public byte[] getData() {
-        return data;
+        return data.clone();
     }
 
     @Override
