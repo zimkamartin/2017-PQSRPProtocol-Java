@@ -14,7 +14,7 @@ public class ServerImple implements Server {
     private final int n;
     private final BigInteger q;
     private final int eta;
-    private final PublicParams publicParams;
+    private final ProtocolConfiguration protocolConfiguration;
     private final EngineImple engine;
     private final MlkemImple mlkem;
     private final NttImple ntt;
@@ -30,15 +30,15 @@ public class ServerImple implements Server {
         this.q = q;
         this.eta = eta;
         this.engine = new EngineImple(random);
-        this.publicParams = new PublicParams(this.n, this.q, this.eta);
+        this.protocolConfiguration = new ProtocolConfiguration(this.n, this.q, this.eta);
         this.mlkem = new MlkemImple(this.n, this.q);
         this.ntt = new NttImple(this.n, this.q);
         this.magic = new MagicImple(this.q);
     }
 
     @Override
-    public PublicParams getPublicParams() {
-        return publicParams;
+    public ProtocolConfiguration getPublicParams() {
+        return protocolConfiguration;
     }
 
     @Override
@@ -63,16 +63,16 @@ public class ServerImple implements Server {
         List<BigInteger> aNtt = new ArrayList<>(Collections.nCopies(n, null));
         mlkem.generateUniformPolynomialNtt(engine, aNtt, publicSeedForA);
         // Compute s1'.
-        List<BigInteger> s1PrimeNtt = Utils.generateRandomErrorPolyNtt(publicParams, mlkem, engine, ntt);
+        List<BigInteger> s1PrimeNtt = Utils.generateRandomErrorPolyNtt(protocolConfiguration, mlkem, engine, ntt);
         // Compute e1'.
-        List<BigInteger> e1PrimeNtt = Utils.generateRandomErrorPolyNtt(publicParams, mlkem, engine, ntt);
+        List<BigInteger> e1PrimeNtt = Utils.generateRandomErrorPolyNtt(protocolConfiguration, mlkem, engine, ntt);
         // Do all the math.
         this.pjNtt = ntt.addPolys(Utils.multiply2NttTuplesAndAddThemTogetherNtt(ntt, aNtt, s1PrimeNtt, constantTwoPolyNtt, e1PrimeNtt), vNtt);
         // u = XOF(H(pi || pj)) //
         List<BigInteger> uNtt = computeUNtt(engine, mlkem, n, piNtt, pjNtt);
         // kj = (v + pi)s1' + uv + 2e1''' //
         // Compute e1'''.
-        List<BigInteger> e1TriplePrimeNtt = Utils.generateRandomErrorPolyNtt(publicParams, mlkem, engine, ntt);
+        List<BigInteger> e1TriplePrimeNtt = Utils.generateRandomErrorPolyNtt(protocolConfiguration, mlkem, engine, ntt);
         // Do all the math.
         List<BigInteger> bracket = ntt.addPolys(vNtt, piNtt);
         List<BigInteger> kj = Utils.multiply3NttTuplesAndAddThemTogether(ntt, bracket, s1PrimeNtt, uNtt, vNtt, constantTwoPolyNtt, e1TriplePrimeNtt);

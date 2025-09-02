@@ -70,13 +70,13 @@ public final class Utils {
         return hashed;
     }
 
-    public static void getEtaNoise(PublicParams pp, MlkemImple mlkem, EngineImple engine, List<BigInteger> r, byte[] seed) {
+    public static void getEtaNoise(ProtocolConfiguration pp, MlkemImple mlkem, EngineImple engine, List<BigInteger> r, byte[] seed) {
         byte[] buf = new byte[(int) Math.ceil((pp.getN() * 2.0 * pp.getEta()) / 8.0)];
         engine.prf(buf, seed);
         mlkem.generateCbdPolynomial(r, buf, pp.getEta());
     }
 
-    public static List<BigInteger> generateRandomErrorPolyNtt(PublicParams pp, MlkemImple mlkem, EngineImple engine, NttImple ntt) {
+    public static List<BigInteger> generateRandomErrorPolyNtt(ProtocolConfiguration pp, MlkemImple mlkem, EngineImple engine, NttImple ntt) {
         List<BigInteger> e = new ArrayList<>(Collections.nCopies(pp.getN(), null));
         byte[] eRandomSeed = new byte[34];
         engine.getRandomBytes(eRandomSeed);

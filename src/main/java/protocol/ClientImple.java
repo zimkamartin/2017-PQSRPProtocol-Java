@@ -19,7 +19,7 @@ public class ClientImple {
     private static final int SALTSIZE = 34;  // Size could be changed however you wish.
 
     private final Server server;
-    private final PublicParams publicParams;
+    private final ProtocolConfiguration protocolConfiguration;
     private final int n;
     private final BigInteger q;
     private final int eta;
@@ -35,10 +35,10 @@ public class ClientImple {
 
     public ClientImple(Random random, Server server) {
         this.server = server;
-        this.publicParams = server.getPublicParams();
-        this.n = this.publicParams.getN();
-        this.q = this.publicParams.getQ();
-        this.eta = this.publicParams.getEta();
+        this.protocolConfiguration = server.getPublicParams();
+        this.n = this.protocolConfiguration.getN();
+        this.q = this.protocolConfiguration.getQ();
+        this.eta = this.protocolConfiguration.getEta();
         this.engine = new EngineImple(random);
         this.engine.getRandomBytes(this.publicSeedForA);
         this.mlkem = new MlkemImple(this.n, this.q);
@@ -63,8 +63,8 @@ public class ClientImple {
         // Based on seeds (computed from private values) generate sv, ev.
         List<BigInteger> sv = new ArrayList<>(Collections.nCopies(n, null));
         List<BigInteger> ev = new ArrayList<>(Collections.nCopies(n, null));
-        Utils.getEtaNoise(publicParams, mlkem, engine, sv, seed1);
-        Utils.getEtaNoise(publicParams, mlkem, engine, ev, seed2);
+        Utils.getEtaNoise(protocolConfiguration, mlkem, engine, sv, seed1);
+        Utils.getEtaNoise(protocolConfiguration, mlkem, engine, ev, seed2);
         List<BigInteger> svNtt = ntt.convertToNtt(sv);
         List<BigInteger> evNtt = ntt.convertToNtt(ev);
         // Do all the math.
@@ -78,9 +78,9 @@ public class ClientImple {
         List<BigInteger> aNtt = new ArrayList<>(Collections.nCopies(n, null));
         mlkem.generateUniformPolynomialNtt(engine, aNtt, publicSeedForA);
         // Compute s1.
-        List<BigInteger> s1Ntt = Utils.generateRandomErrorPolyNtt(publicParams, mlkem, engine, ntt);
+        List<BigInteger> s1Ntt = Utils.generateRandomErrorPolyNtt(protocolConfiguration, mlkem, engine, ntt);
         // Compute e1.
-        List<BigInteger> e1Ntt = Utils.generateRandomErrorPolyNtt(publicParams, mlkem, engine, ntt);
+        List<BigInteger> e1Ntt = Utils.generateRandomErrorPolyNtt(protocolConfiguration, mlkem, engine, ntt);
         // Do all the math.
         this.piNtt = Utils.multiply2NttTuplesAndAddThemTogetherNtt(ntt, aNtt, s1Ntt, constantTwoPolyNtt, e1Ntt);
         // Send identity and ephemeral public key pi in NTT form to the server. //
@@ -95,10 +95,10 @@ public class ClientImple {
         List<BigInteger> vNtt = computeVNttFromANttAndSalt(cs, aNtt, salt);
         // ki = (pj − v)(sv + s1) + uv + 2e1'' //
         // Compute e1''.
-        List<BigInteger> e1DoublePrimeNtt = Utils.generateRandomErrorPolyNtt(publicParams, mlkem, engine, ntt);
+        List<BigInteger> e1DoublePrimeNtt = Utils.generateRandomErrorPolyNtt(protocolConfiguration, mlkem, engine, ntt);
         // Compute sv.
         List<BigInteger> sv = new ArrayList<>(Collections.nCopies(n, null));
-        Utils.getEtaNoise(publicParams, mlkem, engine, sv, computeSeed1(cs, salt));
+        Utils.getEtaNoise(protocolConfiguration, mlkem, engine, sv, computeSeed1(cs, salt));
         List<BigInteger> svNtt = ntt.convertToNtt(sv);
         // Do all the math.
         List<BigInteger> fstBracket = ntt.subtractPolys(this.pjNtt, vNtt);

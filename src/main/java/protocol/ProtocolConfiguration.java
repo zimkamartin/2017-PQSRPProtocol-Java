@@ -6,7 +6,7 @@ import java.math.BigInteger;
  * N and Q will be used to represent a polynomial modulo (X^N + 1) with all coefficients modulo Q.
  * ETA is parameter in Central binomial distribution which is used for generating error polynomials.
  */
-public class PublicParams {
+public class ProtocolConfiguration {
 
     /**
      * Must be power of 2 because of NTT and must not overflow data type int.
@@ -18,11 +18,11 @@ public class PublicParams {
      */
     private final BigInteger q;
     /**
-     * TODO Limitations will be added soon.
+     * Must not overflow data type int.
      */
     private final int eta;
 
-    public PublicParams(int n,  BigInteger q, int eta) {
+    public ProtocolConfiguration(int n, BigInteger q, int eta) {
         this.n = n;
         this.q = q;
         this.eta = eta;

@@ -14,7 +14,7 @@ public interface Server {
     /**
      * @return n, q, eta
      */
-    PublicParams getPublicParams();
+    ProtocolConfiguration getPublicParams();
 
     /**
      * @param publicSeedForA - public seed that will be used to generate public polynomial a
