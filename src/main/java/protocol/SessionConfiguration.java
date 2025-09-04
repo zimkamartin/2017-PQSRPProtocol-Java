@@ -1,34 +1,33 @@
 package protocol;
 
-import java.math.BigInteger;
-import java.util.List;
+import protocol.polynomial.Polynomial;
 
 public class SessionConfiguration {
 
-    private List<BigInteger> piNtt;
-    private List<BigInteger> pjNtt;
+    private Polynomial piNtt;
+    private Polynomial pjNtt;
     private byte[] sk;
 
     public SessionConfiguration() {}
 
-    public void setClientsEphPubKey(List<BigInteger> piNtt) {
-        this.piNtt = List.copyOf(piNtt);
+    public void setClientsEphPubKey(Polynomial piNtt) {
+        this.piNtt = piNtt.defensiveCopy();
     }
 
-    public void setServersEphPubKey(List<BigInteger> pjNtt) {
-        this.pjNtt = List.copyOf(pjNtt);
+    public void setServersEphPubKey(Polynomial pjNtt) {
+        this.pjNtt = pjNtt.defensiveCopy();
     }
 
     public void setSharedSecret(byte[] sk) {
         this.sk = sk.clone();
     }
 
-    public List<BigInteger> getClientsEphPubKey() {
-        return List.copyOf(piNtt);
+    public Polynomial getClientsEphPubKey() {
+        return piNtt.defensiveCopy();
     }
 
-    public List<BigInteger> getServersEphPubKey() {
-        return List.copyOf(pjNtt);
+    public Polynomial getServersEphPubKey() {
+        return pjNtt.defensiveCopy();
     }
 
     public byte[] getSharedSecret() {

@@ -1,18 +1,17 @@
 package protocol.server;
 
-import java.math.BigInteger;
-import java.util.List;
+import protocol.polynomial.Polynomial;
 
 public class ClientRecord {
 
     private final byte[] publicSeedForA;
     private final byte[] salt;
-    private final List<BigInteger> verifierNtt;
+    private final Polynomial verifierNtt;
 
-    public ClientRecord(byte[] publicSeedForA, byte[] salt, List<BigInteger> verifierNtt) {
+    public ClientRecord(byte[] publicSeedForA, byte[] salt, Polynomial verifierNtt) {
         this.publicSeedForA = publicSeedForA;
         this.salt = salt;
-        this.verifierNtt = verifierNtt;
+        this.verifierNtt = verifierNtt.defensiveCopy();
     }
 
     public byte[] getPublicSeedForA() {
@@ -23,7 +22,7 @@ public class ClientRecord {
         return this.salt;
     }
 
-    public List<BigInteger> getVerifierNtt() {
-        return this.verifierNtt;
+    public Polynomial getVerifierNtt() {
+        return this.verifierNtt.defensiveCopy();
     }
 }

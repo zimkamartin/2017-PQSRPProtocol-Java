@@ -157,8 +157,11 @@ public class NttImple {
      * @param inputPoly - polynomial in classic form
      * @return inputPoly in Ntt form
      */
-    public List<BigInteger> convertToNtt(List<BigInteger> inputPoly) {
-        List<BigInteger> polyNtt = new ArrayList<>(inputPoly);
+    public Polynomial convertToNtt(Polynomial inputPoly) {
+        if (inputPoly.isNtt()) {
+            throw new IllegalArgumentException("Input polynomial is already in NTT form");
+        }
+        List<BigInteger> polyNtt = new ArrayList<>(inputPoly.getCoeffs());
         int zetaIndex = 0;
 
         int numOfLayers = (int) (Math.log(n) / Math.log(2));
@@ -178,15 +181,18 @@ public class NttImple {
             }
         }
 
-        return polyNtt;
+        return new Polynomial(polyNtt, inputPoly.getQ(), true);
     }
 
     /**
      * @param inputPoly - polynomial in Ntt form
      * @return inputPoly in classic form
      */
-    public List<BigInteger> convertFromNtt(List<BigInteger> inputPoly) {
-        List<BigInteger> poly = new ArrayList<>(inputPoly);
+    public Polynomial convertFromNtt(Polynomial inputPoly) {
+        if (!inputPoly.isNtt()) {
+            throw new IllegalArgumentException("Input polynomial is already in classic form");
+        }
+        List<BigInteger> poly = new ArrayList<>(inputPoly.getCoeffs());
         int zetaIndex = zetasInverted.size() - 1;
 
         int numOfLayers = (int) (Math.log(n) / Math.log(2));
@@ -210,6 +216,6 @@ public class NttImple {
         for (int i = 0; i < n; i = i + 1) {
             poly.set(i, poly.get(i).multiply(twoDivisor).mod(q));
         }
-        return poly;
+        return new Polynomial(poly, inputPoly.getQ(), false);
     }
 }

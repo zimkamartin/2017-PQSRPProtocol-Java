@@ -1,5 +1,7 @@
 package protocol.polynomial;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,18 +21,34 @@ public class Polynomial {
         this.ntt = ntt;
     }
 
-    public List<BigInteger> coefficients() {
-        return coefficients;
+    public List<BigInteger> getCoeffs() {
+        return List.copyOf(coefficients);
+    }
+
+    public int getN() {
+        return n;
+    }
+
+    public BigInteger getQ() {
+        return q;
+    }
+
+    public boolean isNtt() {
+        return ntt;
+    }
+
+    public Polynomial defensiveCopy() {
+        return new Polynomial(List.copyOf(this.coefficients), this.q, this.ntt);
     }
 
     private void checkCompatibility(Polynomial b) {
-        if (this.n != b.n) {
+        if (this.n != b.getN()) {
             throw new IllegalArgumentException("Polynomials must have the same degree");
         }
-        if (!this.q.equals(b.q)) {
+        if (!this.q.equals(b.getQ())) {
             throw new IllegalArgumentException("Polynomials must use the same modulus");
         }
-        if (this.ntt != b.ntt) {
+        if (this.ntt != b.isNtt()) {
             throw new IllegalArgumentException("Both polynomials must be in the same form (NTT or classic)");
         }
     }
@@ -52,15 +70,15 @@ public class Polynomial {
 
         List<BigInteger> result = new ArrayList<>(Collections.nCopies(n, BigInteger.ZERO));
         for (int i = 0; i < n; i++) {
-            result.set(i, this.coefficients().get(i).add(b.coefficients().get(i)).mod(q));
+            result.set(i, this.getCoeffs().get(i).add(b.getCoeffs().get(i)).mod(q));
         }
-        return new Polynomial(result, q, this.ntt);
+        return new Polynomial(result, q, ntt);
     }
 
     private Polynomial negate() {
         List<BigInteger> result = new ArrayList<>(Collections.nCopies(n, BigInteger.ZERO));
         for (int i = 0; i < n; i++) {
-            result.set(i, this.coefficients().get(i).negate().mod(q));
+            result.set(i, this.getCoeffs().get(i).negate().mod(q));
         }
         return new Polynomial(result, q, ntt);
     }
@@ -80,21 +98,51 @@ public class Polynomial {
      * @return ntt form of a * b
      */
     public Polynomial multiplyNtt(Polynomial bNtt) {
-        if (this.n != bNtt.n) {
+        if (this.n != bNtt.getN()) {
             throw new IllegalArgumentException("Polynomials must have the same degree");
         }
-        if (!this.q.equals(bNtt.q)) {
+        if (!this.q.equals(bNtt.getQ())) {
             throw new IllegalArgumentException("Polynomials must use the same modulus");
         }
-        if (!this.ntt || !bNtt.ntt) {
+        if (!this.ntt || !bNtt.isNtt()) {
             throw new IllegalArgumentException("Both polynomials must be in NTT form");
         }
 
         List<BigInteger> result = new ArrayList<>(Collections.nCopies(n, BigInteger.ZERO));
         for (int i = 0; i < n; i++) {
-            result.set(i, this.coefficients().get(i).multiply(bNtt.coefficients().get(i)).mod(q));
+            result.set(i, this.getCoeffs().get(i).multiply(bNtt.getCoeffs().get(i)).mod(this.q));
         }
 
         return new Polynomial(result, q, true);
+    }
+
+    /**
+     * @return byte array representing polynomial's coefficients
+     */
+    public byte[] toByteArray() {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            for (BigInteger coeff : this.getCoeffs()) {
+                out.write(coeff.toByteArray());
+            }
+        } catch (IOException e) {
+            System.out.println("This should not have happened.");
+        }
+        return out.toByteArray();
+    }
+
+    /**
+     * @param b - polynomial that will be concatenated to this polynomial
+     * @return new polynomial which coefficients will be concatenation this || b
+     * (used later in hashing)
+     */
+    public Polynomial concatWith(Polynomial b) {
+        checkCompatibility(b);
+
+        List<BigInteger> result = new ArrayList<>(2 * this.n);
+        result.addAll(this.getCoeffs());
+        result.addAll(b.getCoeffs());
+
+        return new Polynomial(result, this.q, this.ntt);
     }
 }

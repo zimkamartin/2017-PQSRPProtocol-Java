@@ -74,7 +74,7 @@ public class MlkemImple {
      * @param out - polynomial that will be filled by Ntt representation of a polynomial whose coefficients are sampled from a uniform distribution
      * @param seed - XOF will be seeded by this. Output should be uniform and then sampled to out
      */
-    public void generateUniformPolynomialNtt(EngineImple e, List<BigInteger> out, byte[] seed) {
+    public void generateUniformCoeffsNtt(EngineImple e, List<BigInteger> out, byte[] seed) {
         int KyberGenerateMatrixNBlocks = getKyberGenerateMatrixNBlocks(e);
 
         int k, ctr, off;
@@ -107,7 +107,7 @@ public class MlkemImple {
      * @param bytes - input from which coefficients will be sampled from
      * @param eta - each coefficient will be from -eta to eta (both inclusive)
      */
-    public void generateCbdPolynomial(List<BigInteger> out, byte[] bytes, int eta) {
+    public void generateCbdCoeffs(List<BigInteger> out, byte[] bytes, int eta) {
         int bitIndex = 0;
         int byteIndex = 0;
         for (int i = 0; i < n; i++) {

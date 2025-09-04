@@ -1,6 +1,7 @@
 package protocol;
 
 import protocol.polynomial.NttImple;
+import protocol.polynomial.Polynomial;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -13,18 +14,6 @@ public final class Utils {
 
     private Utils(){}
 
-    public static byte[] convertBigIntegerListToByteArray(List<BigInteger> inp) {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try {
-            for (BigInteger coeff : inp) {
-                out.write(coeff.toByteArray());
-            }
-        } catch (IOException e) {
-            System.out.println("This should not have happened.");
-        }
-        return out.toByteArray();
-    }
-
     /**
      * Enough for our case, so when inp contains only ones and zeros.
      */
@@ -36,21 +25,6 @@ public final class Utils {
         }
         engine.hash(hash, inpByteArray);
         return hash;
-    }
-
-    public static byte[] concatBigIntegerListsToByteArray(List<BigInteger> a, List<BigInteger> b) {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try {
-            for (BigInteger coeff : a) {
-                out.write(coeff.toByteArray());
-            }
-            for (BigInteger coeff : b) {
-                out.write(coeff.toByteArray());
-            }
-        } catch (IOException e) {
-            System.out.println("This should not have happened.");
-        }
-        return out.toByteArray();
     }
 
     public static byte[] concatenateTwoByteArraysAndHashThem(EngineImple engine, byte[] a, byte[] b) {
@@ -70,46 +44,5 @@ public final class Utils {
         byte[] hashed = new byte[32];
         engine.hash(hashed, input);
         return hashed;
-    }
-
-    public static void getEtaNoise(ProtocolConfiguration pp, MlkemImple mlkem, EngineImple engine, List<BigInteger> r, byte[] seed) {
-        byte[] buf = new byte[(int) Math.ceil((pp.getN() * 2.0 * pp.getEta()) / 8.0)];
-        engine.prf(buf, seed);
-        mlkem.generateCbdPolynomial(r, buf, pp.getEta());
-    }
-
-    public static List<BigInteger> generateRandomErrorPolyNtt(ProtocolConfiguration pp, MlkemImple mlkem, EngineImple engine, NttImple ntt) {
-        List<BigInteger> e = new ArrayList<>(Collections.nCopies(pp.getN(), null));
-        byte[] eRandomSeed = new byte[34];
-        engine.getRandomBytes(eRandomSeed);
-        getEtaNoise(pp, mlkem, engine, e, eRandomSeed);
-        return ntt.convertToNtt(e);
-    }
-
-    public static List<BigInteger> computeUNtt(EngineImple engine, MlkemImple mlkem, int n, List<BigInteger> piNtt, List<BigInteger> pjNtt) {
-        byte[] hash = new byte[32];
-        engine.hash(hash, Utils.concatBigIntegerListsToByteArray(piNtt, pjNtt));
-        List<BigInteger> uNtt = new ArrayList<>(Collections.nCopies(n, null));
-        mlkem.generateUniformPolynomialNtt(engine, uNtt, hash);
-        return uNtt;
-    }
-
-    /**
-     * @return ab + cd, where each polynomial is in NTT form
-     */
-    public static List<BigInteger> multiply2NttTuplesAndAddThemTogetherNtt(NttImple ntt, List<BigInteger> aNtt, List<BigInteger> bNtt, List<BigInteger> cNtt, List<BigInteger> dNtt) {
-        List<BigInteger> abNtt = ntt.multiplyNttPolys(aNtt, bNtt);
-        List<BigInteger> cdNtt = ntt.multiplyNttPolys(cNtt, dNtt);
-        return ntt.addPolys(abNtt, cdNtt);
-    }
-
-    /**
-     * @return convertFromNtt(ab + cd + ef), where each polynomial is in NTT form
-     */
-    public static List<BigInteger> multiply3NttTuplesAndAddThemTogether(NttImple ntt, List<BigInteger> aNtt, List<BigInteger> bNtt, List<BigInteger> cNtt, List<BigInteger> dNtt, List<BigInteger> eNtt, List<BigInteger> fNtt) {
-        List<BigInteger> addedFstTwoNtt = multiply2NttTuplesAndAddThemTogetherNtt(ntt, aNtt, bNtt, cNtt, dNtt);
-        List<BigInteger> efNtt = ntt.multiplyNttPolys(eNtt, fNtt);
-        List<BigInteger> resultNtt = ntt.addPolys(addedFstTwoNtt, efNtt);
-        return ntt.convertFromNtt(resultNtt);
     }
 }
