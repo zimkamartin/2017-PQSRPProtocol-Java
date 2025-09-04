@@ -5,10 +5,9 @@ import org.junit.jupiter.api.Test;
 import java.math.BigInteger;
 import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class MagicImpleTest {
+class Ding12ImpleTest {
 
     private static final BigInteger Q = BigInteger.valueOf(17);
     /**
@@ -21,56 +20,56 @@ class MagicImpleTest {
 
     @Test
     void hintFunction00L() {
-        MagicImple magic = new MagicImple(Q);
+        Ding12Imple magic = new Ding12Imple(Q);
         assertEquals(0, magic.hintFunction(BigInteger.valueOf(13), 0));
     }
 
     @Test
     void hintFunction01L() {
-        MagicImple magic = new MagicImple(Q);
+        Ding12Imple magic = new Ding12Imple(Q);
         assertEquals(1, magic.hintFunction(BigInteger.valueOf(12), 0));
     }
 
     @Test
     void hintFunction10L() {
-        MagicImple magic = new MagicImple(Q);
+        Ding12Imple magic = new Ding12Imple(Q);
         assertEquals(0, magic.hintFunction(BigInteger.valueOf(14), 1));
 
     }
 
     @Test
     void hintFunction11L() {
-        MagicImple magic = new MagicImple(Q);
+        Ding12Imple magic = new Ding12Imple(Q);
         assertEquals(1, magic.hintFunction(BigInteger.valueOf(13), 1));
     }
 
     @Test
     void hintFunction00R() {
-        MagicImple magic = new MagicImple(Q);
+        Ding12Imple magic = new Ding12Imple(Q);
         assertEquals(0, magic.hintFunction(BigInteger.valueOf(4), 0));
     }
 
     @Test
     void hintFunction01R() {
-        MagicImple magic = new MagicImple(Q);
+        Ding12Imple magic = new Ding12Imple(Q);
         assertEquals(1, magic.hintFunction(BigInteger.valueOf(5), 0));
     }
 
     @Test
     void hintFunction10R() {
-        MagicImple magic = new MagicImple(Q);
+        Ding12Imple magic = new Ding12Imple(Q);
         assertEquals(0, magic.hintFunction(BigInteger.valueOf(5), 1));
     }
 
     @Test
     void hintFunction11R() {
-        MagicImple magic = new MagicImple(Q);
+        Ding12Imple magic = new Ding12Imple(Q);
         assertEquals(1, magic.hintFunction(BigInteger.valueOf(6), 1));
     }
 
     @Test
     void signalFunction() {
-        MagicImple magic = new MagicImple(Q);
+        Ding12Imple magic = new Ding12Imple(Q);
         EngineImple engine = new EngineImple(new Random(123));
         assertEquals(0, magic.signalFunction(engine, BigInteger.valueOf(14)));  // .getRandomBit() = 1
         assertEquals(0, magic.signalFunction(engine, BigInteger.valueOf(13)));  // .getRandomBit() = 0
@@ -93,32 +92,32 @@ class MagicImpleTest {
 
     @Test
     void symmetricModuloZF() {
-        MagicImple magic = new MagicImple(Q);
+        Ding12Imple magic = new Ding12Imple(Q);
         assertEquals(BigInteger.valueOf(0), magic.symmetricModulo(BigInteger.valueOf(0)));
     }
 
     @Test
     void symmetricModuloZT() {
-        MagicImple magic = new MagicImple(Q);
+        Ding12Imple magic = new Ding12Imple(Q);
         assertEquals(BigInteger.valueOf(-1), magic.symmetricModulo(BigInteger.valueOf(16)));
     }
 
     @Test
     void symmetricModuloHF() {
-        MagicImple magic = new MagicImple(Q);
+        Ding12Imple magic = new Ding12Imple(Q);
         assertEquals(BigInteger.valueOf(8), magic.symmetricModulo(BigInteger.valueOf(8)));
     }
 
     @Test
     void symmetricModuloHT() {
-        MagicImple magic = new MagicImple(Q);
+        Ding12Imple magic = new Ding12Imple(Q);
         assertEquals(BigInteger.valueOf(-8), magic.symmetricModulo(BigInteger.valueOf(9)));
     }
 
     // Trying just tuples that can occur in the input with high probability.
     @Test
     void robustExtractor() {
-        MagicImple magic = new MagicImple(Q);
+        Ding12Imple magic = new Ding12Imple(Q);
         assertEquals(0, magic.robustExtractor(BigInteger.valueOf(4), 0));
         assertEquals(1, magic.robustExtractor(BigInteger.valueOf(8), 1));
     }

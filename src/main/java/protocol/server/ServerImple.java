@@ -20,7 +20,7 @@ public class ServerImple implements Server {
     private final EngineImple engine;
     private final MlkemImple mlkem;
     private final NttImple ntt;
-    private final MagicImple magic;
+    private final Ding12Imple magic;
     private final SessionConfiguration sessionConfiguration = new SessionConfiguration();
 
     public ServerImple(RandomCustom random, int n, BigInteger q, int eta) {
@@ -31,7 +31,7 @@ public class ServerImple implements Server {
         this.protocolConfiguration = new ProtocolConfiguration(this.n, this.q, this.eta);
         this.mlkem = new MlkemImple(this.n, this.q);
         this.ntt = new NttImple(this.n, this.q);
-        this.magic = new MagicImple(this.q);
+        this.magic = new Ding12Imple(this.q);
     }
 
     @Override

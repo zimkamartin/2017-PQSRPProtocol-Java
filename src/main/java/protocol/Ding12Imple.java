@@ -12,11 +12,11 @@ import java.math.BigInteger;
  * although only for odd q, since q will be always odd (prime).
  * </p>
  */
-public class MagicImple {
+public class Ding12Imple {
 
     private final BigInteger q;
 
-    public MagicImple(BigInteger q) {
+    public Ding12Imple(BigInteger q) {
         this.q = q;
     }
 

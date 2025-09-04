@@ -10,7 +10,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.stream.IntStream;
 
 import static protocol.Utils.computeUNtt;
@@ -29,7 +28,7 @@ public class ClientImple {
     private final EngineImple engine;
     private final MlkemImple mlkem;
     private final NttImple ntt;
-    private final MagicImple magic;
+    private final Ding12Imple magic;
     private final SessionConfiguration sessionConfiguration = new SessionConfiguration();
 
     public ClientImple(RandomCustom random, Server server) {
@@ -42,7 +41,7 @@ public class ClientImple {
         this.engine.getRandomBytes(this.publicSeedForA);
         this.mlkem = new MlkemImple(this.n, this.q);
         this.ntt = new NttImple(this.n, this.q);
-        this.magic = new MagicImple(this.q);
+        this.magic = new Ding12Imple(this.q);
     }
 
     private byte[] computeSeed1(ClientsSecrets cs, byte[] salt) {
