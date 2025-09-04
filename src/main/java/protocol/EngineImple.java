@@ -19,9 +19,9 @@ import java.util.Random;
  */
 public class EngineImple {
     private static final int XOFBLOCKBYTES = 168;
-    private static final SHAKEDigest xof = new SHAKEDigest(128);
-    private static final SHA3Digest sha3Digest256 = new SHA3Digest(256);
-    private static final SHAKEDigest shakeDigest = new SHAKEDigest(256);
+    private final SHAKEDigest xof = new SHAKEDigest(128);
+    private final SHA3Digest sha3Digest256 = new SHA3Digest(256);
+    private final SHAKEDigest shakeDigest = new SHAKEDigest(256);
     private final RandomCustom random;
 
     public EngineImple(RandomCustom random) {
