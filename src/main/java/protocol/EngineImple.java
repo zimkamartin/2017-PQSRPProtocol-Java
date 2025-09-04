@@ -2,6 +2,8 @@ package protocol;
 
 import org.bouncycastle.crypto.digests.SHA3Digest;
 import org.bouncycastle.crypto.digests.SHAKEDigest;
+import protocol.random.RandomCustom;
+
 import java.util.Random;
 
 /**
@@ -20,9 +22,9 @@ public class EngineImple {
     private static final SHAKEDigest xof = new SHAKEDigest(128);
     private static final SHA3Digest sha3Digest256 = new SHA3Digest(256);
     private static final SHAKEDigest shakeDigest = new SHAKEDigest(256);
-    private final Random random;
+    private final RandomCustom random;
 
-    public EngineImple(Random random) {
+    public EngineImple(RandomCustom random) {
         this.random = random;
     }
 

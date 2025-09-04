@@ -3,6 +3,7 @@ package protocol.server;
 import protocol.*;
 import protocol.exceptions.ClientNotAuthenticatedException;
 import protocol.exceptions.NotEnrolledClientException;
+import protocol.random.RandomCustom;
 
 import java.math.BigInteger;
 import java.util.*;
@@ -22,7 +23,7 @@ public class ServerImple implements Server {
     private final MagicImple magic;
     private final SessionConfiguration sessionConfiguration = new SessionConfiguration();
 
-    public ServerImple(Random random, int n, BigInteger q, int eta) {
+    public ServerImple(RandomCustom random, int n, BigInteger q, int eta) {
         this.n = n;
         this.q = q;
         this.eta = eta;

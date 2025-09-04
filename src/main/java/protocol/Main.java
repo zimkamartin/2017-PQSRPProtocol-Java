@@ -3,11 +3,11 @@ package protocol;
 import protocol.exceptions.ClientNotAuthenticatedException;
 import protocol.exceptions.NotEnrolledClientException;
 import protocol.exceptions.ServerNotAuthenticatedException;
+import protocol.random.SecureRandomCustom;
 import protocol.server.Server;
 import protocol.server.ServerImple;
 
 import java.math.BigInteger;
-import java.security.SecureRandom;
 import java.util.Arrays;
 
 public class Main {
@@ -23,8 +23,8 @@ public class Main {
 
     public static void main(String[] args) throws NotEnrolledClientException, ServerNotAuthenticatedException, ClientNotAuthenticatedException {
         ClientsSecrets cs = new ClientsSecrets(I, PWD);
-        Server server = new ServerImple(new SecureRandom(), N, Q, ETA);
-        ClientImple client = new ClientImple(new SecureRandom(), server);
+        Server server = new ServerImple(new SecureRandomCustom(), N, Q, ETA);
+        ClientImple client = new ClientImple(new SecureRandomCustom(), server);
         client.enroll(cs);
         byte[] clientsKey = client.login(cs);
         System.out.println(Arrays.toString(clientsKey));

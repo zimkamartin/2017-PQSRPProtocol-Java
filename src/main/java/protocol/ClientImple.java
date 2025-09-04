@@ -3,6 +3,7 @@ package protocol;
 import protocol.exceptions.ClientNotAuthenticatedException;
 import protocol.exceptions.NotEnrolledClientException;
 import protocol.exceptions.ServerNotAuthenticatedException;
+import protocol.random.RandomCustom;
 import protocol.server.Server;
 
 import java.math.BigInteger;
@@ -31,7 +32,7 @@ public class ClientImple {
     private final MagicImple magic;
     private final SessionConfiguration sessionConfiguration = new SessionConfiguration();
 
-    public ClientImple(Random random, Server server) {
+    public ClientImple(RandomCustom random, Server server) {
         this.server = server;
         this.protocolConfiguration = server.getPublicParams();
         this.n = this.protocolConfiguration.getN();
