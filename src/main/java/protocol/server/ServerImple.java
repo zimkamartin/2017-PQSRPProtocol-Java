@@ -1,5 +1,6 @@
-package protocol;
+package protocol.server;
 
+import protocol.*;
 import protocol.exceptions.ClientNotAuthenticatedException;
 import protocol.exceptions.NotEnrolledClientException;
 
@@ -19,7 +20,6 @@ public class ServerImple implements Server {
     private final MlkemImple mlkem;
     private final NttImple ntt;
     private final MagicImple magic;
-    private final Map<ByteArrayWrapper, ClientsPublics> database = new HashMap<>();
     // TODO figure out what to do with these 3 vars //
     private byte[] skj = null;
     private List<BigInteger> piNtt = null;
@@ -43,7 +43,7 @@ public class ServerImple implements Server {
 
     @Override
     public void enrollClient(byte[] publicSeedForA, byte[] I, byte[] salt, List<BigInteger> vNtt) {
-        database.put(new ByteArrayWrapper(I.clone()), new ClientsPublics(publicSeedForA.clone(), salt.clone(), List.copyOf(vNtt)));
+        ServersDatabase.saveClient(new ByteArrayWrapper(I.clone()), new ClientsPublics(publicSeedForA.clone(), salt.clone(), List.copyOf(vNtt)));
     }
 
     @Override
@@ -52,12 +52,12 @@ public class ServerImple implements Server {
         this.piNtt = List.copyOf(piNtt);
         List<BigInteger> constantTwoPolyNtt = ntt.generateConstantTwoPolynomialNtt();
         // Extract database. //
-        if (!database.containsKey(wrappedIdentity)) {
+        if (!ServersDatabase.contains(wrappedIdentity)) {
             throw new NotEnrolledClientException("Identity " + Arrays.toString(I) + " not found in the database.");
         }
-        byte[] publicSeedForA = database.get(wrappedIdentity).getPublicSeedForA();
-        List<BigInteger> vNtt = database.get(wrappedIdentity).getVerifierNtt();
-        byte[] salt = database.get(wrappedIdentity).getSalt();
+        byte[] publicSeedForA = ServersDatabase.getClient(wrappedIdentity).getPublicSeedForA();
+        List<BigInteger> vNtt = ServersDatabase.getClient(wrappedIdentity).getVerifierNtt();
+        byte[] salt = ServersDatabase.getClient(wrappedIdentity).getSalt();
         // pj = as1' + 2e1' + v //
         // Create polynomial a from public seed.
         List<BigInteger> aNtt = new ArrayList<>(Collections.nCopies(n, null));

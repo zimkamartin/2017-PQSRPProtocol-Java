@@ -2,6 +2,8 @@ package protocol;
 
 import org.junit.jupiter.api.Test;
 import protocol.exceptions.NotEnrolledClientException;
+import protocol.server.Server;
+import protocol.server.ServerImple;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;

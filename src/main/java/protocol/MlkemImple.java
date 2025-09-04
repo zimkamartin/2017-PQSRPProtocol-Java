@@ -18,14 +18,14 @@ import static java.math.RoundingMode.HALF_UP;
  * https://github.com/bcgit/bc-java/blob/main/core/src/main/java/org/bouncycastle/pqc/crypto/mlkem/CBD.java
  * </p>
  */
-class MlkemImple {
+public class MlkemImple {
 
     private final int n;
     private final BigInteger q;
     private final int unifNeededNumOfBytes;
     private final BigInteger unifMask;  // used when sampling coefficient for Uniform distribution
 
-    MlkemImple(int n, BigInteger q) {
+    public MlkemImple(int n, BigInteger q) {
         this.n = n;
         this.q = q;
         int unifNeededNumOfBits = this.q.subtract(BigInteger.ONE).bitLength();  // the number of needed bits for generating 1 coefficient by Uniform distribution

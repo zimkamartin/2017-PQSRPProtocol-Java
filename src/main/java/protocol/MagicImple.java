@@ -16,7 +16,7 @@ public class MagicImple {
 
     private final BigInteger q;
 
-    MagicImple(BigInteger q) {
+    public MagicImple(BigInteger q) {
         this.q = q;
     }
 

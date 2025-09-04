@@ -1,5 +1,7 @@
-package protocol;
+package protocol.server;
 
+import protocol.ProtocolConfiguration;
+import protocol.SaltEphPublicSignal;
 import protocol.exceptions.ClientNotAuthenticatedException;
 import protocol.exceptions.NotEnrolledClientException;
 
