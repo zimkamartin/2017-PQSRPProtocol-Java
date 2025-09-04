@@ -20,10 +20,7 @@ public class ServerImple implements Server {
     private final MlkemImple mlkem;
     private final NttImple ntt;
     private final MagicImple magic;
-    // TODO figure out what to do with these 3 vars //
-    private byte[] skj = null;
-    private List<BigInteger> piNtt = null;
-    private List<BigInteger> pjNtt = null;
+    private final SessionConfiguration sessionConfiguration = new SessionConfiguration();
 
     public ServerImple(Random random, int n, BigInteger q, int eta) {
         this.n = n;
@@ -49,7 +46,7 @@ public class ServerImple implements Server {
     @Override
     public SaltEphPublicSignal computeSharedSecret(byte[] I, List<BigInteger> piNtt) throws NotEnrolledClientException {
         ByteArrayWrapper wrappedIdentity = new ByteArrayWrapper(I.clone());
-        this.piNtt = List.copyOf(piNtt);
+        sessionConfiguration.setClientsEphPubKey(List.copyOf(piNtt));
         List<BigInteger> constantTwoPolyNtt = ntt.generateConstantTwoPolynomialNtt();
         // Extract database. //
         if (!ServersDatabase.contains(wrappedIdentity)) {
@@ -67,7 +64,8 @@ public class ServerImple implements Server {
         // Compute e1'.
         List<BigInteger> e1PrimeNtt = Utils.generateRandomErrorPolyNtt(protocolConfiguration, mlkem, engine, ntt);
         // Do all the math.
-        this.pjNtt = ntt.addPolys(Utils.multiply2NttTuplesAndAddThemTogetherNtt(ntt, aNtt, s1PrimeNtt, constantTwoPolyNtt, e1PrimeNtt), vNtt);
+        List<BigInteger> pjNtt = ntt.addPolys(Utils.multiply2NttTuplesAndAddThemTogetherNtt(ntt, aNtt, s1PrimeNtt, constantTwoPolyNtt, e1PrimeNtt), vNtt);
+        sessionConfiguration.setServersEphPubKey(List.copyOf(pjNtt));
         // u = XOF(H(pi || pj)) //
         List<BigInteger> uNtt = computeUNtt(engine, mlkem, n, piNtt, pjNtt);
         // kj = (v + pi)s1' + uv + 2e1''' //
@@ -82,15 +80,18 @@ public class ServerImple implements Server {
         List<Integer> sigmaj = IntStream.range(0, n).mapToObj(i -> magic.robustExtractor(kj.get(i), wj.get(i))).toList();
         // skj = SHA3-256(sigmaj) //
         //System.out.println(sigmaj);
-        this.skj = Utils.convertIntegerListToByteArrayAndHashIt(n, engine, sigmaj);
+        sessionConfiguration.setSharedSecret(Utils.convertIntegerListToByteArrayAndHashIt(n, engine, sigmaj));
 
         return new SaltEphPublicSignal(salt.clone(), List.copyOf(pjNtt), List.copyOf(wj));
     }
 
     @Override
     public byte[] verifyEntities(byte[] m1) throws ClientNotAuthenticatedException {
+        List<BigInteger> piNtt = sessionConfiguration.getClientsEphPubKey();
+        List<BigInteger> pjNtt = sessionConfiguration.getServersEphPubKey();
+        byte[] skj = sessionConfiguration.getSharedSecret();
         // M1' = SHA3-256(pi || pj || skj) //
-        byte[] m1Prime = Utils.concatenateTwoByteArraysAndHashThem(engine, Utils.concatBigIntegerListsToByteArray(this.piNtt, this.pjNtt), this.skj);
+        byte[] m1Prime = Utils.concatenateTwoByteArraysAndHashThem(engine, Utils.concatBigIntegerListsToByteArray(piNtt, pjNtt), skj);
         // VERIFY that M1 == M1'. If true, return M2', else return empty byte array.
         ByteArrayWrapper m1Wrapped = new ByteArrayWrapper(m1);
         ByteArrayWrapper m1PrimeWrapped = new ByteArrayWrapper(m1Prime);
@@ -98,6 +99,6 @@ public class ServerImple implements Server {
             throw new ClientNotAuthenticatedException("M1 does not equal to M1'.");
         }
         // M2' = SHA3-256(pi || M1' || skj) //
-        return Utils.concatenateThreeByteArraysAndHash(engine, Utils.convertBigIntegerListToByteArray(piNtt), m1Prime, this.skj);
+        return Utils.concatenateThreeByteArraysAndHash(engine, Utils.convertBigIntegerListToByteArray(piNtt), m1Prime, skj);
     }
 }

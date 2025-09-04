@@ -29,10 +29,7 @@ public class ClientImple {
     private final MlkemImple mlkem;
     private final NttImple ntt;
     private final MagicImple magic;
-    // TODO figure out what to do with these 3 vars //
-    private byte[] ski = null;
-    private List<BigInteger> piNtt = null;
-    private List<BigInteger> pjNtt = null;
+    private final SessionConfiguration sessionConfiguration = new SessionConfiguration();
 
     public ClientImple(Random random, Server server) {
         this.server = server;
@@ -83,15 +80,16 @@ public class ClientImple {
         // Compute e1.
         List<BigInteger> e1Ntt = Utils.generateRandomErrorPolyNtt(protocolConfiguration, mlkem, engine, ntt);
         // Do all the math.
-        this.piNtt = Utils.multiply2NttTuplesAndAddThemTogetherNtt(ntt, aNtt, s1Ntt, constantTwoPolyNtt, e1Ntt);
+        List<BigInteger> piNtt = Utils.multiply2NttTuplesAndAddThemTogetherNtt(ntt, aNtt, s1Ntt, constantTwoPolyNtt, e1Ntt);
+        sessionConfiguration.setClientsEphPubKey(List.copyOf(piNtt));
         // Send identity and ephemeral public key pi in NTT form to the server. //
         // Receive salt, ephemeral public key pj in NTT form and wj. //
-        SaltEphPublicSignal sPjNttWj = server.computeSharedSecret(cs.getIdentity(), this.piNtt);
+        SaltEphPublicSignal sPjNttWj = server.computeSharedSecret(cs.getIdentity(), sessionConfiguration.getClientsEphPubKey());
         byte[] salt = sPjNttWj.getSalt();
-        this.pjNtt = sPjNttWj.getPjNtt();
+        sessionConfiguration.setServersEphPubKey(List.copyOf(sPjNttWj.getPjNtt()));
         List<Integer> wj = sPjNttWj.getWj();
         // u = XOF(H(pi || pj)) //
-        List<BigInteger> uNtt = computeUNtt(engine, mlkem, n, piNtt, pjNtt);
+        List<BigInteger> uNtt = computeUNtt(engine, mlkem, n, piNtt, sessionConfiguration.getServersEphPubKey());
         // v = asv + 2ev //
         List<BigInteger> vNtt = computeVNttFromANttAndSalt(cs, aNtt, salt);
         // ki = (pj − v)(sv + s1) + uv + 2e1'' //
@@ -102,29 +100,32 @@ public class ClientImple {
         Utils.getEtaNoise(protocolConfiguration, mlkem, engine, sv, computeSeed1(cs, salt));
         List<BigInteger> svNtt = ntt.convertToNtt(sv);
         // Do all the math.
-        List<BigInteger> fstBracket = ntt.subtractPolys(this.pjNtt, vNtt);
+        List<BigInteger> fstBracket = ntt.subtractPolys(sessionConfiguration.getServersEphPubKey(), vNtt);
         List<BigInteger> sndBracket = ntt.addPolys(svNtt, s1Ntt);
         List<BigInteger> ki = Utils.multiply3NttTuplesAndAddThemTogether(ntt, fstBracket, sndBracket, uNtt, vNtt, constantTwoPolyNtt, e1DoublePrimeNtt);
         // sigmai = Mod_2(ki, wj) //
         List<Integer> sigmai = IntStream.range(0, n).mapToObj(i -> magic.robustExtractor(ki.get(i), wj.get(i))).toList();
         // ski = SHA3-256(sigmai) //
         //System.out.println(sigmai);
-        this.ski = Utils.convertIntegerListToByteArrayAndHashIt(n, engine, sigmai);
+        sessionConfiguration.setSharedSecret(Utils.convertIntegerListToByteArrayAndHashIt(n, engine, sigmai));
     }
 
     private byte[] verifyEntities() throws ServerNotAuthenticatedException, ClientNotAuthenticatedException {
+        List<BigInteger> piNtt = sessionConfiguration.getClientsEphPubKey();
+        List<BigInteger> pjNtt = sessionConfiguration.getServersEphPubKey();
+        byte[] ski = sessionConfiguration.getSharedSecret();
         // M1 = SHA3-256(pi || pj || ski) //
-        byte[] m1 = Utils.concatenateTwoByteArraysAndHashThem(engine, Utils.concatBigIntegerListsToByteArray(this.piNtt, this.pjNtt), this.ski);
+        byte[] m1 = Utils.concatenateTwoByteArraysAndHashThem(engine, Utils.concatBigIntegerListsToByteArray(piNtt, pjNtt), ski);
         // M2 = SHA3-256(pi || M1 || ski) //
         byte[] m2Prime = server.verifyEntities(m1);
-        byte[] m2 = Utils.concatenateThreeByteArraysAndHash(engine, Utils.convertBigIntegerListToByteArray(piNtt), m1, this.ski);
+        byte[] m2 = Utils.concatenateThreeByteArraysAndHash(engine, Utils.convertBigIntegerListToByteArray(piNtt), m1, ski);
         // VERIFY that M2 == M2'. If true, return key.
         ByteArrayWrapper m2Wrapped = new ByteArrayWrapper(m2);
         ByteArrayWrapper m2PrimeWrapped = new ByteArrayWrapper(m2Prime);
         if (!m2Wrapped.equals(m2PrimeWrapped)) {
             throw new ServerNotAuthenticatedException("M2 does not equal to M2'.");
         }
-        return this.ski;
+        return ski;
     }
 
     public void enroll(ClientsSecrets cs) {
