@@ -1,6 +1,7 @@
 package protocol;
 
 import org.junit.jupiter.api.Test;
+import protocol.polynomial.NttImple;
 
 import java.math.BigInteger;
 import java.util.ArrayList;

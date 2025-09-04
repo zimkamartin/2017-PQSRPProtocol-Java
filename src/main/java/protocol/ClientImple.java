@@ -3,6 +3,7 @@ package protocol;
 import protocol.exceptions.ClientNotAuthenticatedException;
 import protocol.exceptions.NotEnrolledClientException;
 import protocol.exceptions.ServerNotAuthenticatedException;
+import protocol.polynomial.NttImple;
 import protocol.random.RandomCustom;
 import protocol.server.Server;
 

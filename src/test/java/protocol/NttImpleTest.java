@@ -1,5 +1,7 @@
 package protocol;
 
+import protocol.polynomial.NttImple;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;

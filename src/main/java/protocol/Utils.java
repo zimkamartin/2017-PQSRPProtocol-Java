@@ -1,5 +1,7 @@
 package protocol;
 
+import protocol.polynomial.NttImple;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;

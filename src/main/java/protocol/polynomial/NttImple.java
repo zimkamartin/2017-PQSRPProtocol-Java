@@ -1,4 +1,6 @@
-package protocol;
+package protocol.polynomial;
+
+import protocol.polynomial.ModuloPoly;
 
 import java.math.BigInteger;
 import java.util.*;
@@ -152,43 +154,6 @@ public class NttImple {
     }
 
     /**
-     * @return polynomial in Ntt form representing constant 2
-     */
-    public List<BigInteger> generateConstantTwoPolynomialNtt() {
-        return Collections.nCopies(n, BigInteger.TWO);
-    }
-
-    /**
-     * @param a - polynomial in the Ntt form
-     * @param b - polynomial in the Ntt form
-     * @return Ntt form of the addition a + b (although work also for polynomials in classic form)
-     */
-    public List<BigInteger> addPolys(List<BigInteger> a, List<BigInteger> b) {
-        List<BigInteger> result = new ArrayList<>(Collections.nCopies(n, null));
-        for (int i = 0; i < n; i = i + 1) {
-            result.set(i, a.get(i).add(b.get(i)).mod(q));
-        }
-        return result;
-    }
-
-    private List<BigInteger> inverse(List<BigInteger> a) {
-        List<BigInteger> result = new ArrayList<>(Collections.nCopies(n, null));
-        for (int i = 0; i < n; i = i + 1) {
-            result.set(i, a.get(i).negate().mod(q));
-        }
-        return result;
-    }
-
-    /**
-     * @param a - polynomial in the Ntt form
-     * @param b - polynomial in the Ntt form
-     * @return Ntt form of the substraction a - b (although work also for polynomials in classic form)
-     */
-    public List<BigInteger> subtractPolys(List<BigInteger> a, List<BigInteger> b) {
-        return addPolys(a, inverse(b));
-    }
-
-    /**
      * @param inputPoly - polynomial in classic form
      * @return inputPoly in Ntt form
      */
@@ -214,19 +179,6 @@ public class NttImple {
         }
 
         return polyNtt;
-    }
-
-    /**
-     * @param a - polynomial in the Ntt form
-     * @param b - polynomial in the Ntt form
-     * @return Ntt form of the multiplication a * b (! works only for ntt polynomials !)
-     */
-    public List<BigInteger> multiplyNttPolys(List<BigInteger> a, List<BigInteger> b) {
-        List<BigInteger> result = new ArrayList<>(Collections.nCopies(n, null));
-        for (int i = 0; i < n; i = i + 1) {
-            result.set(i, a.get(i).multiply(b.get(i)).mod(q));
-        }
-        return result;
     }
 
     /**

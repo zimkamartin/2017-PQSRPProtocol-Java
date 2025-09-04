@@ -3,6 +3,7 @@ package protocol.server;
 import protocol.*;
 import protocol.exceptions.ClientNotAuthenticatedException;
 import protocol.exceptions.NotEnrolledClientException;
+import protocol.polynomial.NttImple;
 import protocol.random.RandomCustom;
 
 import java.math.BigInteger;
