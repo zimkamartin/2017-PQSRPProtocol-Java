@@ -40,7 +40,7 @@ public class ServerImple implements Server {
 
     @Override
     public void enrollClient(byte[] publicSeedForA, byte[] I, byte[] salt, List<BigInteger> vNtt) {
-        ServersDatabase.saveClient(new ByteArrayWrapper(I.clone()), new ClientsPublics(publicSeedForA.clone(), salt.clone(), List.copyOf(vNtt)));
+        ServersDatabase.saveClient(new ByteArrayWrapper(I.clone()), new ClientRecord(publicSeedForA.clone(), salt.clone(), List.copyOf(vNtt)));
     }
 
     @Override

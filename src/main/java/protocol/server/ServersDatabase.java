@@ -1,7 +1,6 @@
 package protocol.server;
 
 import protocol.ByteArrayWrapper;
-import protocol.ClientsPublics;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,18 +15,18 @@ import java.util.Map;
  */
 final class ServersDatabase {
 
-    private static final Map<ByteArrayWrapper, ClientsPublics> database = new HashMap<>();
+    private static final Map<ByteArrayWrapper, ClientRecord> database = new HashMap<>();
 
     private ServersDatabase(){}
 
-    static void saveClient(ByteArrayWrapper identity, ClientsPublics clientsPublics) {
+    static void saveClient(ByteArrayWrapper identity, ClientRecord clientRecord) {
         if (database.containsKey(identity)){
             throw new IllegalArgumentException("Client already exists");
         }
-        database.put(identity, clientsPublics);
+        database.put(identity, clientRecord);
     }
 
-    static ClientsPublics getClient(ByteArrayWrapper identity) {
+    static ClientRecord getClient(ByteArrayWrapper identity) {
         if (!database.containsKey(identity)){
             throw new IllegalArgumentException("Client does not exist");
         }
