@@ -1,5 +1,6 @@
-package protocol;
+package protocol.client;
 
+import protocol.*;
 import protocol.exceptions.ClientNotAuthenticatedException;
 import protocol.exceptions.NotEnrolledClientException;
 import protocol.exceptions.ServerNotAuthenticatedException;

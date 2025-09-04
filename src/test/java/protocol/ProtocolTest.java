@@ -1,6 +1,8 @@
 package protocol;
 
 import org.junit.jupiter.api.Test;
+import protocol.client.ClientImple;
+import protocol.client.ClientsSecrets;
 import protocol.server.Server;
 import protocol.server.ServerImple;
 
