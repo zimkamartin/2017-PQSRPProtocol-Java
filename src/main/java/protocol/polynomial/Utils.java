@@ -27,12 +27,12 @@ public final class Utils {
     }
 
     /**
-     * @return ab + cd + ef, where each polynomial is in NTT form
+     * @return fromNtt(ab + cd + ef), where each polynomial is in NTT form
      */
-    public static NttPolynomial multiply3NttTuplesAndAddThemTogetherNtt(NttPolynomial a, NttPolynomial b, NttPolynomial c, NttPolynomial d, NttPolynomial e, NttPolynomial f) {
+    public static ClassicalPolynomial multiply3NttTuplesAndAddThemTogether(NttPolynomial a, NttPolynomial b, NttPolynomial c, NttPolynomial d, NttPolynomial e, NttPolynomial f, List<BigInteger> zetasInverted) {
         NttPolynomial addedFstTwo = multiply2NttTuplesAddThemTogetherNtt(a, b, c, d);
         NttPolynomial ef = e.multiply(f);
-        return addedFstTwo.add(ef);
+        return new ClassicalPolynomial(addedFstTwo.add(ef), List.copyOf(zetasInverted));
     }
 
     public static void getEtaNoise(ProtocolConfiguration pp, MlkemImple mlkem, EngineImple engine, List<BigInteger> r, byte[] seed) {

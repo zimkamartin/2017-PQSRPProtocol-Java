@@ -133,7 +133,6 @@ public class NttImple {
 
     /**
      * @return attribute zetasArray, so all precomputed coefficients used to convert polynomial to its NTT form.
-     * It is needed for test.
      */
     public List<BigInteger> getZetasArray() {
         return List.copyOf(this.zetas);
@@ -141,7 +140,6 @@ public class NttImple {
 
     /**
      * @return attribute zetasInvertedArray, so all precomputed coefficients used to convert polynomial back from its NTT form.
-     * It is needed for test.
      */
     public List<BigInteger> getZetasInvertedArray() {
         return List.copyOf(this.zetasInverted);

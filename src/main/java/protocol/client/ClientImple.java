@@ -107,8 +107,7 @@ public class ClientImple {
         // Do all the math.
         NttPolynomial fstBracket = sessionConfiguration.getServersEphPubKey().subtract(vNtt);
         NttPolynomial sndBracket = svNtt.add(s1Ntt);
-        NttPolynomial kiNtt = multiply3NttTuplesAndAddThemTogetherNtt(fstBracket, sndBracket, uNtt, vNtt, constantTwoPolyNtt, e1DoublePrimeNtt);
-        ClassicalPolynomial ki = new ClassicalPolynomial(kiNtt, ntt.getZetasInvertedArray());
+        ClassicalPolynomial ki = multiply3NttTuplesAndAddThemTogether(fstBracket, sndBracket, uNtt, vNtt, constantTwoPolyNtt, e1DoublePrimeNtt, ntt.getZetasInvertedArray());
         // sigmai = Mod_2(ki, wj) //
         List<Integer> sigmai = IntStream.range(0, n).mapToObj(i -> ding12.robustExtractor(ki.getCoeffs().get(i), wj.get(i))).toList();
         // ski = SHA3-256(sigmai) //

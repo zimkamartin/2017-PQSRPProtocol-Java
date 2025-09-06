@@ -79,8 +79,7 @@ public class ServerImple implements Server {
         NttPolynomial e1TriplePrimeNtt = generateRandomErrorPolyNtt(protocolConfiguration, mlkem, engine, ntt.getZetasArray());
         // Do all the math.
         NttPolynomial bracket = vNtt.add(piNtt);
-        NttPolynomial kjNtt = multiply3NttTuplesAndAddThemTogetherNtt(bracket, s1PrimeNtt, uNtt, vNtt, constantTwoPolyNtt, e1TriplePrimeNtt);
-        ClassicalPolynomial kj = new ClassicalPolynomial(kjNtt, ntt.getZetasInvertedArray());
+        ClassicalPolynomial kj = multiply3NttTuplesAndAddThemTogether(bracket, s1PrimeNtt, uNtt, vNtt, constantTwoPolyNtt, e1TriplePrimeNtt, ntt.getZetasInvertedArray());
         // wj = Cha(kj) //
         List<Integer> wj = IntStream.range(0, n).mapToObj(i -> magic.signalFunction(engine, kj.getCoeffs().get(i))).toList();
         // sigmaj = Mod_2(kj, wj) //
