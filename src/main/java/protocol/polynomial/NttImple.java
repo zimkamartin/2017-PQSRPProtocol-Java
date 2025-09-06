@@ -1,17 +1,11 @@
 package protocol.polynomial;
 
-import protocol.polynomial.ModuloPoly;
-
 import java.math.BigInteger;
 import java.util.*;
 
 /**
- * Represents all math operations with objects of class Polynomial. For efficiency, everything is done in NTT domain.
- * <p>
- * When an instance is constructed, arrays zetas and zetas inverted are computed.
- * Otherwise, provides just utility functions add, inverse, subtracts, multiply, create constant two polynomial.
- * NTT stuff heavily inspired by https://electricdusk.com/ntt.html
- * </p>
+ * Computes arrays zetas and zetas inverted for converting to and from NTT representation of a polynomial.
+ * Heavily inspired by https://electricdusk.com/ntt.html
  */
 public class NttImple {
 
@@ -151,71 +145,5 @@ public class NttImple {
      */
     public List<BigInteger> getZetasInvertedArray() {
         return List.copyOf(this.zetasInverted);
-    }
-
-    /**
-     * @param inputPoly - polynomial in classic form
-     * @return inputPoly in Ntt form
-     */
-    public Polynomial convertToNtt(Polynomial inputPoly) {
-        if (inputPoly.isNtt()) {
-            throw new IllegalArgumentException("Input polynomial is already in NTT form");
-        }
-        List<BigInteger> polyNtt = new ArrayList<>(inputPoly.getCoeffs());
-        int zetaIndex = 0;
-
-        int numOfLayers = (int) (Math.log(n) / Math.log(2));
-        for (int layer = 0; layer < numOfLayers; layer++) {
-            int numOfSubpolys = (int) Math.pow(2, layer);
-            int lenOfSubpoly = n / numOfSubpolys;
-            for (int subpolyCounter = 0; subpolyCounter < numOfSubpolys; subpolyCounter++) {
-                int polyLstIndex = subpolyCounter * lenOfSubpoly - 1;
-                for (int subpolyIndex = polyLstIndex + 1; subpolyIndex < polyLstIndex + 1 + lenOfSubpoly / 2; subpolyIndex++) {
-                    int subpolyHalfIndex = subpolyIndex + lenOfSubpoly / 2;
-                    BigInteger oldSubpolyCoeff = polyNtt.get(subpolyIndex);
-                    BigInteger oldSubpolyHalfCoeff = polyNtt.get(subpolyHalfIndex);
-                    polyNtt.set(subpolyIndex, (oldSubpolyCoeff.subtract(zetas.get(zetaIndex).multiply(oldSubpolyHalfCoeff))).mod(q));
-                    polyNtt.set(subpolyHalfIndex, (oldSubpolyCoeff.add(zetas.get(zetaIndex).multiply(oldSubpolyHalfCoeff))).mod(q));
-                }
-                zetaIndex++;
-            }
-        }
-
-        return new Polynomial(polyNtt, inputPoly.getQ(), true);
-    }
-
-    /**
-     * @param inputPoly - polynomial in Ntt form
-     * @return inputPoly in classic form
-     */
-    public Polynomial convertFromNtt(Polynomial inputPoly) {
-        if (!inputPoly.isNtt()) {
-            throw new IllegalArgumentException("Input polynomial is already in classic form");
-        }
-        List<BigInteger> poly = new ArrayList<>(inputPoly.getCoeffs());
-        int zetaIndex = zetasInverted.size() - 1;
-
-        int numOfLayers = (int) (Math.log(n) / Math.log(2));
-        for (int layer = numOfLayers - 1; layer >= 0; layer--) {
-            int numOfSubpolys = (int) Math.pow(2, layer);
-            int lenOfSubpoly = n / numOfSubpolys;
-            for (int subpolyCounter = numOfSubpolys - 1; subpolyCounter >= 0; subpolyCounter--) {
-                int polyLstIndex = subpolyCounter * lenOfSubpoly + lenOfSubpoly;
-                for (int subpolyHalfIndex = polyLstIndex - 1; subpolyHalfIndex > polyLstIndex - 1 - lenOfSubpoly / 2; subpolyHalfIndex--) {
-                    int subpolyIndex = subpolyHalfIndex - lenOfSubpoly / 2;
-                    BigInteger oldSubpolyCoeff = poly.get(subpolyIndex);
-                    BigInteger oldSubpolyHalfCoeff = poly.get(subpolyHalfIndex);
-                    poly.set(subpolyIndex, oldSubpolyCoeff.add(oldSubpolyHalfCoeff).mod(q));
-                    poly.set(subpolyHalfIndex, zetasInverted.get(zetaIndex).negate().multiply(oldSubpolyCoeff.subtract(oldSubpolyHalfCoeff)).mod(q));
-                }
-                zetaIndex--;
-            }
-        }
-
-        BigInteger twoDivisor = BigInteger.TWO.modPow(BigInteger.valueOf(numOfLayers).negate(), q);
-        for (int i = 0; i < n; i = i + 1) {
-            poly.set(i, poly.get(i).multiply(twoDivisor).mod(q));
-        }
-        return new Polynomial(poly, inputPoly.getQ(), false);
     }
 }

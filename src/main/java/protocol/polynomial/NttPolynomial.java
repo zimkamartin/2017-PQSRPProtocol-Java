@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class NttPolynomial extends Polynomial {
+public class NttPolynomial extends Polynomial<NttPolynomial> {
 
     private static List<BigInteger> convertToNtt(List<BigInteger> coeffs, List<BigInteger> zetas, int n, BigInteger q) {
         List<BigInteger> nttCoeffs = new ArrayList<>(List.copyOf(coeffs));
@@ -31,22 +31,21 @@ public class NttPolynomial extends Polynomial {
         return nttCoeffs;
     }
 
-    public NttPolynomial(List<BigInteger> classicalCoeffs, BigInteger q) {
-        super(List.copyOf(classicalCoeffs), q);
+    public NttPolynomial(List<BigInteger> nttCoeffs, BigInteger q) {
+        super(List.copyOf(nttCoeffs), q);
     }
 
-    public NttPolynomial(List<BigInteger> nttCoeffs, List<BigInteger> zetas, BigInteger q) {
-        super(convertToNtt(List.copyOf(nttCoeffs), List.copyOf(zetas), nttCoeffs.size(), q),q);
+    public NttPolynomial(List<BigInteger> coeffs, List<BigInteger> zetas, BigInteger q) {
+        super(convertToNtt(List.copyOf(coeffs), List.copyOf(zetas), coeffs.size(), q),q);
+    }
+
+    public NttPolynomial(NttPolynomial classicalPoly, List<BigInteger> zetas) {
+        super(convertToNtt(classicalPoly.getCoeffs(), List.copyOf(zetas), classicalPoly.n, classicalPoly.q), classicalPoly.q);
     }
 
     @Override
-    protected NttPolynomial newInstance(List<BigInteger> coeffs, BigInteger q) {
-        return new NttPolynomial(List.copyOf(coeffs), q);
-    }
-
-    @Override
-    public NttPolynomial defensiveCopy() {
-        return new NttPolynomial(this.getCoeffs(), q);
+    protected NttPolynomial newInstance(List<BigInteger> nttCoeffs, BigInteger q) {
+        return new NttPolynomial(List.copyOf(nttCoeffs), q);
     }
 
     /**
@@ -61,5 +60,13 @@ public class NttPolynomial extends Polynomial {
         }
 
         return new NttPolynomial(result, q);
+    }
+
+    /**
+     * @return polynomial in Ntt form representing constant 2
+     */
+    public static NttPolynomial constantTwoNtt(int n, BigInteger q) {
+        List<BigInteger> nttCoeffs = Collections.nCopies(n, BigInteger.TWO);
+        return new NttPolynomial(nttCoeffs, q);
     }
 }

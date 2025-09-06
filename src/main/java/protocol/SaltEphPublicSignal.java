@@ -1,6 +1,6 @@
 package protocol;
 
-import protocol.polynomial.Polynomial;
+import protocol.polynomial.NttPolynomial;
 
 import java.util.List;
 
@@ -17,13 +17,13 @@ public class SaltEphPublicSignal {
     /**
      * Polynomial representing server's ephemeral public key in NTT form.
      */
-    private final Polynomial pjNtt;
+    private final NttPolynomial pjNtt;
     /**
      * List of integers resulting from applying Signal function to polynomial kj.
      */
     private final List<Integer> wj;
 
-    public SaltEphPublicSignal(byte[] salt, Polynomial pjNtt, List<Integer> wj) {
+    public SaltEphPublicSignal(byte[] salt, NttPolynomial pjNtt, List<Integer> wj) {
         this.salt = salt;
         this.pjNtt = pjNtt.defensiveCopy();
         this.wj = List.copyOf(wj);
@@ -33,7 +33,7 @@ public class SaltEphPublicSignal {
         return salt;
     }
 
-    public Polynomial getPjNtt() {
+    public NttPolynomial getPjNtt() {
         return pjNtt.defensiveCopy();
     }
 

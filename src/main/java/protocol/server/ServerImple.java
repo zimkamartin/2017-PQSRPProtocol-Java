@@ -4,7 +4,9 @@ import protocol.*;
 import protocol.exceptions.ClientNotAuthenticatedException;
 import protocol.exceptions.NotEnrolledClientException;
 import protocol.MlkemImple;
+import protocol.polynomial.ClassicalPolynomial;
 import protocol.polynomial.NttImple;
+import protocol.polynomial.NttPolynomial;
 import protocol.polynomial.Polynomial;
 import protocol.random.RandomCustom;
 
@@ -43,47 +45,42 @@ public class ServerImple implements Server {
     }
 
     @Override
-    public void enrollClient(byte[] publicSeedForA, byte[] I, byte[] salt, Polynomial vNtt) {
+    public void enrollClient(byte[] publicSeedForA, byte[] I, byte[] salt, NttPolynomial vNtt) {
         ServersDatabase.saveClient(new ByteArrayWrapper(I.clone()), new ClientRecord(publicSeedForA.clone(), salt.clone(), vNtt.defensiveCopy()));
     }
 
     @Override
-    public SaltEphPublicSignal computeSharedSecret(byte[] I, Polynomial piNtt) throws NotEnrolledClientException {
+    public SaltEphPublicSignal computeSharedSecret(byte[] I, NttPolynomial piNtt) throws NotEnrolledClientException {
         ByteArrayWrapper wrappedIdentity = new ByteArrayWrapper(I.clone());
         sessionConfiguration.setClientsEphPubKey(piNtt.defensiveCopy());
-        Polynomial constantTwoPolyNtt = Polynomial.constantTwoNtt(n, q);
+        NttPolynomial constantTwoPolyNtt = NttPolynomial.constantTwoNtt(n, q);
         // Extract database. //
         if (!ServersDatabase.contains(wrappedIdentity)) {
             throw new NotEnrolledClientException("Identity " + Arrays.toString(I) + " not found in the database.");
         }
         byte[] publicSeedForA = ServersDatabase.getClient(wrappedIdentity).getPublicSeedForA();
-        Polynomial vNtt = ServersDatabase.getClient(wrappedIdentity).getVerifierNtt();
+        NttPolynomial vNtt = ServersDatabase.getClient(wrappedIdentity).getVerifierNtt();
         byte[] salt = ServersDatabase.getClient(wrappedIdentity).getSalt();
         // pj = as1' + 2e1' + v //
         // Create polynomial a from public seed.
-        List<BigInteger> aNttCoeffs = new ArrayList<>(Collections.nCopies(n, null));
-        mlkem.generateUniformCoeffsNtt(engine, aNttCoeffs, publicSeedForA);
-        Polynomial aNtt = new Polynomial(List.copyOf(aNttCoeffs), q, true);
+        NttPolynomial aNtt = generateUniformPolyNtt(protocolConfiguration, mlkem, engine, publicSeedForA);
         // Compute s1'.
-        Polynomial s1Prime = generateRandomErrorPoly(protocolConfiguration, mlkem, engine);
-        Polynomial s1PrimeNtt = ntt.convertToNtt(s1Prime.defensiveCopy());
+        NttPolynomial s1PrimeNtt = generateRandomErrorPolyNtt(protocolConfiguration, mlkem, engine, ntt.getZetasArray());
         // Compute e1'.
-        Polynomial e1Prime = generateRandomErrorPoly(protocolConfiguration, mlkem, engine);
-        Polynomial e1PrimeNtt = ntt.convertToNtt(e1Prime.defensiveCopy());
+        NttPolynomial e1PrimeNtt = generateRandomErrorPolyNtt(protocolConfiguration, mlkem, engine, ntt.getZetasArray());
         // Do all the math.
-        Polynomial summedFstTwoTuples = multiply2NttTuplesAddThemTogetherNtt(aNtt, s1PrimeNtt, constantTwoPolyNtt, e1PrimeNtt);
-        Polynomial pjNtt = summedFstTwoTuples.add(vNtt);
+        NttPolynomial summedFstTwoTuples = multiply2NttTuplesAddThemTogetherNtt(aNtt, s1PrimeNtt, constantTwoPolyNtt, e1PrimeNtt);
+        NttPolynomial pjNtt = summedFstTwoTuples.add(vNtt);
         sessionConfiguration.setServersEphPubKey(pjNtt.defensiveCopy());
         // u = XOF(H(pi || pj)) //
-        Polynomial uNtt = computeUNtt(protocolConfiguration, engine, mlkem, piNtt, pjNtt);
+        NttPolynomial uNtt = computeUNtt(protocolConfiguration, engine, mlkem, piNtt, pjNtt);
         // kj = (v + pi)s1' + uv + 2e1''' //
         // Compute e1'''.
-        Polynomial e1TriplePrime = generateRandomErrorPoly(protocolConfiguration, mlkem, engine);
-        Polynomial e1TriplePrimeNtt = ntt.convertToNtt(s1Prime.defensiveCopy());
+        NttPolynomial e1TriplePrimeNtt = generateRandomErrorPolyNtt(protocolConfiguration, mlkem, engine, ntt.getZetasArray());
         // Do all the math.
-        Polynomial bracket = vNtt.add(piNtt);
-        Polynomial kjNtt = multiply3NttTuplesAndAddThemTogetherNtt(bracket, s1PrimeNtt, uNtt, vNtt, constantTwoPolyNtt, e1TriplePrimeNtt);
-        Polynomial kj = ntt.convertFromNtt(kjNtt.defensiveCopy());
+        NttPolynomial bracket = vNtt.add(piNtt);
+        NttPolynomial kjNtt = multiply3NttTuplesAndAddThemTogetherNtt(bracket, s1PrimeNtt, uNtt, vNtt, constantTwoPolyNtt, e1TriplePrimeNtt);
+        ClassicalPolynomial kj = new ClassicalPolynomial(kjNtt, ntt.getZetasInvertedArray());
         // wj = Cha(kj) //
         List<Integer> wj = IntStream.range(0, n).mapToObj(i -> magic.signalFunction(engine, kj.getCoeffs().get(i))).toList();
         // sigmaj = Mod_2(kj, wj) //
@@ -97,8 +94,8 @@ public class ServerImple implements Server {
 
     @Override
     public byte[] verifyEntities(byte[] m1) throws ClientNotAuthenticatedException {
-        Polynomial piNtt = sessionConfiguration.getClientsEphPubKey();
-        Polynomial pjNtt = sessionConfiguration.getServersEphPubKey();
+        NttPolynomial piNtt = sessionConfiguration.getClientsEphPubKey();
+        NttPolynomial pjNtt = sessionConfiguration.getServersEphPubKey();
         byte[] skj = sessionConfiguration.getSharedSecret();
         // M1' = SHA3-256(pi || pj || skj) //
         byte[] m1Prime = Utils.concatenateTwoByteArraysAndHashThem(engine, piNtt.concatWith(pjNtt).toByteArray(), skj);

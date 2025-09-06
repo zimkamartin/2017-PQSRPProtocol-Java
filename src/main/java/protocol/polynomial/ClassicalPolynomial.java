@@ -4,7 +4,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClassicalPolynomial extends Polynomial {
+public class ClassicalPolynomial extends Polynomial<ClassicalPolynomial> {
 
     private static List<BigInteger> convertFromNtt(List<BigInteger> nttCoeffs, List<BigInteger> zetasInverted, int n, BigInteger q) {
         List<BigInteger> coeffs = new ArrayList<>(List.copyOf(nttCoeffs));
@@ -34,21 +34,20 @@ public class ClassicalPolynomial extends Polynomial {
         return coeffs;
     }
 
-    public ClassicalPolynomial(List<BigInteger> classicalCoeffs, BigInteger q) {
-        super(List.copyOf(classicalCoeffs), q);
+    public ClassicalPolynomial(List<BigInteger> coeffs, BigInteger q) {
+        super(List.copyOf(coeffs), q);
     }
 
     public ClassicalPolynomial(List<BigInteger> nttCoeffs, List<BigInteger> zetasInverted, BigInteger q) {
-        super(convertFromNtt(List.copyOf(nttCoeffs), List.copyOf(zetasInverted), nttCoeffs.size(), q),q);
+        super(convertFromNtt(List.copyOf(nttCoeffs), List.copyOf(zetasInverted), nttCoeffs.size(), q), q);
+    }
+
+    public ClassicalPolynomial(NttPolynomial nttPoly, List<BigInteger> zetasInverted) {
+        super(convertFromNtt(nttPoly.getCoeffs(), List.copyOf(zetasInverted), nttPoly.n, nttPoly.q), nttPoly.q);
     }
 
     @Override
     protected ClassicalPolynomial newInstance(List<BigInteger> coeffs, BigInteger q) {
         return new ClassicalPolynomial(List.copyOf(coeffs), q);
-    }
-
-    @Override
-    public ClassicalPolynomial defensiveCopy() {
-        return new ClassicalPolynomial(this.getCoeffs(), q);
     }
 }

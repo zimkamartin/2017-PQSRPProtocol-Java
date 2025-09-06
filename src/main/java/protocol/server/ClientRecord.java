@@ -1,14 +1,15 @@
 package protocol.server;
 
+import protocol.polynomial.NttPolynomial;
 import protocol.polynomial.Polynomial;
 
 public class ClientRecord {
 
     private final byte[] publicSeedForA;
     private final byte[] salt;
-    private final Polynomial verifierNtt;
+    private final NttPolynomial verifierNtt;
 
-    public ClientRecord(byte[] publicSeedForA, byte[] salt, Polynomial verifierNtt) {
+    public ClientRecord(byte[] publicSeedForA, byte[] salt, NttPolynomial verifierNtt) {
         this.publicSeedForA = publicSeedForA;
         this.salt = salt;
         this.verifierNtt = verifierNtt.defensiveCopy();
@@ -22,7 +23,7 @@ public class ClientRecord {
         return this.salt;
     }
 
-    public Polynomial getVerifierNtt() {
+    public NttPolynomial getVerifierNtt() {
         return this.verifierNtt.defensiveCopy();
     }
 }

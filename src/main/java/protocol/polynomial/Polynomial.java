@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class Polynomial {
+public abstract class Polynomial<T extends Polynomial<T>> {
 
     protected final List<BigInteger> coefficients;
     protected final int n;  // number of coefficients
@@ -31,7 +31,13 @@ public abstract class Polynomial {
         return q;
     }
 
-    private void checkCompatibility(Polynomial b) {
+    protected abstract T newInstance(List<BigInteger> coeffs, BigInteger q);
+
+    public T defensiveCopy() {
+        return newInstance(this.getCoeffs(), q);
+    }
+
+    private void checkCompatibility(T b) {
         if (this.n != b.getN()) {
             throw new IllegalArgumentException("Polynomials must have the same degree");
         }
@@ -44,17 +50,17 @@ public abstract class Polynomial {
      * @param b - polynomial that will be added to this polynomial
      * @return sum of this + b polynomials
      */
-    public Polynomial add(Polynomial b) {
+    public T add(T b) {
         checkCompatibility(b);
 
-        List<BigInteger> result = new ArrayList<>(Collections.nCopies(n, BigInteger.ZERO));
+        List<BigInteger> result = new java.util.ArrayList<>(n);
         for (int i = 0; i < n; i++) {
-            result.set(i, this.getCoeffs().get(i).add(b.getCoeffs().get(i)).mod(q));
+            result.add(this.coefficients.get(i).add(b.coefficients.get(i)).mod(q));
         }
         return newInstance(result, q);
     }
 
-    private Polynomial negate() {
+    protected T negate() {
         List<BigInteger> result = new ArrayList<>(Collections.nCopies(n, BigInteger.ZERO));
         for (int i = 0; i < n; i++) {
             result.set(i, this.getCoeffs().get(i).negate().mod(q));
@@ -66,7 +72,7 @@ public abstract class Polynomial {
      * @param b - polynomial that will be subtracted from this polynomial
      * @return subtraction of this - b polynomials
      */
-    public Polynomial subtract(Polynomial b) {
+    public T subtract(T b) {
         checkCompatibility(b);
 
         return this.add(b.negate());
@@ -92,7 +98,7 @@ public abstract class Polynomial {
      * @return new polynomial which coefficients will be concatenation this || b
      * (used later in hashing)
      */
-    public Polynomial concatWith(Polynomial b) {
+    public T concatWith(T b) {
         checkCompatibility(b);
 
         List<BigInteger> result = new ArrayList<>(2 * this.n);
@@ -101,8 +107,4 @@ public abstract class Polynomial {
 
         return newInstance(result, this.q);
     }
-
-    protected abstract Polynomial newInstance(List<BigInteger> coeffs, BigInteger q);
-
-    public abstract Polynomial defensiveCopy();
 }

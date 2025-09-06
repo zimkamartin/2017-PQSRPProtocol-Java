@@ -1,20 +1,20 @@
 package protocol;
 
-import protocol.polynomial.Polynomial;
+import protocol.polynomial.NttPolynomial;
 
 public class SessionConfiguration {
 
-    private Polynomial piNtt;
-    private Polynomial pjNtt;
+    private NttPolynomial piNtt;
+    private NttPolynomial pjNtt;
     private byte[] sk;
 
     public SessionConfiguration() {}
 
-    public void setClientsEphPubKey(Polynomial piNtt) {
+    public void setClientsEphPubKey(NttPolynomial piNtt) {
         this.piNtt = piNtt.defensiveCopy();
     }
 
-    public void setServersEphPubKey(Polynomial pjNtt) {
+    public void setServersEphPubKey(NttPolynomial pjNtt) {
         this.pjNtt = pjNtt.defensiveCopy();
     }
 
@@ -22,11 +22,11 @@ public class SessionConfiguration {
         this.sk = sk.clone();
     }
 
-    public Polynomial getClientsEphPubKey() {
+    public NttPolynomial getClientsEphPubKey() {
         return piNtt.defensiveCopy();
     }
 
-    public Polynomial getServersEphPubKey() {
+    public NttPolynomial getServersEphPubKey() {
         return pjNtt.defensiveCopy();
     }
 
