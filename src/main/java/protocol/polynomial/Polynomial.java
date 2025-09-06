@@ -7,18 +7,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Polynomial {
+public abstract class Polynomial {
 
-    private final List<BigInteger> coefficients;
-    private final int n;  // number of coefficients
-    private final BigInteger q;  // modulus
-    private final boolean ntt;  // true = NTT form, false = coefficient form
+    protected final List<BigInteger> coefficients;
+    protected final int n;  // number of coefficients
+    protected final BigInteger q;  // modulus
 
-    public Polynomial(List<BigInteger> coefficients, BigInteger q, boolean ntt) {
+    public Polynomial(List<BigInteger> coefficients, BigInteger q) {
         this.coefficients = List.copyOf(coefficients);
         this.n = coefficients.size();
         this.q = q;
-        this.ntt = ntt;
     }
 
     public List<BigInteger> getCoeffs() {
@@ -33,14 +31,6 @@ public class Polynomial {
         return q;
     }
 
-    public boolean isNtt() {
-        return ntt;
-    }
-
-    public Polynomial defensiveCopy() {
-        return new Polynomial(List.copyOf(this.coefficients), this.q, this.ntt);
-    }
-
     private void checkCompatibility(Polynomial b) {
         if (this.n != b.getN()) {
             throw new IllegalArgumentException("Polynomials must have the same degree");
@@ -48,17 +38,6 @@ public class Polynomial {
         if (!this.q.equals(b.getQ())) {
             throw new IllegalArgumentException("Polynomials must use the same modulus");
         }
-        if (this.ntt != b.isNtt()) {
-            throw new IllegalArgumentException("Both polynomials must be in the same form (NTT or classic)");
-        }
-    }
-
-    /**
-     * @return polynomial in Ntt form representing constant 2
-     */
-    public static Polynomial constantTwoNtt(int n, BigInteger q) {
-        List<BigInteger> coeffs = Collections.nCopies(n, BigInteger.TWO);
-        return new Polynomial(coeffs, q, true);
     }
 
     /**
@@ -72,7 +51,7 @@ public class Polynomial {
         for (int i = 0; i < n; i++) {
             result.set(i, this.getCoeffs().get(i).add(b.getCoeffs().get(i)).mod(q));
         }
-        return new Polynomial(result, q, ntt);
+        return newInstance(result, q);
     }
 
     private Polynomial negate() {
@@ -80,7 +59,7 @@ public class Polynomial {
         for (int i = 0; i < n; i++) {
             result.set(i, this.getCoeffs().get(i).negate().mod(q));
         }
-        return new Polynomial(result, q, ntt);
+        return newInstance(result, q);
     }
 
     /**
@@ -91,29 +70,6 @@ public class Polynomial {
         checkCompatibility(b);
 
         return this.add(b.negate());
-    }
-
-    /**
-     * @param bNtt - polynomial, must be in NTT form. Will be multiplied with this polynomial (also in NTT form)
-     * @return ntt form of a * b
-     */
-    public Polynomial multiplyNtt(Polynomial bNtt) {
-        if (this.n != bNtt.getN()) {
-            throw new IllegalArgumentException("Polynomials must have the same degree");
-        }
-        if (!this.q.equals(bNtt.getQ())) {
-            throw new IllegalArgumentException("Polynomials must use the same modulus");
-        }
-        if (!this.ntt || !bNtt.isNtt()) {
-            throw new IllegalArgumentException("Both polynomials must be in NTT form");
-        }
-
-        List<BigInteger> result = new ArrayList<>(Collections.nCopies(n, BigInteger.ZERO));
-        for (int i = 0; i < n; i++) {
-            result.set(i, this.getCoeffs().get(i).multiply(bNtt.getCoeffs().get(i)).mod(this.q));
-        }
-
-        return new Polynomial(result, q, true);
     }
 
     /**
@@ -143,6 +99,10 @@ public class Polynomial {
         result.addAll(this.getCoeffs());
         result.addAll(b.getCoeffs());
 
-        return new Polynomial(result, this.q, this.ntt);
+        return newInstance(result, this.q);
     }
+
+    protected abstract Polynomial newInstance(List<BigInteger> coeffs, BigInteger q);
+
+    public abstract Polynomial defensiveCopy();
 }
