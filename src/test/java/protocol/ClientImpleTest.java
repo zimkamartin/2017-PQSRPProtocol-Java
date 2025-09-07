@@ -18,7 +18,7 @@ class ClientImpleTest {
 
 //    @Test
 //    void computeSharedSecretClientExists() {
-//        ClientsSecrets cs = new ClientsSecrets(I, PWD);
+//        ClientsKnowledge cs = new ClientsKnowledge(I, PWD);
 //        Server server = new ServerImple(new SecureRandom(), N, Q, ETA);
 //        ClientImple client = new ClientImple(new SecureRandom(), server);
 //        client.enrollClient(cs);
@@ -28,11 +28,11 @@ class ClientImpleTest {
 //    @Test
 //    void computeSharedSecretClientDoesNotExist() {
 //        byte[] notEnrolledI = "notEnrolledI".getBytes();
-//        ClientsSecrets cs = new ClientsSecrets(I, PWD);
+//        ClientsKnowledge cs = new ClientsKnowledge(I, PWD);
 //        Server server = new ServerImple(new SecureRandom(), N, Q, ETA);
 //        ClientImple client = new ClientImple(new SecureRandom(), server);
 //        client.enrollClient(cs);
 //        assertThrows(NotEnrolledClientException.class,
-//                () -> client.computeSharedSecret(new ClientsSecrets(notEnrolledI, PWD)));
+//                () -> client.computeSharedSecret(new ClientsKnowledge(notEnrolledI, PWD)));
 //    }
 }

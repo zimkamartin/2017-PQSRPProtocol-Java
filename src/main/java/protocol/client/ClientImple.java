@@ -42,17 +42,17 @@ public class ClientImple {
         this.ding12 = new Ding12Imple(this.q);
     }
 
-    private ByteArrayWrapper computeSeed1(ClientsSecrets cs, ByteArrayWrapper salt) {
-        ByteArrayWrapper identity = cs.getIdentity();
-        ByteArrayWrapper password = cs.getPassword();
+    private ByteArrayWrapper computeSeed1(ClientsKnowledge ck, ByteArrayWrapper salt) {
+        ByteArrayWrapper identity = ck.getIdentity();
+        ByteArrayWrapper password = ck.getPassword();
         // seed1 = SHA3-256(salt||SHA3-256(I||pwd)) //
         return salt.concatWith(identity.concatWith(password).hashWrapped()).hashWrapped();
     }
 
-    private NttPolynomial computeVNttFromANttAndSalt(ClientsSecrets cs, NttPolynomial aNtt, ByteArrayWrapper salt) {
+    private NttPolynomial computeVNttFromANttAndSalt(ClientsKnowledge ck, NttPolynomial aNtt, ByteArrayWrapper salt) {
         // v = asv + 2ev //
         // Compute seeds.
-        ByteArrayWrapper seed1 = computeSeed1(cs, salt);
+        ByteArrayWrapper seed1 = computeSeed1(ck, salt);
         ByteArrayWrapper seed2 = seed1.hashWrapped();
         // Based on seeds (computed from private values) generate sv, ev.
         NttPolynomial svNtt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray(), seed1.defensiveCopy());
@@ -62,7 +62,7 @@ public class ClientImple {
         return multiply2NttTuplesAddThemTogetherNtt(aNtt.defensiveCopy(), svNtt, constantTwoPolyNtt, evNtt);
     }
 
-    private void computeSharedSecret(ClientsSecrets cs) throws NotEnrolledClientException {
+    private void computeSharedSecret(ClientsKnowledge ck) throws NotEnrolledClientException {
         NttPolynomial constantTwoPolyNtt = NttPolynomial.constantTwoNtt(n, q);
         // pi = as1 + 2e1 //
         // Create polynomial a from public seed.
@@ -76,19 +76,19 @@ public class ClientImple {
         sessionConfiguration.setClientsEphPubKey(piNtt.defensiveCopy());
         // Send identity and ephemeral public key pi in NTT form to the server. //
         // Receive salt, ephemeral public key pj in NTT form and wj. //
-        SaltEphPublicSignal sPjNttWj = server.computeSharedSecret(cs.getIdentity(), sessionConfiguration.getClientsEphPubKey());
+        SaltEphPublicSignal sPjNttWj = server.computeSharedSecret(ck.getIdentity(), sessionConfiguration.getClientsEphPubKey());
         ByteArrayWrapper salt = sPjNttWj.getSalt();
         sessionConfiguration.setServersEphPubKey(sPjNttWj.getPjNtt().defensiveCopy());
         List<Integer> wj = sPjNttWj.getWj();
         // u = XOF(H(pi || pj)) //
         NttPolynomial uNtt = computeUNtt(protocolConfiguration, randomCustomImple, piNtt.defensiveCopy(), sessionConfiguration.getServersEphPubKey());
         // v = asv + 2ev //
-        NttPolynomial vNtt = computeVNttFromANttAndSalt(cs, aNtt, salt);
+        NttPolynomial vNtt = computeVNttFromANttAndSalt(ck, aNtt, salt);
         // ki = (pj − v)(sv + s1) + uv + 2e1'' //
         // Compute e1''.
         NttPolynomial e1DoublePrimeNtt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray());
         // Compute sv.
-        NttPolynomial svNtt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray(), computeSeed1(cs, salt));
+        NttPolynomial svNtt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray(), computeSeed1(ck, salt));
         // Do all the math.
         NttPolynomial fstBracket = sessionConfiguration.getServersEphPubKey().subtract(vNtt);
         NttPolynomial sndBracket = svNtt.add(s1Ntt);
@@ -116,7 +116,7 @@ public class ClientImple {
         return ski;
     }
 
-    public void enroll(ClientsSecrets cs) {
+    public void enroll(ClientsKnowledge ck) {
         // PHASE 0 //
         // v = asv + 2ev //
         // Create polynomial a from public seed.
@@ -124,14 +124,14 @@ public class ClientImple {
         // Generate salt.
         ByteArrayWrapper salt = new ByteArrayWrapper(randomCustomImple, SALTSIZE);
         // Compute v.
-        NttPolynomial vNtt = computeVNttFromANttAndSalt(cs, aNtt, salt);
+        NttPolynomial vNtt = computeVNttFromANttAndSalt(ck, aNtt, salt);
         // Send public seed for a, identity, salt and v in NTT form to the server. //
-        server.enrollClient(publicSeedForA, cs.getIdentity(), salt, vNtt);
+        server.enrollClient(publicSeedForA, ck.getIdentity(), salt, vNtt);
     }
 
-    public ByteArrayWrapper login(ClientsSecrets cs) throws NotEnrolledClientException, ServerNotAuthenticatedException, ClientNotAuthenticatedException {
+    public ByteArrayWrapper login(ClientsKnowledge ck) throws NotEnrolledClientException, ServerNotAuthenticatedException, ClientNotAuthenticatedException {
         // PHASE 1 //
-        computeSharedSecret(cs);
+        computeSharedSecret(ck);
         // PHASE 2 //
         return verifyEntities();
     }

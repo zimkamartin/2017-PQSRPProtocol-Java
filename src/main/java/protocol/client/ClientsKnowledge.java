@@ -2,12 +2,12 @@ package protocol.client;
 
 import protocol.ByteArrayWrapper;
 
-public class ClientsSecrets {
+public class ClientsKnowledge {
 
     private final ByteArrayWrapper identity;
     private final ByteArrayWrapper password;
 
-    public ClientsSecrets(ByteArrayWrapper identity, ByteArrayWrapper password) {
+    public ClientsKnowledge(ByteArrayWrapper identity, ByteArrayWrapper password) {
         this.identity = identity.defensiveCopy();
         this.password = password.defensiveCopy();
     }

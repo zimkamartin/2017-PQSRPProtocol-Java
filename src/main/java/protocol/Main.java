@@ -1,7 +1,7 @@
 package protocol;
 
 import protocol.client.ClientImple;
-import protocol.client.ClientsSecrets;
+import protocol.client.ClientsKnowledge;
 import protocol.exceptions.ClientNotAuthenticatedException;
 import protocol.exceptions.NotEnrolledClientException;
 import protocol.exceptions.ServerNotAuthenticatedException;
@@ -24,11 +24,11 @@ public class Main {
     // THIS IS NOT HOW TO DO IT !!! THIS IS JUST FOR PROOF-OF-CONCEPT !!! THIS IS NOT HOW TO DO IT !!!
 
     public static void main(String[] args) throws NotEnrolledClientException, ServerNotAuthenticatedException, ClientNotAuthenticatedException {
-        ClientsSecrets cs = new ClientsSecrets(I.defensiveCopy(), PWD.defensiveCopy());
+        ClientsKnowledge ck = new ClientsKnowledge(I.defensiveCopy(), PWD.defensiveCopy());
         Server server = new ServerImple(new RandomCustomImple(N, Q, ETA), N, Q, ETA);
         ClientImple client = new ClientImple(new RandomCustomImple(N, Q, ETA), server);
-        client.enroll(cs);
-        ByteArrayWrapper clientsKey = client.login(cs);
+        client.enroll(ck);
+        ByteArrayWrapper clientsKey = client.login(ck);
         System.out.println(Arrays.toString(clientsKey.getData()));
     }
 }

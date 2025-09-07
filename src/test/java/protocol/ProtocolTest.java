@@ -15,7 +15,7 @@ class ProtocolTest {
 //        int numOfIterations = 100;
 //        Set<ByteArrayWrapper> keys = new HashSet<>();
 //        for (int i = 0; i < numOfIterations; i++) {
-//            ClientsSecrets cs = new ClientsSecrets(I, PWD);
+//            ClientsKnowledge cs = new ClientsKnowledge(I, PWD);
 //            Server server = new ServerImple(new SecureRandom(), N, Q, ETA);
 //            ClientImple client = new ClientImple(new SecureRandom(), server);
 //            client.enrollClient(cs);
@@ -31,7 +31,7 @@ class ProtocolTest {
 //        int numOfIterations = 100;
 //        Set<ByteArrayWrapper> keys = new HashSet<>();
 //        for (int i = 0; i < numOfIterations; i++) {
-//            ClientsSecrets cs = new ClientsSecrets(I, PWD);
+//            ClientsKnowledge cs = new ClientsKnowledge(I, PWD);
 //            Server server = new ServerImple(new Random(123), N, Q, ETA);
 //            ClientImple client = new ClientImple(new Random(456), server);
 //            client.enrollClient(cs);
