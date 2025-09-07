@@ -1,5 +1,7 @@
 package protocol.polynomial;
 
+import protocol.ByteArrayWrapper;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -34,7 +36,7 @@ public abstract class Polynomial<T extends Polynomial<T>> {
     protected abstract T newInstance(List<BigInteger> coeffs, BigInteger q);
 
     public T defensiveCopy() {
-        return newInstance(this.getCoeffs(), q);
+        return newInstance(List.copyOf(this.getCoeffs()), q);
     }
 
     private void checkCompatibility(T b) {
@@ -94,9 +96,15 @@ public abstract class Polynomial<T extends Polynomial<T>> {
     }
 
     /**
+     * @return byte array wrapped representing polynomial's coefficients
+     */
+    public ByteArrayWrapper toByteArrayWrapper() {
+        return new ByteArrayWrapper(toByteArray());
+    }
+
+    /**
      * @param b - polynomial that will be concatenated to this polynomial
      * @return new polynomial which coefficients will be concatenation this || b
-     * (used later in hashing)
      */
     public T concatWith(T b) {
         checkCompatibility(b);

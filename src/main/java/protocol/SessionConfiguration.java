@@ -6,7 +6,7 @@ public class SessionConfiguration {
 
     private NttPolynomial piNtt;
     private NttPolynomial pjNtt;
-    private byte[] sk;
+    private ByteArrayWrapper sk;
 
     public SessionConfiguration() {}
 
@@ -18,8 +18,8 @@ public class SessionConfiguration {
         this.pjNtt = pjNtt.defensiveCopy();
     }
 
-    public void setSharedSecret(byte[] sk) {
-        this.sk = sk.clone();
+    public void setSharedSecret(ByteArrayWrapper sk) {
+        this.sk = sk.defensiveCopy();
     }
 
     public NttPolynomial getClientsEphPubKey() {
@@ -30,7 +30,7 @@ public class SessionConfiguration {
         return pjNtt.defensiveCopy();
     }
 
-    public byte[] getSharedSecret() {
-        return sk.clone();
+    public ByteArrayWrapper getSharedSecret() {
+        return sk.defensiveCopy();
     }
 }

@@ -1,6 +1,6 @@
 package protocol.polynomial;
 
-import protocol.EngineImple;
+import protocol.ByteArrayWrapper;
 import protocol.ProtocolConfiguration;
 import protocol.random.RandomCustom;
 
@@ -35,30 +35,29 @@ public final class Utils {
         return new ClassicalPolynomial(addedFstTwo.add(ef), List.copyOf(zetasInverted));
     }
 
-    public static NttPolynomial generateRandomErrorPolyNtt(ProtocolConfiguration pc, RandomCustom rc, List<BigInteger> zetas, byte[] seed) {
+    public static NttPolynomial generateRandomErrorPolyNtt(ProtocolConfiguration pc, RandomCustom rc, List<BigInteger> zetas, ByteArrayWrapper seed) {
         List<BigInteger> eCoeffs = new ArrayList<>(Collections.nCopies(pc.getN(), null));
-        rc.generateCbdCoefficients(eCoeffs, seed.clone());
+        rc.generateCbdCoefficients(eCoeffs, seed.getData());
         return new NttPolynomial(List.copyOf(eCoeffs), List.copyOf(zetas), pc.getQ());
     }
 
     public static NttPolynomial generateRandomErrorPolyNtt(ProtocolConfiguration pc, RandomCustom rc, List<BigInteger> zetas) {
         byte[] eRandomSeed = new byte[34];
         rc.getRandomBytes(eRandomSeed);
-        return generateRandomErrorPolyNtt(pc, rc, List.copyOf(zetas), eRandomSeed);
+        return generateRandomErrorPolyNtt(pc, rc, List.copyOf(zetas), new ByteArrayWrapper(eRandomSeed));
     }
 
-    public static NttPolynomial generateUniformPolyNtt(ProtocolConfiguration pc, RandomCustom rc, byte[] seed) {
+    public static NttPolynomial generateUniformPolyNtt(ProtocolConfiguration pc, RandomCustom rc, ByteArrayWrapper seed) {
         List<BigInteger> coeffs = new ArrayList<>(Collections.nCopies(pc.getN(), null));
-        rc.generateUniformCoefficients(coeffs, seed.clone());
+        rc.generateUniformCoefficients(coeffs, seed.getData());
         return new NttPolynomial(List.copyOf(coeffs), pc.getQ());
     }
 
     /**
      * u = XOF(H(pi || pj))
      */
-    public static NttPolynomial computeUNtt(ProtocolConfiguration pc, EngineImple engine, RandomCustom rc, NttPolynomial pi, NttPolynomial pj) {
-        byte[] seed = new byte[32];
-        engine.hash(seed, pi.concatWith(pj).toByteArray());
+    public static NttPolynomial computeUNtt(ProtocolConfiguration pc, RandomCustom rc, NttPolynomial pi, NttPolynomial pj) {
+        ByteArrayWrapper seed = pi.concatWith(pj).toByteArrayWrapper().hashWrapped();
         return generateUniformPolyNtt(pc, rc, seed);
     }
 }

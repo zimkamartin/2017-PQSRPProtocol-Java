@@ -19,16 +19,16 @@ public class Main {
     private static final int ETA = 3;
 
     // THIS IS NOT HOW TO DO IT !!! THIS IS JUST FOR PROOF-OF-CONCEPT !!! THIS IS NOT HOW TO DO IT !!!
-    private static final byte[] I = "identity123".getBytes();
-    private static final byte[] PWD = "password123".getBytes();
+    private static final ByteArrayWrapper I = new ByteArrayWrapper("identity123".getBytes());
+    private static final ByteArrayWrapper PWD = new ByteArrayWrapper("password123".getBytes());
     // THIS IS NOT HOW TO DO IT !!! THIS IS JUST FOR PROOF-OF-CONCEPT !!! THIS IS NOT HOW TO DO IT !!!
 
     public static void main(String[] args) throws NotEnrolledClientException, ServerNotAuthenticatedException, ClientNotAuthenticatedException {
-        ClientsSecrets cs = new ClientsSecrets(I, PWD);
+        ClientsSecrets cs = new ClientsSecrets(I.defensiveCopy(), PWD.defensiveCopy());
         Server server = new ServerImple(new RandomCustomImple(N, Q, ETA), N, Q, ETA);
         ClientImple client = new ClientImple(new RandomCustomImple(N, Q, ETA), server);
         client.enroll(cs);
-        byte[] clientsKey = client.login(cs);
-        System.out.println(Arrays.toString(clientsKey));
+        ByteArrayWrapper clientsKey = client.login(cs);
+        System.out.println(Arrays.toString(clientsKey.getData()));
     }
 }

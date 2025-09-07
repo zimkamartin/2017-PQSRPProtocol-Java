@@ -12,6 +12,8 @@ import static java.math.RoundingMode.CEILING;
 import static java.math.RoundingMode.HALF_UP;
 
 /**
+ * XOF, secureRandom and prf are inspired by
+ * https://github.com/bcgit/bc-java/blob/main/core/src/main/java/org/bouncycastle/pqc/crypto/mlkem/Symmetric.java
  * Building blocks of functions generateUniformCoefficients and generateCbdCoefficients are heavily inspired by
  * https://github.com/bcgit/bc-java/blob/main/core/src/main/java/org/bouncycastle/pqc/crypto/mlkem/MLKEMIndCpa.java
  * and

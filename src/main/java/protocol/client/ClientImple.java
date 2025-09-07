@@ -26,8 +26,7 @@ public class ClientImple {
     private final RandomCustom randomCustomImple;
     private final int n;
     private final BigInteger q;
-    private final byte[] publicSeedForA = new byte[PUBLICSEEDFORASIZE];
-    private final EngineImple engine;
+    private final ByteArrayWrapper publicSeedForA;
     private final NttImple ntt;
     private final Ding12Imple ding12;
     private final SessionConfiguration sessionConfiguration = new SessionConfiguration();
@@ -38,29 +37,26 @@ public class ClientImple {
         this.n = this.protocolConfiguration.getN();
         this.q = this.protocolConfiguration.getQ();
         this.randomCustomImple = random;
-        this.randomCustomImple.getRandomBytes(this.publicSeedForA);
-        this.engine = new EngineImple();
+        this.publicSeedForA = new ByteArrayWrapper(randomCustomImple, PUBLICSEEDFORASIZE);
         this.ntt = new NttImple(this.n, this.q);
         this.ding12 = new Ding12Imple(this.q);
     }
 
-    private byte[] computeSeed1(ClientsSecrets cs, byte[] salt) {
-        byte[] identity = cs.getIdentity();
-        byte[] password = cs.getPassword();
+    private ByteArrayWrapper computeSeed1(ClientsSecrets cs, ByteArrayWrapper salt) {
+        ByteArrayWrapper identity = cs.getIdentity();
+        ByteArrayWrapper password = cs.getPassword();
         // seed1 = SHA3-256(salt||SHA3-256(I||pwd)) //
-        byte[] innerHash = Utils.concatenateTwoByteArraysAndHashThem(engine, identity, password);
-        return Utils.concatenateTwoByteArraysAndHashThem(engine, salt, innerHash);
+        return salt.concatWith(identity.concatWith(password).hashWrapped()).hashWrapped();
     }
 
-    private NttPolynomial computeVNttFromANttAndSalt(ClientsSecrets cs, NttPolynomial aNtt, byte[] salt) {
+    private NttPolynomial computeVNttFromANttAndSalt(ClientsSecrets cs, NttPolynomial aNtt, ByteArrayWrapper salt) {
         // v = asv + 2ev //
         // Compute seeds.
-        byte[] seed1 = computeSeed1(cs, salt);
-        byte[] seed2 = new byte[32];
-        engine.hash(seed2, seed1);
+        ByteArrayWrapper seed1 = computeSeed1(cs, salt);
+        ByteArrayWrapper seed2 = seed1.hashWrapped();
         // Based on seeds (computed from private values) generate sv, ev.
-        NttPolynomial svNtt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray(), seed1);
-        NttPolynomial evNtt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray(), seed2);
+        NttPolynomial svNtt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray(), seed1.defensiveCopy());
+        NttPolynomial evNtt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray(), seed2.defensiveCopy());
         // Do all the math.
         NttPolynomial constantTwoPolyNtt = NttPolynomial.constantTwoNtt(n, q);
         return multiply2NttTuplesAddThemTogetherNtt(aNtt.defensiveCopy(), svNtt, constantTwoPolyNtt, evNtt);
@@ -81,11 +77,11 @@ public class ClientImple {
         // Send identity and ephemeral public key pi in NTT form to the server. //
         // Receive salt, ephemeral public key pj in NTT form and wj. //
         SaltEphPublicSignal sPjNttWj = server.computeSharedSecret(cs.getIdentity(), sessionConfiguration.getClientsEphPubKey());
-        byte[] salt = sPjNttWj.getSalt();
+        ByteArrayWrapper salt = sPjNttWj.getSalt();
         sessionConfiguration.setServersEphPubKey(sPjNttWj.getPjNtt().defensiveCopy());
         List<Integer> wj = sPjNttWj.getWj();
         // u = XOF(H(pi || pj)) //
-        NttPolynomial uNtt = computeUNtt(protocolConfiguration, engine, randomCustomImple, piNtt.defensiveCopy(), sessionConfiguration.getServersEphPubKey());
+        NttPolynomial uNtt = computeUNtt(protocolConfiguration, randomCustomImple, piNtt.defensiveCopy(), sessionConfiguration.getServersEphPubKey());
         // v = asv + 2ev //
         NttPolynomial vNtt = computeVNttFromANttAndSalt(cs, aNtt, salt);
         // ki = (pj − v)(sv + s1) + uv + 2e1'' //
@@ -101,22 +97,20 @@ public class ClientImple {
         List<Integer> sigmai = IntStream.range(0, n).mapToObj(i -> ding12.robustExtractor(ki.getCoeffs().get(i), wj.get(i))).toList();
         // ski = SHA3-256(sigmai) //
         //System.out.println(sigmai);
-        sessionConfiguration.setSharedSecret(Utils.convertIntegerListToByteArrayAndHashIt(n, engine, sigmai));
+        sessionConfiguration.setSharedSecret(new ByteArrayWrapper(Utils.convertIntegerListToByteArray(sigmai)).hashWrapped());
     }
 
-    private byte[] verifyEntities() throws ServerNotAuthenticatedException, ClientNotAuthenticatedException {
+    private ByteArrayWrapper verifyEntities() throws ServerNotAuthenticatedException, ClientNotAuthenticatedException {
         NttPolynomial piNtt = sessionConfiguration.getClientsEphPubKey();
         NttPolynomial pjNtt = sessionConfiguration.getServersEphPubKey();
-        byte[] ski = sessionConfiguration.getSharedSecret();
+        ByteArrayWrapper ski = sessionConfiguration.getSharedSecret();
         // M1 = SHA3-256(pi || pj || ski) //
-        byte[] m1 = Utils.concatenateTwoByteArraysAndHashThem(engine, piNtt.concatWith(pjNtt).toByteArray(), ski);
+        ByteArrayWrapper m1 = piNtt.concatWith(pjNtt).toByteArrayWrapper().concatWith(ski).hashWrapped();
         // M2 = SHA3-256(pi || M1 || ski) //
-        byte[] m2Prime = server.verifyEntities(m1);
-        byte[] m2 = Utils.concatenateThreeByteArraysAndHash(engine, piNtt.toByteArray(), m1, ski);
+        ByteArrayWrapper m2Prime = server.verifyEntities(m1.defensiveCopy());
+        ByteArrayWrapper m2 = piNtt.toByteArrayWrapper().concatWith(m1).concatWith(ski).hashWrapped();
         // VERIFY that M2 == M2'. If true, return key.
-        ByteArrayWrapper m2Wrapped = new ByteArrayWrapper(m2);
-        ByteArrayWrapper m2PrimeWrapped = new ByteArrayWrapper(m2Prime);
-        if (!m2Wrapped.equals(m2PrimeWrapped)) {
+        if (!m2.equals(m2Prime)) {
             throw new ServerNotAuthenticatedException("M2 does not equal to M2'.");
         }
         return ski;
@@ -128,15 +122,14 @@ public class ClientImple {
         // Create polynomial a from public seed.
         NttPolynomial aNtt = generateUniformPolyNtt(protocolConfiguration, randomCustomImple, publicSeedForA);
         // Generate salt.
-        byte[] salt = new byte[SALTSIZE];
-        randomCustomImple.getRandomBytes(salt);
+        ByteArrayWrapper salt = new ByteArrayWrapper(randomCustomImple, SALTSIZE);
         // Compute v.
         NttPolynomial vNtt = computeVNttFromANttAndSalt(cs, aNtt, salt);
         // Send public seed for a, identity, salt and v in NTT form to the server. //
         server.enrollClient(publicSeedForA, cs.getIdentity(), salt, vNtt);
     }
 
-    public byte[] login(ClientsSecrets cs) throws NotEnrolledClientException, ServerNotAuthenticatedException, ClientNotAuthenticatedException {
+    public ByteArrayWrapper login(ClientsSecrets cs) throws NotEnrolledClientException, ServerNotAuthenticatedException, ClientNotAuthenticatedException {
         // PHASE 1 //
         computeSharedSecret(cs);
         // PHASE 2 //

@@ -1,20 +1,22 @@
 package protocol.client;
 
+import protocol.ByteArrayWrapper;
+
 public class ClientsSecrets {
 
-    private final byte[] identity;
-    private final byte[] password;
+    private final ByteArrayWrapper identity;
+    private final ByteArrayWrapper password;
 
-    public ClientsSecrets(byte[] identity, byte[] password) {
-        this.identity = identity;
-        this.password = password;
+    public ClientsSecrets(ByteArrayWrapper identity, ByteArrayWrapper password) {
+        this.identity = identity.defensiveCopy();
+        this.password = password.defensiveCopy();
     }
 
-    byte[] getIdentity() {
-        return identity;
+    ByteArrayWrapper getIdentity() {
+        return identity.defensiveCopy();
     }
 
-    byte[] getPassword() {
-        return password;
+    ByteArrayWrapper getPassword() {
+        return password.defensiveCopy();
     }
 }

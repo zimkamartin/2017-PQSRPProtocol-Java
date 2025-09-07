@@ -20,19 +20,17 @@ public class ServerImple implements Server {
     private final BigInteger q;
     private final ProtocolConfiguration protocolConfiguration;
     private final RandomCustom randomCustomImple;
-    private final EngineImple engine;
     private final NttImple ntt;
-    private final Ding12Imple magic;
+    private final Ding12Imple ding12;
     private final SessionConfiguration sessionConfiguration = new SessionConfiguration();
 
     public ServerImple(RandomCustom random, int n, BigInteger q, int eta) {
         this.n = n;
         this.q = q;
         this.randomCustomImple = random;
-        this.engine = new EngineImple();
         this.protocolConfiguration = new ProtocolConfiguration(this.n, this.q, eta);
         this.ntt = new NttImple(this.n, this.q);
-        this.magic = new Ding12Imple(this.q);
+        this.ding12 = new Ding12Imple(this.q);
     }
 
     @Override
@@ -41,22 +39,22 @@ public class ServerImple implements Server {
     }
 
     @Override
-    public void enrollClient(byte[] publicSeedForA, byte[] I, byte[] salt, NttPolynomial vNtt) {
-        ServersDatabase.saveClient(new ByteArrayWrapper(I.clone()), new ClientRecord(publicSeedForA.clone(), salt.clone(), vNtt.defensiveCopy()));
+    public void enrollClient(ByteArrayWrapper publicSeedForA, ByteArrayWrapper I, ByteArrayWrapper salt, NttPolynomial vNtt) {
+        ServersDatabase.saveClient(I.defensiveCopy(), new ClientRecord(publicSeedForA.defensiveCopy(), salt.defensiveCopy(), vNtt.defensiveCopy()));
     }
 
     @Override
-    public SaltEphPublicSignal computeSharedSecret(byte[] I, NttPolynomial piNtt) throws NotEnrolledClientException {
-        ByteArrayWrapper wrappedIdentity = new ByteArrayWrapper(I.clone());
+    public SaltEphPublicSignal computeSharedSecret(ByteArrayWrapper I, NttPolynomial piNtt) throws NotEnrolledClientException {
+        I = I.defensiveCopy();
         sessionConfiguration.setClientsEphPubKey(piNtt.defensiveCopy());
         NttPolynomial constantTwoPolyNtt = NttPolynomial.constantTwoNtt(n, q);
         // Extract database. //
-        if (!ServersDatabase.contains(wrappedIdentity)) {
-            throw new NotEnrolledClientException("Identity " + Arrays.toString(I) + " not found in the database.");
+        if (!ServersDatabase.contains(I)) {
+            throw new NotEnrolledClientException("Identity " + Arrays.toString(I.getData()) + " not found in the database.");
         }
-        byte[] publicSeedForA = ServersDatabase.getClient(wrappedIdentity).getPublicSeedForA();
-        NttPolynomial vNtt = ServersDatabase.getClient(wrappedIdentity).getVerifierNtt();
-        byte[] salt = ServersDatabase.getClient(wrappedIdentity).getSalt();
+        ByteArrayWrapper publicSeedForA = ServersDatabase.getClient(I).getPublicSeedForA();
+        NttPolynomial vNtt = ServersDatabase.getClient(I).getVerifierNtt();
+        ByteArrayWrapper salt = ServersDatabase.getClient(I).getSalt();
         // pj = as1' + 2e1' + v //
         // Create polynomial a from public seed.
         NttPolynomial aNtt = generateUniformPolyNtt(protocolConfiguration, randomCustomImple, publicSeedForA);
@@ -69,7 +67,7 @@ public class ServerImple implements Server {
         NttPolynomial pjNtt = summedFstTwoTuples.add(vNtt);
         sessionConfiguration.setServersEphPubKey(pjNtt.defensiveCopy());
         // u = XOF(H(pi || pj)) //
-        NttPolynomial uNtt = computeUNtt(protocolConfiguration, engine, randomCustomImple, piNtt.defensiveCopy(), pjNtt.defensiveCopy());
+        NttPolynomial uNtt = computeUNtt(protocolConfiguration, randomCustomImple, piNtt.defensiveCopy(), pjNtt.defensiveCopy());
         // kj = (v + pi)s1' + uv + 2e1''' //
         // Compute e1'''.
         NttPolynomial e1TriplePrimeNtt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray());
@@ -77,30 +75,28 @@ public class ServerImple implements Server {
         NttPolynomial bracket = vNtt.add(piNtt);
         ClassicalPolynomial kj = multiply3NttTuplesAndAddThemTogether(bracket, s1PrimeNtt, uNtt, vNtt, constantTwoPolyNtt, e1TriplePrimeNtt, ntt.getZetasInvertedArray());
         // wj = Cha(kj) //
-        List<Integer> wj = IntStream.range(0, n).mapToObj(i -> magic.signalFunction(randomCustomImple, kj.getCoeffs().get(i))).toList();
+        List<Integer> wj = IntStream.range(0, n).mapToObj(i -> ding12.signalFunction(randomCustomImple, kj.getCoeffs().get(i))).toList();
         // sigmaj = Mod_2(kj, wj) //
-        List<Integer> sigmaj = IntStream.range(0, n).mapToObj(i -> magic.robustExtractor(kj.getCoeffs().get(i), wj.get(i))).toList();
+        List<Integer> sigmaj = IntStream.range(0, n).mapToObj(i -> ding12.robustExtractor(kj.getCoeffs().get(i), wj.get(i))).toList();
         // skj = SHA3-256(sigmaj) //
         //System.out.println(sigmaj);
-        sessionConfiguration.setSharedSecret(Utils.convertIntegerListToByteArrayAndHashIt(n, engine, sigmaj));
+        sessionConfiguration.setSharedSecret(new ByteArrayWrapper(Utils.convertIntegerListToByteArray(sigmaj)).hashWrapped());
 
-        return new SaltEphPublicSignal(salt.clone(), pjNtt.defensiveCopy(), wj);
+        return new SaltEphPublicSignal(salt.defensiveCopy(), pjNtt.defensiveCopy(), wj);
     }
 
     @Override
-    public byte[] verifyEntities(byte[] m1) throws ClientNotAuthenticatedException {
+    public ByteArrayWrapper verifyEntities(ByteArrayWrapper m1) throws ClientNotAuthenticatedException {
         NttPolynomial piNtt = sessionConfiguration.getClientsEphPubKey();
         NttPolynomial pjNtt = sessionConfiguration.getServersEphPubKey();
-        byte[] skj = sessionConfiguration.getSharedSecret();
+        ByteArrayWrapper skj = sessionConfiguration.getSharedSecret();
         // M1' = SHA3-256(pi || pj || skj) //
-        byte[] m1Prime = Utils.concatenateTwoByteArraysAndHashThem(engine, piNtt.concatWith(pjNtt).toByteArray(), skj);
+        ByteArrayWrapper m1Prime = piNtt.concatWith(pjNtt).toByteArrayWrapper().concatWith(skj).hashWrapped();
         // VERIFY that M1 == M1'. If true, return M2', else return empty byte array.
-        ByteArrayWrapper m1Wrapped = new ByteArrayWrapper(m1);
-        ByteArrayWrapper m1PrimeWrapped = new ByteArrayWrapper(m1Prime);
-        if (!m1Wrapped.equals(m1PrimeWrapped)) {
+        if (!m1.equals(m1Prime)) {
             throw new ClientNotAuthenticatedException("M1 does not equal to M1'.");
         }
         // M2' = SHA3-256(pi || M1' || skj) //
-        return Utils.concatenateThreeByteArraysAndHash(engine, piNtt.toByteArray(), m1Prime, skj);
+        return piNtt.toByteArrayWrapper().concatWith(m1Prime).concatWith(skj).hashWrapped();
     }
 }

@@ -1,5 +1,8 @@
 package protocol;
 
+import org.bouncycastle.crypto.digests.SHA3Digest;
+import protocol.random.RandomCustom;
+
 import java.util.Arrays;
 
 /**
@@ -12,6 +15,11 @@ public class ByteArrayWrapper {
 
     public ByteArrayWrapper(byte[] data) {
         this.data = data.clone();
+    }
+    public ByteArrayWrapper(RandomCustom rc, int numOfBytes) {
+        byte[] saltBA = new byte[numOfBytes];
+        rc.getRandomBytes(saltBA);
+        this.data = saltBA.clone();
     }
 
     public byte[] getData() {
@@ -29,5 +37,32 @@ public class ByteArrayWrapper {
     @Override
     public int hashCode() {
         return Arrays.hashCode(data);
+    }
+
+    public byte[] hash() {
+        byte[] hash = new byte[32];
+        SHA3Digest sha3Digest256 = new SHA3Digest(256);
+        sha3Digest256.update(data, 0, data.length);
+        sha3Digest256.doFinal(hash, 0);
+        return hash;
+    }
+
+    public ByteArrayWrapper hashWrapped() {
+        return new ByteArrayWrapper(this.hash());
+    }
+
+    /**
+     * @param b - ByteArrayWrapper object which data will be concatenated to this ByteArrayWrapper object
+     * @return new ByteArrayWrapper which data will be concatenation this || b
+     */
+    public ByteArrayWrapper concatWith(ByteArrayWrapper b) {
+        byte[] result = new byte[this.data.length + b.getData().length];
+        System.arraycopy(this.data, 0, result, 0, this.data.length);
+        System.arraycopy(b.getData(), 0, result, this.data.length, b.getData().length);
+        return new ByteArrayWrapper(result);
+    }
+
+    public ByteArrayWrapper defensiveCopy() {
+        return new ByteArrayWrapper(this.data.clone());
     }
 }

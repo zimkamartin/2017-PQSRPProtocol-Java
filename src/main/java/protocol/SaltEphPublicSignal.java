@@ -13,7 +13,7 @@ public class SaltEphPublicSignal {
     /**
      * Used on client's side when computing seed1.
      */
-    private final byte[] salt;
+    private final ByteArrayWrapper salt;
     /**
      * Polynomial representing server's ephemeral public key in NTT form.
      */
@@ -23,14 +23,14 @@ public class SaltEphPublicSignal {
      */
     private final List<Integer> wj;
 
-    public SaltEphPublicSignal(byte[] salt, NttPolynomial pjNtt, List<Integer> wj) {
-        this.salt = salt;
+    public SaltEphPublicSignal(ByteArrayWrapper salt, NttPolynomial pjNtt, List<Integer> wj) {
+        this.salt = salt.defensiveCopy();
         this.pjNtt = pjNtt.defensiveCopy();
         this.wj = List.copyOf(wj);
     }
 
-    public byte[] getSalt() {
-        return salt;
+    public ByteArrayWrapper getSalt() {
+        return salt.defensiveCopy();
     }
 
     public NttPolynomial getPjNtt() {
