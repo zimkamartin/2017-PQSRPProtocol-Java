@@ -5,10 +5,6 @@ import protocol.SaltEphPublicSignal;
 import protocol.exceptions.ClientNotAuthenticatedException;
 import protocol.exceptions.NotEnrolledClientException;
 import protocol.polynomial.NttPolynomial;
-import protocol.polynomial.Polynomial;
-
-import java.math.BigInteger;
-import java.util.List;
 
 /**
  * Server from https://eprint.iacr.org/2017/1196.pdf

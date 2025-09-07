@@ -1,7 +1,6 @@
 package protocol.server;
 
 import protocol.polynomial.NttPolynomial;
-import protocol.polynomial.Polynomial;
 
 public class ClientRecord {
 

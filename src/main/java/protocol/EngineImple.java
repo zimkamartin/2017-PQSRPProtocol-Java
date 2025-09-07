@@ -1,8 +1,6 @@
 package protocol;
 
 import org.bouncycastle.crypto.digests.SHA3Digest;
-import org.bouncycastle.crypto.digests.SHAKEDigest;
-import protocol.random.RandomCustom;
 
 /**
  * Represents engine of the protocol, so all functions that must have some internal state during the run of the protocol.
