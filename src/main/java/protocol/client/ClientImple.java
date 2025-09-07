@@ -7,13 +7,10 @@ import protocol.exceptions.ServerNotAuthenticatedException;
 import protocol.polynomial.ClassicalPolynomial;
 import protocol.polynomial.NttImple;
 import protocol.polynomial.NttPolynomial;
-import protocol.polynomial.Polynomial;
 import protocol.random.RandomCustom;
 import protocol.server.Server;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -26,12 +23,11 @@ public class ClientImple {
 
     private final Server server;
     private final ProtocolConfiguration protocolConfiguration;
+    private final RandomCustom randomCustomImple;
     private final int n;
     private final BigInteger q;
-    private final int eta;
     private final byte[] publicSeedForA = new byte[PUBLICSEEDFORASIZE];
     private final EngineImple engine;
-    private final MlkemImple mlkem;
     private final NttImple ntt;
     private final Ding12Imple ding12;
     private final SessionConfiguration sessionConfiguration = new SessionConfiguration();
@@ -41,10 +37,9 @@ public class ClientImple {
         this.protocolConfiguration = server.getProtocolConfiguration();
         this.n = this.protocolConfiguration.getN();
         this.q = this.protocolConfiguration.getQ();
-        this.eta = this.protocolConfiguration.getEta();
-        this.engine = new EngineImple(random);
-        this.engine.getRandomBytes(this.publicSeedForA);
-        this.mlkem = new MlkemImple(this.n, this.q);
+        this.randomCustomImple = random;
+        this.randomCustomImple.getRandomBytes(this.publicSeedForA);
+        this.engine = new EngineImple();
         this.ntt = new NttImple(this.n, this.q);
         this.ding12 = new Ding12Imple(this.q);
     }
@@ -64,26 +59,22 @@ public class ClientImple {
         byte[] seed2 = new byte[32];
         engine.hash(seed2, seed1);
         // Based on seeds (computed from private values) generate sv, ev.
-        List<BigInteger> svCoeffs = new ArrayList<>(Collections.nCopies(n, null));
-        List<BigInteger> evCoeffs = new ArrayList<>(Collections.nCopies(n, null));
-        getEtaNoise(protocolConfiguration, mlkem, engine, svCoeffs, seed1);
-        getEtaNoise(protocolConfiguration, mlkem, engine, evCoeffs, seed2);
-        NttPolynomial svNtt = new NttPolynomial(List.copyOf(svCoeffs), ntt.getZetasArray(), q);
-        NttPolynomial evNtt = new NttPolynomial(List.copyOf(evCoeffs), ntt.getZetasArray(), q);
+        NttPolynomial svNtt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray(), seed1);
+        NttPolynomial evNtt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray(), seed2);
         // Do all the math.
         NttPolynomial constantTwoPolyNtt = NttPolynomial.constantTwoNtt(n, q);
-        return multiply2NttTuplesAddThemTogetherNtt(aNtt, svNtt, constantTwoPolyNtt, evNtt);
+        return multiply2NttTuplesAddThemTogetherNtt(aNtt.defensiveCopy(), svNtt, constantTwoPolyNtt, evNtt);
     }
 
     private void computeSharedSecret(ClientsSecrets cs) throws NotEnrolledClientException {
         NttPolynomial constantTwoPolyNtt = NttPolynomial.constantTwoNtt(n, q);
         // pi = as1 + 2e1 //
         // Create polynomial a from public seed.
-        NttPolynomial aNtt = generateUniformPolyNtt(protocolConfiguration, mlkem, engine, publicSeedForA);
+        NttPolynomial aNtt = generateUniformPolyNtt(protocolConfiguration, randomCustomImple, publicSeedForA);
         // Compute s1.
-        NttPolynomial s1Ntt = generateRandomErrorPolyNtt(protocolConfiguration, mlkem, engine, ntt.getZetasArray());
+        NttPolynomial s1Ntt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray());
         // Compute e1.
-        NttPolynomial e1Ntt = generateRandomErrorPolyNtt(protocolConfiguration, mlkem, engine, ntt.getZetasArray());
+        NttPolynomial e1Ntt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray());
         // Do all the math.
         NttPolynomial piNtt = multiply2NttTuplesAddThemTogetherNtt(aNtt, s1Ntt, constantTwoPolyNtt, e1Ntt);
         sessionConfiguration.setClientsEphPubKey(piNtt.defensiveCopy());
@@ -94,16 +85,14 @@ public class ClientImple {
         sessionConfiguration.setServersEphPubKey(sPjNttWj.getPjNtt().defensiveCopy());
         List<Integer> wj = sPjNttWj.getWj();
         // u = XOF(H(pi || pj)) //
-        NttPolynomial uNtt = computeUNtt(protocolConfiguration, engine, mlkem, piNtt, sessionConfiguration.getServersEphPubKey());
+        NttPolynomial uNtt = computeUNtt(protocolConfiguration, engine, randomCustomImple, piNtt.defensiveCopy(), sessionConfiguration.getServersEphPubKey());
         // v = asv + 2ev //
         NttPolynomial vNtt = computeVNttFromANttAndSalt(cs, aNtt, salt);
         // ki = (pj − v)(sv + s1) + uv + 2e1'' //
         // Compute e1''.
-        NttPolynomial e1DoublePrimeNtt = generateRandomErrorPolyNtt(protocolConfiguration, mlkem, engine, ntt.getZetasArray());
+        NttPolynomial e1DoublePrimeNtt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray());
         // Compute sv.
-        List<BigInteger> svCoeffs = new ArrayList<>(Collections.nCopies(n, null));
-        getEtaNoise(protocolConfiguration, mlkem, engine, svCoeffs, computeSeed1(cs, salt));
-        NttPolynomial svNtt = new NttPolynomial(List.copyOf(svCoeffs), ntt.getZetasArray(), q);
+        NttPolynomial svNtt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray(), computeSeed1(cs, salt));
         // Do all the math.
         NttPolynomial fstBracket = sessionConfiguration.getServersEphPubKey().subtract(vNtt);
         NttPolynomial sndBracket = svNtt.add(s1Ntt);
@@ -137,10 +126,10 @@ public class ClientImple {
         // PHASE 0 //
         // v = asv + 2ev //
         // Create polynomial a from public seed.
-        NttPolynomial aNtt = generateUniformPolyNtt(protocolConfiguration, mlkem, engine, publicSeedForA);
+        NttPolynomial aNtt = generateUniformPolyNtt(protocolConfiguration, randomCustomImple, publicSeedForA);
         // Generate salt.
         byte[] salt = new byte[SALTSIZE];
-        engine.getRandomBytes(salt);
+        randomCustomImple.getRandomBytes(salt);
         // Compute v.
         NttPolynomial vNtt = computeVNttFromANttAndSalt(cs, aNtt, salt);
         // Send public seed for a, identity, salt and v in NTT form to the server. //

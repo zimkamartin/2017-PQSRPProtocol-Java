@@ -1,7 +1,10 @@
-package protocol;
+package protocol.random;
+
+import org.bouncycastle.crypto.digests.SHAKEDigest;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.List;
 
@@ -9,28 +12,44 @@ import static java.math.RoundingMode.CEILING;
 import static java.math.RoundingMode.HALF_UP;
 
 /**
- * Extracted (and modified) all needed functions from MLKEM.
- * <p>
- * Functions are modified so they can dynamically adapt to different N, Q, ETA.
- * However, their building blocks are heavily inspired by
+ * Building blocks of functions generateUniformCoefficients and generateCbdCoefficients are heavily inspired by
  * https://github.com/bcgit/bc-java/blob/main/core/src/main/java/org/bouncycastle/pqc/crypto/mlkem/MLKEMIndCpa.java
  * and
  * https://github.com/bcgit/bc-java/blob/main/core/src/main/java/org/bouncycastle/pqc/crypto/mlkem/CBD.java
- * </p>
  */
-public class MlkemImple {
+public class RandomCustomImple implements RandomCustom {
 
     private final int n;
     private final BigInteger q;
-    private final int unifNeededNumOfBytes;
-    private final BigInteger unifMask;  // used when sampling coefficient for Uniform distribution
+    private final int eta;
 
-    public MlkemImple(int n, BigInteger q) {
+    private static final SHAKEDigest xof = new SHAKEDigest(128);  // XOF defined in protocol && XOF used in BC for public a (uniform distribution) from seed ~> speed > security
+    private static final int XOFBLOCKBYTES = xof.getByteLength();  // shall be 168
+
+    private static final SecureRandom secureRandom = new SecureRandom();  // when truly random data are needed
+    private final SHAKEDigest prf = new SHAKEDigest(256);  // PRF for sampling error poly from seed ~> security > speed
+
+    // variables used in uniform distribution:
+    private final int unifNeededNumOfBytes;
+    private final BigInteger unifMask;
+
+    public RandomCustomImple(int n, BigInteger q, int eta) {
         this.n = n;
         this.q = q;
+        this.eta = eta;
         int unifNeededNumOfBits = this.q.subtract(BigInteger.ONE).bitLength();  // the number of needed bits for generating 1 coefficient by Uniform distribution
         this.unifNeededNumOfBytes = (unifNeededNumOfBits + 7) / 8;
         this.unifMask = BigInteger.ONE.shiftLeft(unifNeededNumOfBits).subtract(BigInteger.ONE);
+    }
+
+    @Override
+    public void getRandomBytes(byte[] bytes) {
+        secureRandom.nextBytes(bytes);
+    }
+
+    @Override
+    public int getRandomBit(int bound) {
+        return secureRandom.nextInt(bound);
     }
 
     private int rejectionSampling(List<BigInteger> outputBuffer, int coeffOff, int len, byte[] inpBuf, int inpBufLen) {
@@ -57,31 +76,28 @@ public class MlkemImple {
      * where xBB is xofBlockBytes.
      * </p>
      */
-    private int getKyberGenerateMatrixNBlocks(EngineImple e) {
+    private int computeKyberGenerateMatrixNBlocks() {
         BigDecimal numerator = BigDecimal.valueOf(n)
                 .multiply(BigDecimal.valueOf(unifNeededNumOfBytes))
                 .multiply(new BigDecimal(unifMask));
         BigDecimal denominator = new BigDecimal(q.subtract(BigInteger.ONE));
         BigDecimal fraction = numerator.divide(denominator, 11, HALF_UP);  // choose precision, currently set to 11 decimal places
         BigDecimal result = fraction
-                .add(BigDecimal.valueOf(e.getXofBlockBytes()))
-                .divide(BigDecimal.valueOf(e.getXofBlockBytes()), 11, HALF_UP);
+                .add(BigDecimal.valueOf(XOFBLOCKBYTES))
+                .divide(BigDecimal.valueOf(XOFBLOCKBYTES), 11, HALF_UP);
         return result.setScale(0, CEILING).intValueExact();  // = the closest needed higher amount of xBB to generate for sampling
     }
 
-    /**
-     * @param e - engine where XOF is implemented
-     * @param out - polynomial that will be filled by Ntt representation of a polynomial whose coefficients are sampled from a uniform distribution
-     * @param seed - XOF will be seeded by this. Output should be uniform and then sampled to out
-     */
-    public void generateUniformCoeffsNtt(EngineImple e, List<BigInteger> out, byte[] seed) {
-        int KyberGenerateMatrixNBlocks = getKyberGenerateMatrixNBlocks(e);
+    @Override
+    public void generateUniformCoefficients(List<BigInteger> out, byte[] seed) {
+        int KyberGenerateMatrixNBlocks = computeKyberGenerateMatrixNBlocks();
 
         int k, ctr, off;
-        int buflen = KyberGenerateMatrixNBlocks * e.getXofBlockBytes();
+        int buflen = KyberGenerateMatrixNBlocks * XOFBLOCKBYTES;
         byte[] buf = new byte[buflen];
-        e.xofAbsorb(seed);
-        e.xofSqueezeBlocks(buf, 0, buflen);
+        xof.reset();
+        xof.update(seed, 0, seed.length);
+        xof.doOutput(buf, 0, buflen);
 
         ctr = rejectionSampling(out, 0, n, buf, buflen);  // number of sampled coefficients
 
@@ -90,7 +106,7 @@ public class MlkemImple {
             for (k = 0; k < off; k++) {  // move unused bytes to the beginning of the buf
                 buf[k] = buf[buflen - off + k];
             }
-            e.xofSqueezeBlocks(buf, off, buflen - off);  // fill the rest of buf
+            xof.doOutput(buf, off, buflen - off);  // fill the rest of buf
             ctr += rejectionSampling(out, ctr, n - ctr, buf, buflen);
         }
     }
@@ -102,12 +118,12 @@ public class MlkemImple {
         return Integer.bitCount(shifted & mask);  // add to a number of bits 1 in masked result
     }
 
-    /**
-     * @param out - polynomial that will have coefficients sampled from a centered binomial distribution
-     * @param bytes - input from which coefficients will be sampled from
-     * @param eta - each coefficient will be from -eta to eta (both inclusive)
-     */
-    public void generateCbdCoeffs(List<BigInteger> out, byte[] bytes, int eta) {
+    @Override
+    public void generateCbdCoefficients(List<BigInteger> out, byte[] seed) {
+        byte[] buf = new byte[(int) Math.ceil((n * 2.0 * eta) / 8.0)];
+        prf.update(seed, 0, seed.length);
+        prf.doFinal(buf, 0, buf.length);
+
         int bitIndex = 0;
         int byteIndex = 0;
         for (int i = 0; i < n; i++) {
@@ -116,7 +132,7 @@ public class MlkemImple {
             int count = 0;  // how many bits do I already have?
             while (count < eta) {
                 int m = Math.min(eta - count, 8 - bitIndex);  // how many bits will we take from the byte
-                a += bitCountOfMUnusedBits(bytes, byteIndex, bitIndex, m);  // add to a number of bits 1 in masked result
+                a += bitCountOfMUnusedBits(buf, byteIndex, bitIndex, m);  // add to a number of bits 1 in masked result
                 count += m;  // update number of bits that we already have
                 byteIndex += (bitIndex + m == 8) ? 1 : 0;  // change byte and bit index accordingly
                 bitIndex = (bitIndex + m) % 8;
@@ -124,7 +140,7 @@ public class MlkemImple {
             count = 0;
             while (count < eta) {
                 int m = Math.min(eta - count, 8 - bitIndex);  // how many bits will we take from the byte
-                b += bitCountOfMUnusedBits(bytes, byteIndex, bitIndex, m);  // add to a number of bits 1 in masked result
+                b += bitCountOfMUnusedBits(buf, byteIndex, bitIndex, m);  // add to a number of bits 1 in masked result
                 count += m;  // update number of bits that we already have
                 byteIndex += (bitIndex + m == 8) ? 1 : 0;  // change byte and bit index accordingly
                 bitIndex = (bitIndex + m) % 8;

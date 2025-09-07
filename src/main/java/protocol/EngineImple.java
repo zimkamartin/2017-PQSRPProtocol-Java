@@ -4,8 +4,6 @@ import org.bouncycastle.crypto.digests.SHA3Digest;
 import org.bouncycastle.crypto.digests.SHAKEDigest;
 import protocol.random.RandomCustom;
 
-import java.util.Random;
-
 /**
  * Represents engine of the protocol, so all functions that must have some internal state during the run of the protocol.
  * <p>
@@ -18,39 +16,9 @@ import java.util.Random;
  * </p>
  */
 public class EngineImple {
-    private static final int XOFBLOCKBYTES = 168;
-    private final SHAKEDigest xof = new SHAKEDigest(128);
-    private final SHA3Digest sha3Digest256 = new SHA3Digest(256);
-    private final SHAKEDigest shakeDigest = new SHAKEDigest(256);
-    private final RandomCustom random;
+    private final SHA3Digest sha3Digest256 = new SHA3Digest(256);  // defined in protocol
 
-    public EngineImple(RandomCustom random) {
-        this.random = random;
-    }
-
-    /**
-     * @return the output block size of the underlying XOF (SHAKE128), in bytes
-     */
-    public int getXofBlockBytes() {
-        return XOFBLOCKBYTES;
-    }
-
-    /**
-     * @param seed - used for seeding XOF (SHAKE128)
-     */
-    public void xofAbsorb(byte[] seed) {
-        xof.reset();
-        xof.update(seed, 0, seed.length);
-    }
-
-    /**
-     * @param out - byte array where hash will be squeezed to
-     * @param outOffset - position from which hash will be squeezed to
-     * @param outLen - how many bytes to squeeze
-     */
-    public void xofSqueezeBlocks(byte[] out, int outOffset, int outLen) {
-        xof.doOutput(out, outOffset, outLen);
-    }
+    public EngineImple() {}
 
     /**
      * @param out - byte array where hashed will be put
@@ -59,28 +27,5 @@ public class EngineImple {
     public void hash(byte[] out, byte[] in) {
         sha3Digest256.update(in, 0, in.length);
         sha3Digest256.doFinal(out, 0);
-    }
-
-    /**
-     * @param out - byte array where the output from pseudo-random function will be put
-     * @param seed - seed for the pseudo-random function (SHAKE256)
-     */
-    public void prf(byte[] out, byte[] seed) {
-        shakeDigest.update(seed, 0, seed.length);
-        shakeDigest.doFinal(out, 0, out.length);
-    }
-
-    /**
-     * @param buf - byte array which will be filed by random bytes
-     */
-    public void getRandomBytes(byte[] buf) {
-        random.nextBytes(buf);
-    }
-
-    /**
-     * @return random bit
-     */
-    public int getRandomBit() {
-        return random.nextInt(2);
     }
 }

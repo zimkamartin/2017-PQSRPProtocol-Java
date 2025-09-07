@@ -1,5 +1,7 @@
 package protocol;
 
+import protocol.random.RandomCustom;
+
 import java.math.BigInteger;
 
 /**
@@ -27,8 +29,8 @@ public class Ding12Imple {
         return (x.compareTo(leftBound) >= 0 && x.compareTo(rightBound) <= 0) ? 0 : 1;
     }
 
-    public int signalFunction(EngineImple e, BigInteger y) {
-        int b = e.getRandomBit();
+    public int signalFunction(RandomCustom rc, BigInteger y) {
+        int b = rc.getRandomBit(2);
         return hintFunction(y, b);
     }
 

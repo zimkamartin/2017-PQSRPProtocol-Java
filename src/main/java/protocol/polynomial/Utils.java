@@ -1,8 +1,8 @@
 package protocol.polynomial;
 
 import protocol.EngineImple;
-import protocol.MlkemImple;
 import protocol.ProtocolConfiguration;
+import protocol.random.RandomCustom;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -35,32 +35,30 @@ public final class Utils {
         return new ClassicalPolynomial(addedFstTwo.add(ef), List.copyOf(zetasInverted));
     }
 
-    public static void getEtaNoise(ProtocolConfiguration pp, MlkemImple mlkem, EngineImple engine, List<BigInteger> r, byte[] seed) {
-        byte[] buf = new byte[(int) Math.ceil((pp.getN() * 2.0 * pp.getEta()) / 8.0)];
-        engine.prf(buf, seed);
-        mlkem.generateCbdCoeffs(r, buf, pp.getEta());
-    }
-
-    public static NttPolynomial generateRandomErrorPolyNtt(ProtocolConfiguration pc, MlkemImple mlkem, EngineImple engine, List<BigInteger> zetas) {
+    public static NttPolynomial generateRandomErrorPolyNtt(ProtocolConfiguration pc, RandomCustom rc, List<BigInteger> zetas, byte[] seed) {
         List<BigInteger> eCoeffs = new ArrayList<>(Collections.nCopies(pc.getN(), null));
-        byte[] eRandomSeed = new byte[34];
-        engine.getRandomBytes(eRandomSeed);
-        getEtaNoise(pc, mlkem, engine, eCoeffs, eRandomSeed);
+        rc.generateCbdCoefficients(eCoeffs, seed.clone());
         return new NttPolynomial(List.copyOf(eCoeffs), List.copyOf(zetas), pc.getQ());
     }
 
-    public static NttPolynomial generateUniformPolyNtt(ProtocolConfiguration pc, MlkemImple mlkem, EngineImple engine, byte[] seed) {
+    public static NttPolynomial generateRandomErrorPolyNtt(ProtocolConfiguration pc, RandomCustom rc, List<BigInteger> zetas) {
+        byte[] eRandomSeed = new byte[34];
+        rc.getRandomBytes(eRandomSeed);
+        return generateRandomErrorPolyNtt(pc, rc, List.copyOf(zetas), eRandomSeed);
+    }
+
+    public static NttPolynomial generateUniformPolyNtt(ProtocolConfiguration pc, RandomCustom rc, byte[] seed) {
         List<BigInteger> coeffs = new ArrayList<>(Collections.nCopies(pc.getN(), null));
-        mlkem.generateUniformCoeffsNtt(engine, coeffs, seed.clone());
-        return new NttPolynomial(coeffs, pc.getQ());
+        rc.generateUniformCoefficients(coeffs, seed.clone());
+        return new NttPolynomial(List.copyOf(coeffs), pc.getQ());
     }
 
     /**
      * u = XOF(H(pi || pj))
      */
-    public static NttPolynomial computeUNtt(ProtocolConfiguration pc, EngineImple engine, MlkemImple mlkem, NttPolynomial pi, NttPolynomial pj) {
+    public static NttPolynomial computeUNtt(ProtocolConfiguration pc, EngineImple engine, RandomCustom rc, NttPolynomial pi, NttPolynomial pj) {
         byte[] seed = new byte[32];
         engine.hash(seed, pi.concatWith(pj).toByteArray());
-        return generateUniformPolyNtt(pc, mlkem, engine, seed);
+        return generateUniformPolyNtt(pc, rc, seed);
     }
 }

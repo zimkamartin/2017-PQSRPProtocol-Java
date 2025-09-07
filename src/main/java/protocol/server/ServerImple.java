@@ -3,11 +3,9 @@ package protocol.server;
 import protocol.*;
 import protocol.exceptions.ClientNotAuthenticatedException;
 import protocol.exceptions.NotEnrolledClientException;
-import protocol.MlkemImple;
 import protocol.polynomial.ClassicalPolynomial;
 import protocol.polynomial.NttImple;
 import protocol.polynomial.NttPolynomial;
-import protocol.polynomial.Polynomial;
 import protocol.random.RandomCustom;
 
 import java.math.BigInteger;
@@ -20,10 +18,9 @@ public class ServerImple implements Server {
 
     private final int n;
     private final BigInteger q;
-    private final int eta;
     private final ProtocolConfiguration protocolConfiguration;
+    private final RandomCustom randomCustomImple;
     private final EngineImple engine;
-    private final MlkemImple mlkem;
     private final NttImple ntt;
     private final Ding12Imple magic;
     private final SessionConfiguration sessionConfiguration = new SessionConfiguration();
@@ -31,10 +28,9 @@ public class ServerImple implements Server {
     public ServerImple(RandomCustom random, int n, BigInteger q, int eta) {
         this.n = n;
         this.q = q;
-        this.eta = eta;
-        this.engine = new EngineImple(random);
-        this.protocolConfiguration = new ProtocolConfiguration(this.n, this.q, this.eta);
-        this.mlkem = new MlkemImple(this.n, this.q);
+        this.randomCustomImple = random;
+        this.engine = new EngineImple();
+        this.protocolConfiguration = new ProtocolConfiguration(this.n, this.q, eta);
         this.ntt = new NttImple(this.n, this.q);
         this.magic = new Ding12Imple(this.q);
     }
@@ -63,25 +59,25 @@ public class ServerImple implements Server {
         byte[] salt = ServersDatabase.getClient(wrappedIdentity).getSalt();
         // pj = as1' + 2e1' + v //
         // Create polynomial a from public seed.
-        NttPolynomial aNtt = generateUniformPolyNtt(protocolConfiguration, mlkem, engine, publicSeedForA);
+        NttPolynomial aNtt = generateUniformPolyNtt(protocolConfiguration, randomCustomImple, publicSeedForA);
         // Compute s1'.
-        NttPolynomial s1PrimeNtt = generateRandomErrorPolyNtt(protocolConfiguration, mlkem, engine, ntt.getZetasArray());
+        NttPolynomial s1PrimeNtt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray());
         // Compute e1'.
-        NttPolynomial e1PrimeNtt = generateRandomErrorPolyNtt(protocolConfiguration, mlkem, engine, ntt.getZetasArray());
+        NttPolynomial e1PrimeNtt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray());
         // Do all the math.
         NttPolynomial summedFstTwoTuples = multiply2NttTuplesAddThemTogetherNtt(aNtt, s1PrimeNtt, constantTwoPolyNtt, e1PrimeNtt);
         NttPolynomial pjNtt = summedFstTwoTuples.add(vNtt);
         sessionConfiguration.setServersEphPubKey(pjNtt.defensiveCopy());
         // u = XOF(H(pi || pj)) //
-        NttPolynomial uNtt = computeUNtt(protocolConfiguration, engine, mlkem, piNtt, pjNtt);
+        NttPolynomial uNtt = computeUNtt(protocolConfiguration, engine, randomCustomImple, piNtt.defensiveCopy(), pjNtt.defensiveCopy());
         // kj = (v + pi)s1' + uv + 2e1''' //
         // Compute e1'''.
-        NttPolynomial e1TriplePrimeNtt = generateRandomErrorPolyNtt(protocolConfiguration, mlkem, engine, ntt.getZetasArray());
+        NttPolynomial e1TriplePrimeNtt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray());
         // Do all the math.
         NttPolynomial bracket = vNtt.add(piNtt);
         ClassicalPolynomial kj = multiply3NttTuplesAndAddThemTogether(bracket, s1PrimeNtt, uNtt, vNtt, constantTwoPolyNtt, e1TriplePrimeNtt, ntt.getZetasInvertedArray());
         // wj = Cha(kj) //
-        List<Integer> wj = IntStream.range(0, n).mapToObj(i -> magic.signalFunction(engine, kj.getCoeffs().get(i))).toList();
+        List<Integer> wj = IntStream.range(0, n).mapToObj(i -> magic.signalFunction(randomCustomImple, kj.getCoeffs().get(i))).toList();
         // sigmaj = Mod_2(kj, wj) //
         List<Integer> sigmaj = IntStream.range(0, n).mapToObj(i -> magic.robustExtractor(kj.getCoeffs().get(i), wj.get(i))).toList();
         // skj = SHA3-256(sigmaj) //
