@@ -24,16 +24,15 @@ public class ClientImple {
     private final Server server;
     private final ProtocolConfiguration protocolConfiguration;
     private final RandomCustom randomCustomImple;
-    private final int n;
+    private final int n;  // mozno n a q vytiahnut do maleho objektu aj s metodou porovnavania
     private final BigInteger q;
     private final ByteArrayWrapper publicSeedForA;
     private final NttImple ntt;
     private final Ding12Imple ding12;
-    private final SessionConfiguration sessionConfiguration = new SessionConfiguration();
 
     public ClientImple(RandomCustom random, Server server) {
         this.server = server;
-        this.protocolConfiguration = server.getProtocolConfiguration();
+        this.protocolConfiguration = server.getProtocolConfiguration();  // do buducnosti na toto zabudnem, iba si z toho vytiahnem n, q a etu. Do polynomov budem davat PolynomialConfig, ktory obsahuje n, q, zeta / zetaInverted
         this.n = this.protocolConfiguration.getN();
         this.q = this.protocolConfiguration.getQ();
         this.randomCustomImple = random;
@@ -62,7 +61,7 @@ public class ClientImple {
         return multiply2NttTuplesAddThemTogetherNtt(aNtt.defensiveCopy(), svNtt, constantTwoPolyNtt, evNtt);
     }
 
-    private void computeSharedSecret(ClientsKnowledge ck) throws NotEnrolledClientException {
+    private SessionConfigurationClient computeSharedSecret(ClientsKnowledge ck) throws NotEnrolledClientException {
         NttPolynomial constantTwoPolyNtt = NttPolynomial.constantTwoNtt(n, q);
         // pi = as1 + 2e1 //
         // Create polynomial a from public seed.
@@ -73,15 +72,14 @@ public class ClientImple {
         NttPolynomial e1Ntt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray());
         // Do all the math.
         NttPolynomial piNtt = multiply2NttTuplesAddThemTogetherNtt(aNtt, s1Ntt, constantTwoPolyNtt, e1Ntt);
-        sessionConfiguration.setClientsEphPubKey(piNtt.defensiveCopy());
         // Send identity and ephemeral public key pi in NTT form to the server. //
         // Receive salt, ephemeral public key pj in NTT form and wj. //
-        SaltEphPublicSignal sPjNttWj = server.computeSharedSecret(ck.getIdentity(), sessionConfiguration.getClientsEphPubKey());
-        ByteArrayWrapper salt = sPjNttWj.getSalt();
-        sessionConfiguration.setServersEphPubKey(sPjNttWj.getPjNtt().defensiveCopy());
-        List<Integer> wj = sPjNttWj.getWj();
+        ServersResponseScs serversResponseScs = server.computeSharedSecret(ck.getIdentity(), piNtt.defensiveCopy());
+        ByteArrayWrapper salt = serversResponseScs.getSalt();
+        NttPolynomial pjNtt = serversResponseScs.getPjNtt();
+        List<Integer> wj = serversResponseScs.getWj();
         // u = XOF(H(pi || pj)) //
-        NttPolynomial uNtt = computeUNtt(protocolConfiguration, randomCustomImple, piNtt.defensiveCopy(), sessionConfiguration.getServersEphPubKey());
+        NttPolynomial uNtt = computeUNtt(protocolConfiguration, randomCustomImple, piNtt.defensiveCopy(), pjNtt.defensiveCopy());
         // v = asv + 2ev //
         NttPolynomial vNtt = computeVNttFromANttAndSalt(ck, aNtt, salt);
         // ki = (pj − v)(sv + s1) + uv + 2e1'' //
@@ -90,24 +88,25 @@ public class ClientImple {
         // Compute sv.
         NttPolynomial svNtt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray(), computeSeed1(ck, salt));
         // Do all the math.
-        NttPolynomial fstBracket = sessionConfiguration.getServersEphPubKey().subtract(vNtt);
+        NttPolynomial fstBracket = pjNtt.subtract(vNtt);
         NttPolynomial sndBracket = svNtt.add(s1Ntt);
         ClassicalPolynomial ki = multiply3NttTuplesAndAddThemTogether(fstBracket, sndBracket, uNtt, vNtt, constantTwoPolyNtt, e1DoublePrimeNtt, ntt.getZetasInvertedArray());
         // sigmai = Mod_2(ki, wj) //
         List<Integer> sigmai = IntStream.range(0, n).mapToObj(i -> ding12.robustExtractor(ki.getCoeffs().get(i), wj.get(i))).toList();
         // ski = SHA3-256(sigmai) //
         //System.out.println(sigmai);
-        sessionConfiguration.setSharedSecret(new ByteArrayWrapper(Utils.convertIntegerListToByteArray(sigmai)).hashWrapped());
+        ByteArrayWrapper ski = new ByteArrayWrapper(Utils.convertIntegerListToByteArray(sigmai)).hashWrapped();  // TODO zmazat tuto utilku, dat to ako konstruktor do ByteArrayWrapper
+        return new SessionConfigurationClient(piNtt.defensiveCopy(), pjNtt.defensiveCopy(), ski, serversResponseScs.getScs());
     }
 
-    private ByteArrayWrapper verifyEntities() throws ServerNotAuthenticatedException, ClientNotAuthenticatedException {
-        NttPolynomial piNtt = sessionConfiguration.getClientsEphPubKey();
-        NttPolynomial pjNtt = sessionConfiguration.getServersEphPubKey();
-        ByteArrayWrapper ski = sessionConfiguration.getSharedSecret();
+    private ByteArrayWrapper verifyEntities(SessionConfigurationClient scs) throws ServerNotAuthenticatedException, ClientNotAuthenticatedException {
+        NttPolynomial piNtt = scs.getClientsEphPubKey();
+        NttPolynomial pjNtt = scs.getServersEphPubKey();
+        ByteArrayWrapper ski = scs.getSharedSecret();
         // M1 = SHA3-256(pi || pj || ski) //
         ByteArrayWrapper m1 = piNtt.concatWith(pjNtt).toByteArrayWrapper().concatWith(ski).hashWrapped();
         // M2 = SHA3-256(pi || M1 || ski) //
-        ByteArrayWrapper m2Prime = server.verifyEntities(m1.defensiveCopy());
+        ByteArrayWrapper m2Prime = server.verifyEntities(scs.getServersSessionConfiguration(), m1.defensiveCopy());
         ByteArrayWrapper m2 = piNtt.toByteArrayWrapper().concatWith(m1).concatWith(ski).hashWrapped();
         // VERIFY that M2 == M2'. If true, return key.
         if (!m2.equals(m2Prime)) {
@@ -131,8 +130,9 @@ public class ClientImple {
 
     public ByteArrayWrapper login(ClientsKnowledge ck) throws NotEnrolledClientException, ServerNotAuthenticatedException, ClientNotAuthenticatedException {
         // PHASE 1 //
-        computeSharedSecret(ck);
+        SessionConfigurationClient scc = computeSharedSecret(ck);
         // PHASE 2 //
-        return verifyEntities();
+        return verifyEntities(scc);
+        // FOR THE FUTURE: Pripadne vratit loginResponse
     }
 }

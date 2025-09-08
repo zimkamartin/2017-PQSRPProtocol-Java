@@ -22,7 +22,6 @@ public class ServerImple implements Server {
     private final RandomCustom randomCustomImple;
     private final NttImple ntt;
     private final Ding12Imple ding12;
-    private final SessionConfiguration sessionConfiguration = new SessionConfiguration();
 
     public ServerImple(RandomCustom random, int n, BigInteger q, int eta) {
         this.n = n;
@@ -44,9 +43,8 @@ public class ServerImple implements Server {
     }
 
     @Override
-    public SaltEphPublicSignal computeSharedSecret(ByteArrayWrapper I, NttPolynomial piNtt) throws NotEnrolledClientException {
+    public ServersResponseScs computeSharedSecret(ByteArrayWrapper I, NttPolynomial piNtt) throws NotEnrolledClientException {
         I = I.defensiveCopy();
-        sessionConfiguration.setClientsEphPubKey(piNtt.defensiveCopy());
         NttPolynomial constantTwoPolyNtt = NttPolynomial.constantTwoNtt(n, q);
         // Extract database. //
         if (!ServersDatabase.contains(I)) {
@@ -65,7 +63,6 @@ public class ServerImple implements Server {
         // Do all the math.
         NttPolynomial summedFstTwoTuples = multiply2NttTuplesAddThemTogetherNtt(aNtt, s1PrimeNtt, constantTwoPolyNtt, e1PrimeNtt);
         NttPolynomial pjNtt = summedFstTwoTuples.add(vNtt);
-        sessionConfiguration.setServersEphPubKey(pjNtt.defensiveCopy());
         // u = XOF(H(pi || pj)) //
         NttPolynomial uNtt = computeUNtt(protocolConfiguration, randomCustomImple, piNtt.defensiveCopy(), pjNtt.defensiveCopy());
         // kj = (v + pi)s1' + uv + 2e1''' //
@@ -80,13 +77,12 @@ public class ServerImple implements Server {
         List<Integer> sigmaj = IntStream.range(0, n).mapToObj(i -> ding12.robustExtractor(kj.getCoeffs().get(i), wj.get(i))).toList();
         // skj = SHA3-256(sigmaj) //
         //System.out.println(sigmaj);
-        sessionConfiguration.setSharedSecret(new ByteArrayWrapper(Utils.convertIntegerListToByteArray(sigmaj)).hashWrapped());
-
-        return new SaltEphPublicSignal(salt.defensiveCopy(), pjNtt.defensiveCopy(), wj);
+        ByteArrayWrapper skj = new ByteArrayWrapper(Utils.convertIntegerListToByteArray(sigmaj)).hashWrapped();
+        return new ServersResponseScs(salt.defensiveCopy(), pjNtt.defensiveCopy(), List.copyOf(wj), new SessionConfigurationServer(piNtt.defensiveCopy(), pjNtt.defensiveCopy(), skj));
     }
 
     @Override
-    public ByteArrayWrapper verifyEntities(ByteArrayWrapper m1) throws ClientNotAuthenticatedException {
+    public ByteArrayWrapper verifyEntities(SessionConfigurationServer sessionConfiguration, ByteArrayWrapper m1) throws ClientNotAuthenticatedException {
         NttPolynomial piNtt = sessionConfiguration.getClientsEphPubKey();
         NttPolynomial pjNtt = sessionConfiguration.getServersEphPubKey();
         ByteArrayWrapper skj = sessionConfiguration.getSharedSecret();

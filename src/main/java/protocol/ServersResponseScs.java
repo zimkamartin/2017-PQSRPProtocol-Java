@@ -1,6 +1,7 @@
 package protocol;
 
 import protocol.polynomial.NttPolynomial;
+import protocol.server.SessionConfigurationServer;
 
 import java.util.List;
 
@@ -8,7 +9,7 @@ import java.util.List;
  * Represents response from the server during server - client communication
  * when computing shared secret key.
  */
-public class SaltEphPublicSignal {
+public class ServersResponseScs {
 
     /**
      * Used on client's side when computing seed1.
@@ -23,10 +24,13 @@ public class SaltEphPublicSignal {
      */
     private final List<Integer> wj;
 
-    public SaltEphPublicSignal(ByteArrayWrapper salt, NttPolynomial pjNtt, List<Integer> wj) {
+    private final SessionConfigurationServer scs;
+
+    public ServersResponseScs(ByteArrayWrapper salt, NttPolynomial pjNtt, List<Integer> wj, SessionConfigurationServer scs) {
         this.salt = salt.defensiveCopy();
         this.pjNtt = pjNtt.defensiveCopy();
         this.wj = List.copyOf(wj);
+        this.scs = scs;
     }
 
     public ByteArrayWrapper getSalt() {
@@ -39,5 +43,9 @@ public class SaltEphPublicSignal {
 
     public List<Integer> getWj() {
         return List.copyOf(wj);
+    }
+
+    public SessionConfigurationServer getScs() {
+        return scs;
     }
 }
