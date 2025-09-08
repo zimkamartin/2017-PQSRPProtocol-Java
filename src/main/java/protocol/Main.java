@@ -2,9 +2,6 @@ package protocol;
 
 import protocol.client.ClientImple;
 import protocol.client.ClientsKnowledge;
-import protocol.exceptions.ClientNotAuthenticatedException;
-import protocol.exceptions.NotEnrolledClientException;
-import protocol.exceptions.ServerNotAuthenticatedException;
 import protocol.random.RandomCustomImple;
 import protocol.server.Server;
 import protocol.server.ServerImple;
@@ -24,7 +21,7 @@ public class Main {
     // THIS IS NOT HOW TO DO IT !!! THIS IS JUST FOR PROOF-OF-CONCEPT !!! THIS IS NOT HOW TO DO IT !!!
 
     // mozno cisto bez mainu a v testoch sa to vsetko ukaze
-    public static void main(String[] args) throws NotEnrolledClientException, ServerNotAuthenticatedException, ClientNotAuthenticatedException {
+    public static void main(String[] args) {
 
         Server server = new ServerImple(new RandomCustomImple(N, Q, ETA), N, Q, ETA);
 
@@ -35,6 +32,7 @@ public class Main {
         client.enroll(ck);
         // Client decides to log in //
         ByteArrayWrapper clientsKey = client.login(ck);
-        System.out.println(Arrays.toString(clientsKey.getData()));
+        String infoToTheConsole = (clientsKey == null) ? "Login FAILED." : Arrays.toString(clientsKey.getData());
+        System.out.println(infoToTheConsole);
     }
 }

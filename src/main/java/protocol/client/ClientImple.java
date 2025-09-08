@@ -1,9 +1,6 @@
 package protocol.client;
 
 import protocol.*;
-import protocol.exceptions.ClientNotAuthenticatedException;
-import protocol.exceptions.NotEnrolledClientException;
-import protocol.exceptions.ServerNotAuthenticatedException;
 import protocol.polynomial.ClassicalPolynomial;
 import protocol.polynomial.NttPolynomial;
 import protocol.polynomial.PolynomialConfig;
@@ -60,7 +57,7 @@ public class ClientImple {
         return multiply2NttTuplesAddThemTogetherNtt(aNtt.defensiveCopy(), svNtt, constantTwoPolyNtt, evNtt);
     }
 
-    private SessionConfigurationClient computeSharedSecret(ClientsKnowledge ck) throws NotEnrolledClientException {
+    private SessionConfigurationClient computeSharedSecret(ClientsKnowledge ck) {
         NttPolynomial constantTwoPolyNtt = NttPolynomial.constantTwoNtt(n, polynomialConfig);
         // pi = as1 + 2e1 //
         // Create polynomial a from public seed.
@@ -74,6 +71,9 @@ public class ClientImple {
         // Send identity and ephemeral public key pi in NTT form to the server. //
         // Receive salt, ephemeral public key pj in NTT form and wj. //
         ServersResponseScs serversResponseScs = server.computeSharedSecret(ck.getIdentity(), piNtt.defensiveCopy());
+        if (serversResponseScs == null) {
+            return null;
+        }
         ByteArrayWrapper salt = serversResponseScs.getSalt();
         NttPolynomial pjNtt = serversResponseScs.getPjNtt();
         List<Integer> wj = serversResponseScs.getWj();
@@ -98,7 +98,7 @@ public class ClientImple {
         return new SessionConfigurationClient(piNtt.defensiveCopy(), pjNtt.defensiveCopy(), ski, serversResponseScs.getScs());
     }
 
-    private ByteArrayWrapper verifyEntities(SessionConfigurationClient scs) throws ServerNotAuthenticatedException, ClientNotAuthenticatedException {
+    private ByteArrayWrapper verifyEntities(SessionConfigurationClient scs) {
         NttPolynomial piNtt = scs.getClientsEphPubKey();
         NttPolynomial pjNtt = scs.getServersEphPubKey();
         ByteArrayWrapper ski = scs.getSharedSecret();
@@ -108,10 +108,7 @@ public class ClientImple {
         ByteArrayWrapper m2Prime = server.verifyEntities(scs.getServersSessionConfiguration(), m1.defensiveCopy());
         ByteArrayWrapper m2 = piNtt.toByteArrayWrapper().concatWith(m1).concatWith(ski).hashWrapped();
         // VERIFY that M2 == M2'. If true, return key.
-        if (!m2.equals(m2Prime)) {
-            throw new ServerNotAuthenticatedException("M2 does not equal to M2'.");
-        }
-        return ski;
+        return m2.equals(m2Prime) ? ski : null;
     }
 
     public void enroll(ClientsKnowledge ck) {
@@ -127,9 +124,12 @@ public class ClientImple {
         server.enrollClient(publicSeedForA, ck.getIdentity(), salt, vNtt);
     }
 
-    public ByteArrayWrapper login(ClientsKnowledge ck) throws NotEnrolledClientException, ServerNotAuthenticatedException, ClientNotAuthenticatedException {
+    public ByteArrayWrapper login(ClientsKnowledge ck) {
         // PHASE 1 //
         SessionConfigurationClient scc = computeSharedSecret(ck);
+        if (scc == null) {
+            return null;
+        }
         // PHASE 2 //
         return verifyEntities(scc);
         // FOR THE FUTURE: Pripadne vratit loginResponse

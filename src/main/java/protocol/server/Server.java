@@ -3,8 +3,6 @@ package protocol.server;
 import protocol.ByteArrayWrapper;
 import protocol.ProtocolConfiguration;
 import protocol.ServersResponseScs;
-import protocol.exceptions.ClientNotAuthenticatedException;
-import protocol.exceptions.NotEnrolledClientException;
 import protocol.polynomial.NttPolynomial;
 
 /**
@@ -30,11 +28,11 @@ public interface Server {
      * @param piNtt - polynomial representing client's ephemeral public key in NTT form
      * @return client's salt, polynomial representing server's ephemeral public key, polynomial where coefficients are result of applying Signal function
      */
-    ServersResponseScs computeSharedSecret(ByteArrayWrapper I, NttPolynomial piNtt) throws NotEnrolledClientException;
+    ServersResponseScs computeSharedSecret(ByteArrayWrapper I, NttPolynomial piNtt);
 
     /**
      * @param m1 - hash of concatenated client's ephemeral key with server's ephemeral key and with client's shared secret key
      * @return hash of concatenated client's ephemeral key with m1 with server's shared secret key
      */
-    ByteArrayWrapper verifyEntities(SessionConfigurationServer scs, ByteArrayWrapper m1) throws ClientNotAuthenticatedException;
+    ByteArrayWrapper verifyEntities(SessionConfigurationServer scs, ByteArrayWrapper m1);
 }

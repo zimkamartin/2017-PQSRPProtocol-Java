@@ -1,8 +1,6 @@
 package protocol.server;
 
 import protocol.*;
-import protocol.exceptions.ClientNotAuthenticatedException;
-import protocol.exceptions.NotEnrolledClientException;
 import protocol.polynomial.ClassicalPolynomial;
 import protocol.polynomial.NttPolynomial;
 import protocol.polynomial.PolynomialConfig;
@@ -43,12 +41,12 @@ public class ServerImple implements Server {
     }
 
     @Override
-    public ServersResponseScs computeSharedSecret(ByteArrayWrapper I, NttPolynomial piNtt) throws NotEnrolledClientException {
+    public ServersResponseScs computeSharedSecret(ByteArrayWrapper I, NttPolynomial piNtt) {
         I = I.defensiveCopy();
         NttPolynomial constantTwoPolyNtt = NttPolynomial.constantTwoNtt(n, polynomialConfig);
         // Extract database. //
         if (!ServersDatabase.contains(I)) {
-            throw new NotEnrolledClientException("Identity " + Arrays.toString(I.getData()) + " not found in the database.");
+            return null;
         }
         ByteArrayWrapper publicSeedForA = ServersDatabase.getClient(I).getPublicSeedForA();
         NttPolynomial vNtt = ServersDatabase.getClient(I).getVerifierNtt();
@@ -82,17 +80,15 @@ public class ServerImple implements Server {
     }
 
     @Override
-    public ByteArrayWrapper verifyEntities(SessionConfigurationServer sessionConfiguration, ByteArrayWrapper m1) throws ClientNotAuthenticatedException {
+    public ByteArrayWrapper verifyEntities(SessionConfigurationServer sessionConfiguration, ByteArrayWrapper m1) {
         NttPolynomial piNtt = sessionConfiguration.getClientsEphPubKey();
         NttPolynomial pjNtt = sessionConfiguration.getServersEphPubKey();
         ByteArrayWrapper skj = sessionConfiguration.getSharedSecret();
         // M1' = SHA3-256(pi || pj || skj) //
         ByteArrayWrapper m1Prime = piNtt.concatWith(pjNtt).toByteArrayWrapper().concatWith(skj).hashWrapped();
         // VERIFY that M1 == M1'. If true, return M2', else return empty byte array.
-        if (!m1.equals(m1Prime)) {
-            throw new ClientNotAuthenticatedException("M1 does not equal to M1'.");
-        }
         // M2' = SHA3-256(pi || M1' || skj) //
-        return piNtt.toByteArrayWrapper().concatWith(m1Prime).concatWith(skj).hashWrapped();
+        ByteArrayWrapper m2Prime = piNtt.toByteArrayWrapper().concatWith(m1Prime).concatWith(skj).hashWrapped();
+        return m1.equals(m1Prime) ? m2Prime : null;
     }
 }
