@@ -130,23 +130,23 @@ public class PolynomialConfig {
         computeZetaArrays();
     }
 
-    public int getN() {
+    int getN() {
         return n;
     }
 
-    public BigInteger getQ() {
+    BigInteger getQ() {
         return q;
     }
 
-    public List<BigInteger> getZetas() {
+    List<BigInteger> getZetas() {
         return List.copyOf(zetas);
     }
 
-    public List<BigInteger> getZetasInverted() {
+    List<BigInteger> getZetasInverted() {
         return List.copyOf(zetasInverted);
     }
 
-    public void assertCompatibleWith(PolynomialConfig b) {
+    void assertCompatibleWith(PolynomialConfig b) {
         if (this.n != b.n) {
             throw new IllegalArgumentException("Polynomials must have the same degree n");
         }
