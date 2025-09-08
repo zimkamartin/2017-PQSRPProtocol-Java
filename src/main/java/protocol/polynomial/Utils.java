@@ -29,34 +29,34 @@ public final class Utils {
     /**
      * @return fromNtt(ab + cd + ef), where each polynomial is in NTT form
      */
-    public static ClassicalPolynomial multiply3NttTuplesAndAddThemTogether(NttPolynomial a, NttPolynomial b, NttPolynomial c, NttPolynomial d, NttPolynomial e, NttPolynomial f, List<BigInteger> zetasInverted) {
+    public static ClassicalPolynomial multiply3NttTuplesAndAddThemTogether(PolynomialConfig pc, NttPolynomial a, NttPolynomial b, NttPolynomial c, NttPolynomial d, NttPolynomial e, NttPolynomial f) {
         NttPolynomial addedFstTwo = multiply2NttTuplesAddThemTogetherNtt(a, b, c, d);
         NttPolynomial ef = e.multiply(f);
-        return new ClassicalPolynomial(addedFstTwo.add(ef), List.copyOf(zetasInverted));
+        return new ClassicalPolynomial(addedFstTwo.add(ef), pc);
     }
 
-    public static NttPolynomial generateRandomErrorPolyNtt(ProtocolConfiguration pc, RandomCustom rc, List<BigInteger> zetas, ByteArrayWrapper seed) {
+    public static NttPolynomial generateRandomErrorPolyNtt(PolynomialConfig pc, RandomCustom rc, ByteArrayWrapper seed) {
         List<BigInteger> eCoeffs = new ArrayList<>(Collections.nCopies(pc.getN(), null));
         rc.generateCbdCoefficients(eCoeffs, seed.getData());
-        return new NttPolynomial(List.copyOf(eCoeffs), List.copyOf(zetas), pc.getQ());
+        return new NttPolynomial(new ClassicalPolynomial(List.copyOf(eCoeffs), pc), pc);
     }
 
-    public static NttPolynomial generateRandomErrorPolyNtt(ProtocolConfiguration pc, RandomCustom rc, List<BigInteger> zetas) {
+    public static NttPolynomial generateRandomErrorPolyNtt(PolynomialConfig pc, RandomCustom rc) {
         byte[] eRandomSeed = new byte[34];
         rc.getRandomBytes(eRandomSeed);
-        return generateRandomErrorPolyNtt(pc, rc, List.copyOf(zetas), new ByteArrayWrapper(eRandomSeed));
+        return generateRandomErrorPolyNtt(pc, rc, new ByteArrayWrapper(eRandomSeed));
     }
 
-    public static NttPolynomial generateUniformPolyNtt(ProtocolConfiguration pc, RandomCustom rc, ByteArrayWrapper seed) {
+    public static NttPolynomial generateUniformPolyNtt(PolynomialConfig pc, RandomCustom rc, ByteArrayWrapper seed) {
         List<BigInteger> coeffs = new ArrayList<>(Collections.nCopies(pc.getN(), null));
         rc.generateUniformCoefficients(coeffs, seed.getData());
-        return new NttPolynomial(List.copyOf(coeffs), pc.getQ());
+        return new NttPolynomial(List.copyOf(coeffs), pc);
     }
 
     /**
      * u = XOF(H(pi || pj))
      */
-    public static NttPolynomial computeUNtt(ProtocolConfiguration pc, RandomCustom rc, NttPolynomial pi, NttPolynomial pj) {
+    public static NttPolynomial computeUNtt(PolynomialConfig pc, RandomCustom rc, NttPolynomial pi, NttPolynomial pj) {
         ByteArrayWrapper seed = pi.concatWith(pj).toByteArrayWrapper().hashWrapped();
         return generateUniformPolyNtt(pc, rc, seed);
     }

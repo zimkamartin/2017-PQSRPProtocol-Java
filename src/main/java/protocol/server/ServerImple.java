@@ -4,8 +4,8 @@ import protocol.*;
 import protocol.exceptions.ClientNotAuthenticatedException;
 import protocol.exceptions.NotEnrolledClientException;
 import protocol.polynomial.ClassicalPolynomial;
-import protocol.polynomial.NttImple;
 import protocol.polynomial.NttPolynomial;
+import protocol.polynomial.PolynomialConfig;
 import protocol.random.RandomCustom;
 
 import java.math.BigInteger;
@@ -20,15 +20,15 @@ public class ServerImple implements Server {
     private final BigInteger q;
     private final ProtocolConfiguration protocolConfiguration;
     private final RandomCustom randomCustomImple;
-    private final NttImple ntt;
     private final Ding12Imple ding12;
+    private final PolynomialConfig polynomialConfig;
 
     public ServerImple(RandomCustom random, int n, BigInteger q, int eta) {
         this.n = n;
         this.q = q;
         this.randomCustomImple = random;
         this.protocolConfiguration = new ProtocolConfiguration(this.n, this.q, eta);
-        this.ntt = new NttImple(this.n, this.q);
+        this.polynomialConfig = new PolynomialConfig(this.n, this.q);
         this.ding12 = new Ding12Imple(this.q);
     }
 
@@ -45,7 +45,7 @@ public class ServerImple implements Server {
     @Override
     public ServersResponseScs computeSharedSecret(ByteArrayWrapper I, NttPolynomial piNtt) throws NotEnrolledClientException {
         I = I.defensiveCopy();
-        NttPolynomial constantTwoPolyNtt = NttPolynomial.constantTwoNtt(n, q);
+        NttPolynomial constantTwoPolyNtt = NttPolynomial.constantTwoNtt(n, polynomialConfig);
         // Extract database. //
         if (!ServersDatabase.contains(I)) {
             throw new NotEnrolledClientException("Identity " + Arrays.toString(I.getData()) + " not found in the database.");
@@ -55,29 +55,29 @@ public class ServerImple implements Server {
         ByteArrayWrapper salt = ServersDatabase.getClient(I).getSalt();
         // pj = as1' + 2e1' + v //
         // Create polynomial a from public seed.
-        NttPolynomial aNtt = generateUniformPolyNtt(protocolConfiguration, randomCustomImple, publicSeedForA);
+        NttPolynomial aNtt = generateUniformPolyNtt(polynomialConfig, randomCustomImple, publicSeedForA);
         // Compute s1'.
-        NttPolynomial s1PrimeNtt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray());
+        NttPolynomial s1PrimeNtt = generateRandomErrorPolyNtt(polynomialConfig, randomCustomImple);
         // Compute e1'.
-        NttPolynomial e1PrimeNtt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray());
+        NttPolynomial e1PrimeNtt = generateRandomErrorPolyNtt(polynomialConfig, randomCustomImple);
         // Do all the math.
         NttPolynomial summedFstTwoTuples = multiply2NttTuplesAddThemTogetherNtt(aNtt, s1PrimeNtt, constantTwoPolyNtt, e1PrimeNtt);
         NttPolynomial pjNtt = summedFstTwoTuples.add(vNtt);
         // u = XOF(H(pi || pj)) //
-        NttPolynomial uNtt = computeUNtt(protocolConfiguration, randomCustomImple, piNtt.defensiveCopy(), pjNtt.defensiveCopy());
+        NttPolynomial uNtt = computeUNtt(polynomialConfig, randomCustomImple, piNtt.defensiveCopy(), pjNtt.defensiveCopy());
         // kj = (v + pi)s1' + uv + 2e1''' //
         // Compute e1'''.
-        NttPolynomial e1TriplePrimeNtt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray());
+        NttPolynomial e1TriplePrimeNtt = generateRandomErrorPolyNtt(polynomialConfig, randomCustomImple);
         // Do all the math.
         NttPolynomial bracket = vNtt.add(piNtt);
-        ClassicalPolynomial kj = multiply3NttTuplesAndAddThemTogether(bracket, s1PrimeNtt, uNtt, vNtt, constantTwoPolyNtt, e1TriplePrimeNtt, ntt.getZetasInvertedArray());
+        ClassicalPolynomial kj = multiply3NttTuplesAndAddThemTogether(polynomialConfig, bracket, s1PrimeNtt, uNtt, vNtt, constantTwoPolyNtt, e1TriplePrimeNtt);
         // wj = Cha(kj) //
         List<Integer> wj = IntStream.range(0, n).mapToObj(i -> ding12.signalFunction(randomCustomImple, kj.getCoeffs().get(i))).toList();
         // sigmaj = Mod_2(kj, wj) //
         List<Integer> sigmaj = IntStream.range(0, n).mapToObj(i -> ding12.robustExtractor(kj.getCoeffs().get(i), wj.get(i))).toList();
         // skj = SHA3-256(sigmaj) //
         //System.out.println(sigmaj);
-        ByteArrayWrapper skj = new ByteArrayWrapper(Utils.convertIntegerListToByteArray(sigmaj)).hashWrapped();
+        ByteArrayWrapper skj = new ByteArrayWrapper(sigmaj).hashWrapped();
         return new ServersResponseScs(salt.defensiveCopy(), pjNtt.defensiveCopy(), List.copyOf(wj), new SessionConfigurationServer(piNtt.defensiveCopy(), pjNtt.defensiveCopy(), skj));
     }
 

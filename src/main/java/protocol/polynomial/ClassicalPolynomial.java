@@ -6,7 +6,12 @@ import java.util.List;
 
 public class ClassicalPolynomial extends Polynomial<ClassicalPolynomial> {
 
-    private static List<BigInteger> convertFromNtt(List<BigInteger> nttCoeffs, List<BigInteger> zetasInverted, int n, BigInteger q) {
+    private static List<BigInteger> convertFromNtt(List<BigInteger> nttCoeffs, PolynomialConfig pc) {
+
+        int n = pc.getN();
+        BigInteger q = pc.getQ();
+        List<BigInteger> zetasInverted = List.copyOf(pc.getZetasInverted());
+
         List<BigInteger> coeffs = new ArrayList<>(List.copyOf(nttCoeffs));
         int zetaIndex = zetasInverted.size() - 1;
 
@@ -34,20 +39,16 @@ public class ClassicalPolynomial extends Polynomial<ClassicalPolynomial> {
         return coeffs;
     }
 
-    public ClassicalPolynomial(List<BigInteger> coeffs, BigInteger q) {
-        super(List.copyOf(coeffs), q);
+    public ClassicalPolynomial(List<BigInteger> coeffs, PolynomialConfig pc) {
+        super(List.copyOf(coeffs), pc);
     }
 
-    public ClassicalPolynomial(List<BigInteger> nttCoeffs, List<BigInteger> zetasInverted, BigInteger q) {
-        super(convertFromNtt(List.copyOf(nttCoeffs), List.copyOf(zetasInverted), nttCoeffs.size(), q), q);
-    }
-
-    public ClassicalPolynomial(NttPolynomial nttPoly, List<BigInteger> zetasInverted) {
-        super(convertFromNtt(nttPoly.getCoeffs(), List.copyOf(zetasInverted), nttPoly.n, nttPoly.q), nttPoly.q);
+    public ClassicalPolynomial(NttPolynomial nttPoly, PolynomialConfig pc) {
+        super(convertFromNtt(nttPoly.getCoeffs(), pc), pc);
     }
 
     @Override
-    protected ClassicalPolynomial newInstance(List<BigInteger> coeffs, BigInteger q) {
-        return new ClassicalPolynomial(List.copyOf(coeffs), q);
+    protected ClassicalPolynomial newInstance(List<BigInteger> coeffs, PolynomialConfig pc) {
+        return new ClassicalPolynomial(List.copyOf(coeffs), pc);
     }
 }

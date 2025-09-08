@@ -12,40 +12,25 @@ import java.util.List;
 public abstract class Polynomial<T extends Polynomial<T>> {
 
     protected final List<BigInteger> coefficients;
-    protected final int n;  // number of coefficients
-    protected final BigInteger q;  // modulus
+    protected final PolynomialConfig pc;  // contains n and q
 
-    public Polynomial(List<BigInteger> coefficients, BigInteger q) {
+    public Polynomial(List<BigInteger> coefficients, PolynomialConfig pc) {
         this.coefficients = List.copyOf(coefficients);
-        this.n = coefficients.size();
-        this.q = q;
+        this.pc = pc;
     }
 
     public List<BigInteger> getCoeffs() {
         return List.copyOf(coefficients);
     }
 
-    public int getN() {
-        return n;
+    public PolynomialConfig getPc() {
+        return pc;
     }
 
-    public BigInteger getQ() {
-        return q;
-    }
-
-    protected abstract T newInstance(List<BigInteger> coeffs, BigInteger q);
+    protected abstract T newInstance(List<BigInteger> coeffs, PolynomialConfig pc);
 
     public T defensiveCopy() {
-        return newInstance(List.copyOf(this.getCoeffs()), q);
-    }
-
-    private void checkCompatibility(T b) {
-        if (this.n != b.getN()) {
-            throw new IllegalArgumentException("Polynomials must have the same degree");
-        }
-        if (!this.q.equals(b.getQ())) {
-            throw new IllegalArgumentException("Polynomials must use the same modulus");
-        }
+        return newInstance(getCoeffs(), pc);
     }
 
     /**
@@ -53,21 +38,21 @@ public abstract class Polynomial<T extends Polynomial<T>> {
      * @return sum of this + b polynomials
      */
     public T add(T b) {
-        checkCompatibility(b);
+        pc.assertCompatibleWith(b.getPc());
 
-        List<BigInteger> result = new java.util.ArrayList<>(n);
-        for (int i = 0; i < n; i++) {
-            result.add(this.coefficients.get(i).add(b.coefficients.get(i)).mod(q));
+        List<BigInteger> result = new java.util.ArrayList<>(this.pc.getN());
+        for (int i = 0; i < this.pc.getN(); i++) {
+            result.add(this.coefficients.get(i).add(b.coefficients.get(i)).mod(this.pc.getQ()));
         }
-        return newInstance(result, q);
+        return newInstance(result, pc);
     }
 
     protected T negate() {
-        List<BigInteger> result = new ArrayList<>(Collections.nCopies(n, BigInteger.ZERO));
-        for (int i = 0; i < n; i++) {
-            result.set(i, this.getCoeffs().get(i).negate().mod(q));
+        List<BigInteger> result = new ArrayList<>(Collections.nCopies(this.pc.getN(), BigInteger.ZERO));
+        for (int i = 0; i < this.pc.getN(); i++) {
+            result.set(i, this.getCoeffs().get(i).negate().mod(this.pc.getQ()));
         }
-        return newInstance(result, q);
+        return newInstance(result, pc);
     }
 
     /**
@@ -75,7 +60,7 @@ public abstract class Polynomial<T extends Polynomial<T>> {
      * @return subtraction of this - b polynomials
      */
     public T subtract(T b) {
-        checkCompatibility(b);
+        pc.assertCompatibleWith(b.getPc());
 
         return this.add(b.negate());
     }
@@ -107,12 +92,12 @@ public abstract class Polynomial<T extends Polynomial<T>> {
      * @return new polynomial which coefficients will be concatenation this || b
      */
     public T concatWith(T b) {
-        checkCompatibility(b);
+        pc.assertCompatibleWith(b.getPc());
 
-        List<BigInteger> result = new ArrayList<>(2 * this.n);
+        List<BigInteger> result = new ArrayList<>(2 * this.pc.getN());
         result.addAll(this.getCoeffs());
         result.addAll(b.getCoeffs());
 
-        return newInstance(result, this.q);
+        return newInstance(result, pc);
     }
 }

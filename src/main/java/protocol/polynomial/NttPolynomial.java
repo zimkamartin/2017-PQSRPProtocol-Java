@@ -7,7 +7,12 @@ import java.util.List;
 
 public class NttPolynomial extends Polynomial<NttPolynomial> {
 
-    private static List<BigInteger> convertToNtt(List<BigInteger> coeffs, List<BigInteger> zetas, int n, BigInteger q) {
+    private static List<BigInteger> convertToNtt(List<BigInteger> coeffs, PolynomialConfig pc) {
+
+        int n = pc.getN();
+        BigInteger q = pc.getQ();
+        List<BigInteger> zetas = List.copyOf(pc.getZetas());
+
         List<BigInteger> nttCoeffs = new ArrayList<>(List.copyOf(coeffs));
         int zetaIndex = 0;
 
@@ -31,21 +36,17 @@ public class NttPolynomial extends Polynomial<NttPolynomial> {
         return nttCoeffs;
     }
 
-    public NttPolynomial(List<BigInteger> nttCoeffs, BigInteger q) {
-        super(List.copyOf(nttCoeffs), q);
+    public NttPolynomial(List<BigInteger> nttCoeffs, PolynomialConfig pc) {
+        super(List.copyOf(nttCoeffs), pc);
     }
 
-    public NttPolynomial(List<BigInteger> coeffs, List<BigInteger> zetas, BigInteger q) {
-        super(convertToNtt(List.copyOf(coeffs), List.copyOf(zetas), coeffs.size(), q),q);
-    }
-
-    public NttPolynomial(NttPolynomial classicalPoly, List<BigInteger> zetas) {
-        super(convertToNtt(classicalPoly.getCoeffs(), List.copyOf(zetas), classicalPoly.n, classicalPoly.q), classicalPoly.q);
+    public NttPolynomial(ClassicalPolynomial classPoly, PolynomialConfig pc) {
+        super(convertToNtt(classPoly.getCoeffs(), pc), pc);
     }
 
     @Override
-    protected NttPolynomial newInstance(List<BigInteger> nttCoeffs, BigInteger q) {
-        return new NttPolynomial(List.copyOf(nttCoeffs), q);
+    protected NttPolynomial newInstance(List<BigInteger> nttCoeffs, PolynomialConfig pc) {
+        return new NttPolynomial(List.copyOf(nttCoeffs), pc);
     }
 
     /**
@@ -53,20 +54,21 @@ public class NttPolynomial extends Polynomial<NttPolynomial> {
      * @return ntt form of a * b
      */
     public NttPolynomial multiply(NttPolynomial b) {
+        pc.assertCompatibleWith(b.getPc());
 
-        List<BigInteger> result = new ArrayList<>(Collections.nCopies(this.getN(), BigInteger.ZERO));
-        for (int i = 0; i < this.getN(); i++) {
-            result.set(i, this.getCoeffs().get(i).multiply(b.getCoeffs().get(i)).mod(q));
+        List<BigInteger> result = new ArrayList<>(Collections.nCopies(this.pc.getN(), BigInteger.ZERO));
+        for (int i = 0; i < this.pc.getN(); i++) {
+            result.set(i, this.getCoeffs().get(i).multiply(b.getCoeffs().get(i)).mod(this.pc.getQ()));
         }
 
-        return new NttPolynomial(result, q);
+        return new NttPolynomial(result, pc);
     }
 
     /**
      * @return polynomial in Ntt form representing constant 2
      */
-    public static NttPolynomial constantTwoNtt(int n, BigInteger q) {
+    public static NttPolynomial constantTwoNtt(int n, PolynomialConfig pc) {
         List<BigInteger> nttCoeffs = Collections.nCopies(n, BigInteger.TWO);
-        return new NttPolynomial(nttCoeffs, q);
+        return new NttPolynomial(nttCoeffs, pc);
     }
 }

@@ -4,6 +4,7 @@ import org.bouncycastle.crypto.digests.SHA3Digest;
 import protocol.random.RandomCustom;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Wrapper for byte[] so that we can compare them and use them as keys in database.
@@ -16,10 +17,19 @@ public class ByteArrayWrapper {
     public ByteArrayWrapper(byte[] data) {
         this.data = data.clone();
     }
+
     public ByteArrayWrapper(RandomCustom rc, int numOfBytes) {
         byte[] saltBA = new byte[numOfBytes];
         rc.getRandomBytes(saltBA);
         this.data = saltBA.clone();
+    }
+
+    public ByteArrayWrapper(List<Integer> dataList) {
+        byte[] dataBA = new byte[dataList.size()];
+        for (int i = 0; i < dataList.size(); i++) {
+            dataBA[i] = dataList.get(i).byteValue();
+        }
+        this.data = dataBA;
     }
 
     public byte[] getData() {

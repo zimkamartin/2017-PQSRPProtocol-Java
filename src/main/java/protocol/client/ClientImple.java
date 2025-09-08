@@ -5,8 +5,8 @@ import protocol.exceptions.ClientNotAuthenticatedException;
 import protocol.exceptions.NotEnrolledClientException;
 import protocol.exceptions.ServerNotAuthenticatedException;
 import protocol.polynomial.ClassicalPolynomial;
-import protocol.polynomial.NttImple;
 import protocol.polynomial.NttPolynomial;
+import protocol.polynomial.PolynomialConfig;
 import protocol.random.RandomCustom;
 import protocol.server.Server;
 
@@ -22,22 +22,21 @@ public class ClientImple {
     private static final int SALTSIZE = 34;  // Size could be changed however you wish.
 
     private final Server server;
-    private final ProtocolConfiguration protocolConfiguration;
     private final RandomCustom randomCustomImple;
-    private final int n;  // mozno n a q vytiahnut do maleho objektu aj s metodou porovnavania
+    private final int n;
     private final BigInteger q;
     private final ByteArrayWrapper publicSeedForA;
-    private final NttImple ntt;
     private final Ding12Imple ding12;
+    private final PolynomialConfig polynomialConfig;
 
     public ClientImple(RandomCustom random, Server server) {
         this.server = server;
-        this.protocolConfiguration = server.getProtocolConfiguration();  // do buducnosti na toto zabudnem, iba si z toho vytiahnem n, q a etu. Do polynomov budem davat PolynomialConfig, ktory obsahuje n, q, zeta / zetaInverted
-        this.n = this.protocolConfiguration.getN();
-        this.q = this.protocolConfiguration.getQ();
+        ProtocolConfiguration protocolConfiguration = server.getProtocolConfiguration();
+        this.n = protocolConfiguration.getN();
+        this.q = protocolConfiguration.getQ();
         this.randomCustomImple = random;
         this.publicSeedForA = new ByteArrayWrapper(randomCustomImple, PUBLICSEEDFORASIZE);
-        this.ntt = new NttImple(this.n, this.q);
+        this.polynomialConfig = new PolynomialConfig(this.n, this.q);
         this.ding12 = new Ding12Imple(this.q);
     }
 
@@ -54,22 +53,22 @@ public class ClientImple {
         ByteArrayWrapper seed1 = computeSeed1(ck, salt);
         ByteArrayWrapper seed2 = seed1.hashWrapped();
         // Based on seeds (computed from private values) generate sv, ev.
-        NttPolynomial svNtt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray(), seed1.defensiveCopy());
-        NttPolynomial evNtt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray(), seed2.defensiveCopy());
+        NttPolynomial svNtt = generateRandomErrorPolyNtt(polynomialConfig, randomCustomImple, seed1.defensiveCopy());
+        NttPolynomial evNtt = generateRandomErrorPolyNtt(polynomialConfig, randomCustomImple, seed2.defensiveCopy());
         // Do all the math.
-        NttPolynomial constantTwoPolyNtt = NttPolynomial.constantTwoNtt(n, q);
+        NttPolynomial constantTwoPolyNtt = NttPolynomial.constantTwoNtt(n, polynomialConfig);
         return multiply2NttTuplesAddThemTogetherNtt(aNtt.defensiveCopy(), svNtt, constantTwoPolyNtt, evNtt);
     }
 
     private SessionConfigurationClient computeSharedSecret(ClientsKnowledge ck) throws NotEnrolledClientException {
-        NttPolynomial constantTwoPolyNtt = NttPolynomial.constantTwoNtt(n, q);
+        NttPolynomial constantTwoPolyNtt = NttPolynomial.constantTwoNtt(n, polynomialConfig);
         // pi = as1 + 2e1 //
         // Create polynomial a from public seed.
-        NttPolynomial aNtt = generateUniformPolyNtt(protocolConfiguration, randomCustomImple, publicSeedForA);
+        NttPolynomial aNtt = generateUniformPolyNtt(polynomialConfig, randomCustomImple, publicSeedForA);
         // Compute s1.
-        NttPolynomial s1Ntt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray());
+        NttPolynomial s1Ntt = generateRandomErrorPolyNtt(polynomialConfig, randomCustomImple);
         // Compute e1.
-        NttPolynomial e1Ntt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray());
+        NttPolynomial e1Ntt = generateRandomErrorPolyNtt(polynomialConfig, randomCustomImple);
         // Do all the math.
         NttPolynomial piNtt = multiply2NttTuplesAddThemTogetherNtt(aNtt, s1Ntt, constantTwoPolyNtt, e1Ntt);
         // Send identity and ephemeral public key pi in NTT form to the server. //
@@ -79,23 +78,23 @@ public class ClientImple {
         NttPolynomial pjNtt = serversResponseScs.getPjNtt();
         List<Integer> wj = serversResponseScs.getWj();
         // u = XOF(H(pi || pj)) //
-        NttPolynomial uNtt = computeUNtt(protocolConfiguration, randomCustomImple, piNtt.defensiveCopy(), pjNtt.defensiveCopy());
+        NttPolynomial uNtt = computeUNtt(polynomialConfig, randomCustomImple, piNtt.defensiveCopy(), pjNtt.defensiveCopy());
         // v = asv + 2ev //
         NttPolynomial vNtt = computeVNttFromANttAndSalt(ck, aNtt, salt);
         // ki = (pj − v)(sv + s1) + uv + 2e1'' //
         // Compute e1''.
-        NttPolynomial e1DoublePrimeNtt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray());
+        NttPolynomial e1DoublePrimeNtt = generateRandomErrorPolyNtt(polynomialConfig, randomCustomImple);
         // Compute sv.
-        NttPolynomial svNtt = generateRandomErrorPolyNtt(protocolConfiguration, randomCustomImple, ntt.getZetasArray(), computeSeed1(ck, salt));
+        NttPolynomial svNtt = generateRandomErrorPolyNtt(polynomialConfig, randomCustomImple, computeSeed1(ck, salt));
         // Do all the math.
         NttPolynomial fstBracket = pjNtt.subtract(vNtt);
         NttPolynomial sndBracket = svNtt.add(s1Ntt);
-        ClassicalPolynomial ki = multiply3NttTuplesAndAddThemTogether(fstBracket, sndBracket, uNtt, vNtt, constantTwoPolyNtt, e1DoublePrimeNtt, ntt.getZetasInvertedArray());
+        ClassicalPolynomial ki = multiply3NttTuplesAndAddThemTogether(polynomialConfig, fstBracket, sndBracket, uNtt, vNtt, constantTwoPolyNtt, e1DoublePrimeNtt);
         // sigmai = Mod_2(ki, wj) //
         List<Integer> sigmai = IntStream.range(0, n).mapToObj(i -> ding12.robustExtractor(ki.getCoeffs().get(i), wj.get(i))).toList();
         // ski = SHA3-256(sigmai) //
         //System.out.println(sigmai);
-        ByteArrayWrapper ski = new ByteArrayWrapper(Utils.convertIntegerListToByteArray(sigmai)).hashWrapped();  // TODO zmazat tuto utilku, dat to ako konstruktor do ByteArrayWrapper
+        ByteArrayWrapper ski = new ByteArrayWrapper(sigmai).hashWrapped();
         return new SessionConfigurationClient(piNtt.defensiveCopy(), pjNtt.defensiveCopy(), ski, serversResponseScs.getScs());
     }
 
@@ -119,7 +118,7 @@ public class ClientImple {
         // PHASE 0 //
         // v = asv + 2ev //
         // Create polynomial a from public seed.
-        NttPolynomial aNtt = generateUniformPolyNtt(protocolConfiguration, randomCustomImple, publicSeedForA);
+        NttPolynomial aNtt = generateUniformPolyNtt(polynomialConfig, randomCustomImple, publicSeedForA);
         // Generate salt.
         ByteArrayWrapper salt = new ByteArrayWrapper(randomCustomImple, SALTSIZE);
         // Compute v.

@@ -1,13 +1,12 @@
 package protocol.polynomial;
 
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-/**
- * Computes arrays zetas and zetas inverted for converting to and from NTT representation of a polynomial.
- * Heavily inspired by https://electricdusk.com/ntt.html
- */
-public class NttImple {
+public class PolynomialConfig {
 
     private final int n;
     private final BigInteger q;
@@ -122,7 +121,7 @@ public class NttImple {
         generateArrays(zeta);
     }
 
-    public NttImple(int n, BigInteger q) {
+    public PolynomialConfig(int n, BigInteger q) {
         this.n = n;
         this.q = q;
         this.zetas = new ArrayList<>(n - 1);
@@ -131,17 +130,28 @@ public class NttImple {
         computeZetaArrays();
     }
 
-    /**
-     * @return attribute zetasArray, so all precomputed coefficients used to convert polynomial to its NTT form.
-     */
-    public List<BigInteger> getZetasArray() {
-        return List.copyOf(this.zetas);
+    public int getN() {
+        return n;
     }
 
-    /**
-     * @return attribute zetasInvertedArray, so all precomputed coefficients used to convert polynomial back from its NTT form.
-     */
-    public List<BigInteger> getZetasInvertedArray() {
-        return List.copyOf(this.zetasInverted);
+    public BigInteger getQ() {
+        return q;
+    }
+
+    public List<BigInteger> getZetas() {
+        return List.copyOf(zetas);
+    }
+
+    public List<BigInteger> getZetasInverted() {
+        return List.copyOf(zetasInverted);
+    }
+
+    public void assertCompatibleWith(PolynomialConfig b) {
+        if (this.n != b.n) {
+            throw new IllegalArgumentException("Polynomials must have the same degree n");
+        }
+        if (!this.q.equals(b.q)) {
+            throw new IllegalArgumentException("Polynomials must use the same modulus q");
+        }
     }
 }
