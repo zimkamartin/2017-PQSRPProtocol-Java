@@ -15,7 +15,6 @@ import static protocol.polynomial.Utils.*;
 public class ServerImple implements Server {
 
     private final int n;
-    private final BigInteger q;
     private final ProtocolConfiguration protocolConfiguration;
     private final RandomCustom randomCustomImple;
     private final Ding12Imple ding12;
@@ -23,11 +22,10 @@ public class ServerImple implements Server {
 
     public ServerImple(RandomCustom random, int n, BigInteger q, int eta) {
         this.n = n;
-        this.q = q;
         this.randomCustomImple = random;
-        this.protocolConfiguration = new ProtocolConfiguration(this.n, this.q, eta);
-        this.polynomialConfig = new PolynomialConfig(this.n, this.q);
-        this.ding12 = new Ding12Imple(this.q);
+        this.protocolConfiguration = new ProtocolConfiguration(this.n, q, eta);
+        this.polynomialConfig = new PolynomialConfig(this.n, q);
+        this.ding12 = new Ding12Imple(q);
     }
 
     @Override

@@ -21,7 +21,6 @@ public class ClientImple {
     private final Server server;
     private final RandomCustom randomCustomImple;
     private final int n;
-    private final BigInteger q;
     private final ByteArrayWrapper publicSeedForA;
     private final Ding12Imple ding12;
     private final PolynomialConfig polynomialConfig;
@@ -30,11 +29,11 @@ public class ClientImple {
         this.server = server;
         ProtocolConfiguration protocolConfiguration = server.getProtocolConfiguration();
         this.n = protocolConfiguration.getN();
-        this.q = protocolConfiguration.getQ();
+        BigInteger q = protocolConfiguration.getQ();
         this.randomCustomImple = random;
         this.publicSeedForA = new ByteArrayWrapper(randomCustomImple, PUBLICSEEDFORASIZE);
-        this.polynomialConfig = new PolynomialConfig(this.n, this.q);
-        this.ding12 = new Ding12Imple(this.q);
+        this.polynomialConfig = new PolynomialConfig(this.n, q);
+        this.ding12 = new Ding12Imple(q);
     }
 
     private ByteArrayWrapper computeSeed1(ClientsKnowledge ck, ByteArrayWrapper salt) {
