@@ -1,7 +1,6 @@
 package protocol.polynomial;
 
 import protocol.ByteArrayWrapper;
-import protocol.ProtocolConfiguration;
 import protocol.random.RandomCustom;
 
 import java.math.BigInteger;
@@ -38,19 +37,19 @@ public final class Utils {
     public static NttPolynomial generateRandomErrorPolyNtt(PolynomialConfig pc, RandomCustom rc, ByteArrayWrapper seed) {
         List<BigInteger> eCoeffs = new ArrayList<>(Collections.nCopies(pc.getN(), null));
         rc.generateCbdCoefficients(eCoeffs, seed.getData());
-        return new NttPolynomial(new ClassicalPolynomial(List.copyOf(eCoeffs), pc), pc);
+        return NttPolynomial.fromClassicalCoefficients(eCoeffs, pc);
     }
 
     public static NttPolynomial generateRandomErrorPolyNtt(PolynomialConfig pc, RandomCustom rc) {
         byte[] eRandomSeed = new byte[34];
         rc.getRandomBytes(eRandomSeed);
-        return generateRandomErrorPolyNtt(pc, rc, new ByteArrayWrapper(eRandomSeed));
+        return generateRandomErrorPolyNtt(pc, rc, new ByteArrayWrapper(eRandomSeed));  // ByteArrayWrapper uz ma konstruktor s random
     }
 
     public static NttPolynomial generateUniformPolyNtt(PolynomialConfig pc, RandomCustom rc, ByteArrayWrapper seed) {
-        List<BigInteger> coeffs = new ArrayList<>(Collections.nCopies(pc.getN(), null));
-        rc.generateUniformCoefficients(coeffs, seed.getData());
-        return new NttPolynomial(List.copyOf(coeffs), pc);
+        List<BigInteger> coeffs = new ArrayList<>(Collections.nCopies(pc.getN(), null));  // zvycajne iba cez add, netreba vytvorit a potom assignovat
+        rc.generateUniformCoefficients(coeffs, seed.getData());  // ma dostat n na vstupe a vratit list koeficientov (fcie dostanu na vstupe nieco co nemodifikuju a vratia novu vec cez navratovu hodnotu)
+        return NttPolynomial.fromNttCoefficients(coeffs, pc);
     }
 
     /**

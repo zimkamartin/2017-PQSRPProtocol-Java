@@ -36,17 +36,21 @@ public class NttPolynomial extends Polynomial<NttPolynomial> {
         return nttCoeffs;
     }
 
-    public NttPolynomial(List<BigInteger> nttCoeffs, PolynomialConfig pc) {
+    private NttPolynomial(List<BigInteger> nttCoeffs, PolynomialConfig pc) {
         super(List.copyOf(nttCoeffs), pc);
     }
 
-    public NttPolynomial(ClassicalPolynomial classPoly, PolynomialConfig pc) {
-        super(convertToNtt(classPoly.getCoeffs(), pc), pc);
+    public static NttPolynomial fromNttCoefficients(List<BigInteger> nttCoeffs, PolynomialConfig pc) {
+        return new NttPolynomial(nttCoeffs, pc);
+    }
+
+    public static NttPolynomial fromClassicalCoefficients(List<BigInteger> classicalCoeffs, PolynomialConfig pc) {
+        return new NttPolynomial(convertToNtt(classicalCoeffs, pc), pc);
     }
 
     @Override
     protected NttPolynomial newInstance(List<BigInteger> nttCoeffs, PolynomialConfig pc) {
-        return new NttPolynomial(List.copyOf(nttCoeffs), pc);
+        return NttPolynomial.fromNttCoefficients(nttCoeffs, pc);
     }
 
     /**
@@ -61,7 +65,7 @@ public class NttPolynomial extends Polynomial<NttPolynomial> {
             result.set(i, this.getCoeffs().get(i).multiply(b.getCoeffs().get(i)).mod(this.pc.getQ()));
         }
 
-        return new NttPolynomial(result, pc);
+        return NttPolynomial.fromNttCoefficients(result, pc);
     }
 
     /**
@@ -69,6 +73,6 @@ public class NttPolynomial extends Polynomial<NttPolynomial> {
      */
     public static NttPolynomial constantTwoNtt(int n, PolynomialConfig pc) {
         List<BigInteger> nttCoeffs = Collections.nCopies(n, BigInteger.TWO);
-        return new NttPolynomial(nttCoeffs, pc);
+        return NttPolynomial.fromNttCoefficients(nttCoeffs, pc);
     }
 }

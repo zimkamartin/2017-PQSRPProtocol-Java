@@ -39,8 +39,12 @@ public class ClassicalPolynomial extends Polynomial<ClassicalPolynomial> {
         return coeffs;
     }
 
-    public ClassicalPolynomial(List<BigInteger> coeffs, PolynomialConfig pc) {
-        super(List.copyOf(coeffs), pc);
+    private ClassicalPolynomial(List<BigInteger> classicalCoeffs, PolynomialConfig pc) {
+        super(List.copyOf(classicalCoeffs), pc);
+    }
+
+    public static ClassicalPolynomial fromClassicalCoefficients(List<BigInteger> classicalCoeffs, PolynomialConfig pc) {
+        return new ClassicalPolynomial(classicalCoeffs, pc);
     }
 
     public ClassicalPolynomial(NttPolynomial nttPoly, PolynomialConfig pc) {
@@ -48,7 +52,7 @@ public class ClassicalPolynomial extends Polynomial<ClassicalPolynomial> {
     }
 
     @Override
-    protected ClassicalPolynomial newInstance(List<BigInteger> coeffs, PolynomialConfig pc) {
-        return new ClassicalPolynomial(List.copyOf(coeffs), pc);
+    protected ClassicalPolynomial newInstance(List<BigInteger> classicalCoeffs, PolynomialConfig pc) {
+        return ClassicalPolynomial.fromClassicalCoefficients(classicalCoeffs, pc);
     }
 }
