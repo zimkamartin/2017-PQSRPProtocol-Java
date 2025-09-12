@@ -69,8 +69,4 @@ public class ByteArrayWrapper {
         System.arraycopy(b.getData(), 0, result, this.data.length, b.getData().length);
         return new ByteArrayWrapper(result);
     }
-
-    public ByteArrayWrapper defensiveCopy() {  // zmazat, kedze nikde nie je mutable getter
-        return new ByteArrayWrapper(this.data.clone());
-    }
 }

@@ -25,7 +25,7 @@ public class Main {
 
         Server server = new ServerImple(new RandomCustomImple(N, Q, ETA), N, Q, ETA);
 
-        ClientsKnowledge ck = new ClientsKnowledge(I.defensiveCopy(), PWD.defensiveCopy());
+        ClientsKnowledge ck = new ClientsKnowledge(I, PWD);
         ClientImple client = new ClientImple(new RandomCustomImple(N, Q, ETA), server);
 
         // Client decides to enroll //
@@ -36,3 +36,5 @@ public class Main {
         System.out.println(infoToTheConsole);
     }
 }
+
+// Pre testovanie ci aj klient aj server ma to iste k: Vytvorit wrapper (triedu) na server, ktory vytiahne kluc, bude delegovat volania serveru, potom to skontroluje.

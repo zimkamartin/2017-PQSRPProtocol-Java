@@ -10,20 +10,20 @@ public class ClientRecord {
     private final NttPolynomial verifierNtt;
 
     public ClientRecord(ByteArrayWrapper publicSeedForA, ByteArrayWrapper salt, NttPolynomial verifierNtt) {
-        this.publicSeedForA = publicSeedForA.defensiveCopy();
-        this.salt = salt.defensiveCopy();
-        this.verifierNtt = verifierNtt.defensiveCopy();
+        this.publicSeedForA = publicSeedForA;
+        this.salt = salt;
+        this.verifierNtt = verifierNtt;
     }
 
     public ByteArrayWrapper getPublicSeedForA() {
-        return this.publicSeedForA.defensiveCopy();
+        return publicSeedForA;
     }
 
     public ByteArrayWrapper getSalt() {
-        return this.salt.defensiveCopy();
+        return salt;
     }
 
     public NttPolynomial getVerifierNtt() {
-        return this.verifierNtt.defensiveCopy();
+        return verifierNtt;
     }
 }

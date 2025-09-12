@@ -4,8 +4,6 @@ import protocol.ByteArrayWrapper;
 import protocol.random.RandomCustom;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -35,7 +33,7 @@ public final class Utils {
     }
 
     public static NttPolynomial generateRandomErrorPolyNtt(PolynomialConfig pc, RandomCustom rc, ByteArrayWrapper seed) {
-        List<BigInteger> eCoeffs = rc.generateCbdCoefficients(pc.getN(), seed.getData());
+        List<BigInteger> eCoeffs = rc.generateCbdCoefficients(pc.getN(), seed.getData().clone());
         return NttPolynomial.fromClassicalCoefficients(eCoeffs, pc);
     }
 

@@ -7,7 +7,6 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static java.math.RoundingMode.CEILING;
@@ -15,11 +14,11 @@ import static java.math.RoundingMode.HALF_UP;
 
 /**
  * XOF, secureRandom and prf are inspired by
- * https://github.com/bcgit/bc-java/blob/main/core/src/main/java/org/bouncycastle/pqc/crypto/mlkem/Symmetric.java
+ * <a href="https://github.com/bcgit/bc-java/blob/main/core/src/main/java/org/bouncycastle/pqc/crypto/mlkem/Symmetric.java">mlkem/Symmetric.java</a>
  * Building blocks of functions generateUniformCoefficients and generateCbdCoefficients are heavily inspired by
- * https://github.com/bcgit/bc-java/blob/main/core/src/main/java/org/bouncycastle/pqc/crypto/mlkem/MLKEMIndCpa.java
+ * <a href="https://github.com/bcgit/bc-java/blob/main/core/src/main/java/org/bouncycastle/pqc/crypto/mlkem/MLKEMIndCpa.java">mlkem/MLKEMIndCpa.java</a>
  * and
- * https://github.com/bcgit/bc-java/blob/main/core/src/main/java/org/bouncycastle/pqc/crypto/mlkem/CBD.java
+ * <a href="https://github.com/bcgit/bc-java/blob/main/core/src/main/java/org/bouncycastle/pqc/crypto/mlkem/CBD.java">mlkem/CBD.java</a>
  */
 public class RandomCustomImple implements RandomCustom {
 
@@ -118,7 +117,7 @@ public class RandomCustomImple implements RandomCustom {
             ctr += rejectionSampling(out, n - ctr, buf, buflen);
         }
 
-        return List.copyOf(out);
+        return out;
     }
 
     private int bitCountOfMUnusedBits(byte[] bytes, int byteIndex, int bitIndex, int m) {
@@ -159,6 +158,6 @@ public class RandomCustomImple implements RandomCustom {
             out.add(BigInteger.valueOf(a - b));
         }
 
-        return List.copyOf(out);
+        return out;
     }
 }

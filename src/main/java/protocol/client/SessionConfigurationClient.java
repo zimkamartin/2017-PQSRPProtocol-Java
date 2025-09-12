@@ -19,15 +19,15 @@ class SessionConfigurationClient {
     }
 
     NttPolynomial getClientsEphPubKey() {
-        return piNtt.defensiveCopy();
+        return piNtt;
     }
 
     NttPolynomial getServersEphPubKey() {
-        return pjNtt.defensiveCopy();
+        return pjNtt;
     }
 
     ByteArrayWrapper getSharedSecret() {
-        return ski.defensiveCopy();
+        return ski;
     }
 
     SessionConfigurationServer getServersSessionConfiguration() { return scs; }

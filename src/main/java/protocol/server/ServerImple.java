@@ -35,12 +35,11 @@ public class ServerImple implements Server {
 
     @Override
     public void enrollClient(ByteArrayWrapper publicSeedForA, ByteArrayWrapper I, ByteArrayWrapper salt, NttPolynomial vNtt) {
-        ServersDatabase.saveClient(I.defensiveCopy(), new ClientRecord(publicSeedForA.defensiveCopy(), salt.defensiveCopy(), vNtt.defensiveCopy()));
+        ServersDatabase.saveClient(I, new ClientRecord(publicSeedForA, salt, vNtt));
     }
 
     @Override
     public ServersResponseScs computeSharedSecret(ByteArrayWrapper I, NttPolynomial piNtt) {
-        I = I.defensiveCopy();
         NttPolynomial constantTwoPolyNtt = NttPolynomial.constantTwoNtt(n, polynomialConfig);
         // Extract database. //
         if (!ServersDatabase.contains(I)) {
@@ -60,7 +59,7 @@ public class ServerImple implements Server {
         NttPolynomial summedFstTwoTuples = multiply2NttTuplesAddThemTogetherNtt(aNtt, s1PrimeNtt, constantTwoPolyNtt, e1PrimeNtt);
         NttPolynomial pjNtt = summedFstTwoTuples.add(vNtt);
         // u = XOF(H(pi || pj)) //
-        NttPolynomial uNtt = computeUNtt(polynomialConfig, randomCustomImple, piNtt.defensiveCopy(), pjNtt.defensiveCopy());
+        NttPolynomial uNtt = computeUNtt(polynomialConfig, randomCustomImple, piNtt, pjNtt);
         // kj = (v + pi)s1' + uv + 2e1''' //
         // Compute e1'''.
         NttPolynomial e1TriplePrimeNtt = generateRandomErrorPolyNtt(polynomialConfig, randomCustomImple);
@@ -74,7 +73,7 @@ public class ServerImple implements Server {
         // skj = SHA3-256(sigmaj) //
         //System.out.println(sigmaj);
         ByteArrayWrapper skj = new ByteArrayWrapper(sigmaj).hashWrapped();
-        return new ServersResponseScs(salt.defensiveCopy(), pjNtt.defensiveCopy(), List.copyOf(wj), new SessionConfigurationServer(piNtt.defensiveCopy(), pjNtt.defensiveCopy(), skj));
+        return new ServersResponseScs(salt, pjNtt, wj, new SessionConfigurationServer(piNtt, pjNtt, skj));
     }
 
     @Override

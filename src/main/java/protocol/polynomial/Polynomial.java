@@ -6,7 +6,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 // Porozmyslat ci Polynomial vobec potrebujem.
@@ -21,8 +20,8 @@ public abstract class Polynomial<T extends Polynomial<T>> {
         this.pc = pc;
     }
 
-    public List<BigInteger> getCoeffs() {  // nemusi tu znovu byt copyOf, kedze je v konstruktore
-        return List.copyOf(coefficients);
+    public List<BigInteger> getCoeffs() {
+        return coefficients;
     }
 
     public PolynomialConfig getPc() {
@@ -30,10 +29,6 @@ public abstract class Polynomial<T extends Polynomial<T>> {
     }
 
     protected abstract T newInstance(List<BigInteger> coeffs, PolynomialConfig pc);
-
-    public T defensiveCopy() {  // pozriet si ci to potrebujem
-        return newInstance(getCoeffs(), pc);
-    }
 
     /**
      * @param b - polynomial that will be added to this polynomial

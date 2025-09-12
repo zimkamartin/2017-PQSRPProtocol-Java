@@ -27,22 +27,22 @@ public class ServersResponseScs {
     private final SessionConfigurationServer scs;
 
     public ServersResponseScs(ByteArrayWrapper salt, NttPolynomial pjNtt, List<Integer> wj, SessionConfigurationServer scs) {
-        this.salt = salt.defensiveCopy();
-        this.pjNtt = pjNtt.defensiveCopy();
+        this.salt = salt;
+        this.pjNtt = pjNtt;
         this.wj = List.copyOf(wj);
         this.scs = scs;
     }
 
     public ByteArrayWrapper getSalt() {
-        return salt.defensiveCopy();
+        return salt;
     }
 
     public NttPolynomial getPjNtt() {
-        return pjNtt.defensiveCopy();
+        return pjNtt;
     }
 
     public List<Integer> getWj() {
-        return List.copyOf(wj);
+        return wj;
     }
 
     public SessionConfigurationServer getScs() {

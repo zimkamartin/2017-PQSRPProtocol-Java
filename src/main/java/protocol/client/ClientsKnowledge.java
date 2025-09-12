@@ -8,15 +8,15 @@ public class ClientsKnowledge {
     private final ByteArrayWrapper password;
 
     public ClientsKnowledge(ByteArrayWrapper identity, ByteArrayWrapper password) {
-        this.identity = identity.defensiveCopy();
-        this.password = password.defensiveCopy();
+        this.identity = identity;
+        this.password = password;
     }
 
     ByteArrayWrapper getIdentity() {
-        return identity.defensiveCopy();
+        return identity;
     }
 
     ByteArrayWrapper getPassword() {
-        return password.defensiveCopy();
+        return password;
     }
 }

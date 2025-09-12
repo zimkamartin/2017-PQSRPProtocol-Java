@@ -10,9 +10,9 @@ public class ClassicalPolynomial extends Polynomial<ClassicalPolynomial> {
 
         int n = pc.getN();
         BigInteger q = pc.getQ();
-        List<BigInteger> zetasInverted = List.copyOf(pc.getZetasInverted());
+        List<BigInteger> zetasInverted = pc.getZetasInverted();
 
-        List<BigInteger> coeffs = new ArrayList<>(List.copyOf(nttCoeffs));
+        List<BigInteger> coeffs = new ArrayList<>(nttCoeffs);
         int zetaIndex = zetasInverted.size() - 1;
 
         int numOfLayers = (int) (Math.log(n) / Math.log(2));
@@ -40,7 +40,7 @@ public class ClassicalPolynomial extends Polynomial<ClassicalPolynomial> {
     }
 
     private ClassicalPolynomial(List<BigInteger> classicalCoeffs, PolynomialConfig pc) {
-        super(List.copyOf(classicalCoeffs), pc);
+        super(classicalCoeffs, pc);
     }
 
     public static ClassicalPolynomial fromClassicalCoefficients(List<BigInteger> classicalCoeffs, PolynomialConfig pc) {

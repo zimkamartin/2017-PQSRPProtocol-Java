@@ -10,20 +10,20 @@ public class SessionConfigurationServer {
     private final ByteArrayWrapper skj;
 
     SessionConfigurationServer(NttPolynomial piNtt, NttPolynomial pjNtt, ByteArrayWrapper skj) {
-        this.piNtt = piNtt.defensiveCopy();
-        this.pjNtt = pjNtt.defensiveCopy();
-        this.skj = skj.defensiveCopy();
+        this.piNtt = piNtt;
+        this.pjNtt = pjNtt;
+        this.skj = skj;
     }
 
     NttPolynomial getClientsEphPubKey() {
-        return piNtt.defensiveCopy();
+        return piNtt;
     }
 
     NttPolynomial getServersEphPubKey() {
-        return pjNtt.defensiveCopy();
+        return pjNtt;
     }
 
     ByteArrayWrapper getSharedSecret() {
-        return skj.defensiveCopy();
+        return skj;
     }
 }

@@ -11,9 +11,9 @@ public class NttPolynomial extends Polynomial<NttPolynomial> {
 
         int n = pc.getN();
         BigInteger q = pc.getQ();
-        List<BigInteger> zetas = List.copyOf(pc.getZetas());
+        List<BigInteger> zetas = pc.getZetas();
 
-        List<BigInteger> nttCoeffs = new ArrayList<>(List.copyOf(coeffs));
+        List<BigInteger> nttCoeffs = new ArrayList<>(coeffs);
         int zetaIndex = 0;
 
         int numOfLayers = (int) (Math.log(n) / Math.log(2));
@@ -37,7 +37,7 @@ public class NttPolynomial extends Polynomial<NttPolynomial> {
     }
 
     private NttPolynomial(List<BigInteger> nttCoeffs, PolynomialConfig pc) {
-        super(List.copyOf(nttCoeffs), pc);
+        super(nttCoeffs, pc);
     }
 
     public static NttPolynomial fromNttCoefficients(List<BigInteger> nttCoeffs, PolynomialConfig pc) {
@@ -60,9 +60,9 @@ public class NttPolynomial extends Polynomial<NttPolynomial> {
     public NttPolynomial multiply(NttPolynomial b) {
         pc.assertCompatibleWith(b.getPc());
 
-        List<BigInteger> result = new ArrayList<>(Collections.nCopies(this.pc.getN(), BigInteger.ZERO));
+        List<BigInteger> result = new ArrayList<>(this.pc.getN());
         for (int i = 0; i < this.pc.getN(); i++) {
-            result.set(i, this.getCoeffs().get(i).multiply(b.getCoeffs().get(i)).mod(this.pc.getQ()));
+            result.add(this.getCoeffs().get(i).multiply(b.getCoeffs().get(i)).mod(this.pc.getQ()));
         }
 
         return NttPolynomial.fromNttCoefficients(result, pc);

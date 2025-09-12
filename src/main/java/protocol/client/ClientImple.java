@@ -49,11 +49,11 @@ public class ClientImple {
         ByteArrayWrapper seed1 = computeSeed1(ck, salt);
         ByteArrayWrapper seed2 = seed1.hashWrapped();
         // Based on seeds (computed from private values) generate sv, ev.
-        NttPolynomial svNtt = generateRandomErrorPolyNtt(polynomialConfig, randomCustomImple, seed1.defensiveCopy());
-        NttPolynomial evNtt = generateRandomErrorPolyNtt(polynomialConfig, randomCustomImple, seed2.defensiveCopy());
+        NttPolynomial svNtt = generateRandomErrorPolyNtt(polynomialConfig, randomCustomImple, seed1);
+        NttPolynomial evNtt = generateRandomErrorPolyNtt(polynomialConfig, randomCustomImple, seed2);
         // Do all the math.
         NttPolynomial constantTwoPolyNtt = NttPolynomial.constantTwoNtt(n, polynomialConfig);
-        return multiply2NttTuplesAddThemTogetherNtt(aNtt.defensiveCopy(), svNtt, constantTwoPolyNtt, evNtt);
+        return multiply2NttTuplesAddThemTogetherNtt(aNtt, svNtt, constantTwoPolyNtt, evNtt);
     }
 
     private SessionConfigurationClient computeSharedSecret(ClientsKnowledge ck) {
@@ -69,7 +69,7 @@ public class ClientImple {
         NttPolynomial piNtt = multiply2NttTuplesAddThemTogetherNtt(aNtt, s1Ntt, constantTwoPolyNtt, e1Ntt);
         // Send identity and ephemeral public key pi in NTT form to the server. //
         // Receive salt, ephemeral public key pj in NTT form and wj. //
-        ServersResponseScs serversResponseScs = server.computeSharedSecret(ck.getIdentity(), piNtt.defensiveCopy());
+        ServersResponseScs serversResponseScs = server.computeSharedSecret(ck.getIdentity(), piNtt);
         if (serversResponseScs == null) {
             return null;
         }
@@ -77,7 +77,7 @@ public class ClientImple {
         NttPolynomial pjNtt = serversResponseScs.getPjNtt();
         List<Integer> wj = serversResponseScs.getWj();
         // u = XOF(H(pi || pj)) //
-        NttPolynomial uNtt = computeUNtt(polynomialConfig, randomCustomImple, piNtt.defensiveCopy(), pjNtt.defensiveCopy());
+        NttPolynomial uNtt = computeUNtt(polynomialConfig, randomCustomImple, piNtt, pjNtt);
         // v = asv + 2ev //
         NttPolynomial vNtt = computeVNttFromANttAndSalt(ck, aNtt, salt);
         // ki = (pj − v)(sv + s1) + uv + 2e1'' //
@@ -94,7 +94,7 @@ public class ClientImple {
         // ski = SHA3-256(sigmai) //
         //System.out.println(sigmai);
         ByteArrayWrapper ski = new ByteArrayWrapper(sigmai).hashWrapped();
-        return new SessionConfigurationClient(piNtt.defensiveCopy(), pjNtt.defensiveCopy(), ski, serversResponseScs.getScs());
+        return new SessionConfigurationClient(piNtt, pjNtt, ski, serversResponseScs.getScs());
     }
 
     private ByteArrayWrapper verifyEntities(SessionConfigurationClient scs) {
@@ -104,7 +104,7 @@ public class ClientImple {
         // M1 = SHA3-256(pi || pj || ski) //
         ByteArrayWrapper m1 = piNtt.concatWith(pjNtt).toByteArrayWrapper().concatWith(ski).hashWrapped();
         // M2 = SHA3-256(pi || M1 || ski) //
-        ByteArrayWrapper m2Prime = server.verifyEntities(scs.getServersSessionConfiguration(), m1.defensiveCopy());
+        ByteArrayWrapper m2Prime = server.verifyEntities(scs.getServersSessionConfiguration(), m1);
         ByteArrayWrapper m2 = piNtt.toByteArrayWrapper().concatWith(m1).concatWith(ski).hashWrapped();
         // VERIFY that M2 == M2'. If true, return key.
         return m2.equals(m2Prime) ? ski : null;
@@ -131,6 +131,6 @@ public class ClientImple {
         }
         // PHASE 2 //
         return verifyEntities(scc);
-        // FOR THE FUTURE: Pripadne vratit loginResponse
+        // FOR THE FUTURE pre klienta: Pripadne vratit loginResponse: kluc = byteArrayWrapper[], loginOk = boolin (aby to nebolo iba cez kluc = null)
     }
 }
