@@ -19,9 +19,7 @@ public class ByteArrayWrapper {
     }
 
     public ByteArrayWrapper(RandomCustom rc, int numOfBytes) {
-        byte[] byteArray = new byte[numOfBytes];
-        rc.getRandomBytes(byteArray);
-        this.data = byteArray.clone();
+        this.data = rc.getRandomBytes(numOfBytes);
     }
 
     public ByteArrayWrapper(List<Integer> dataList) {

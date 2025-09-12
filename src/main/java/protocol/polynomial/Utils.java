@@ -35,8 +35,7 @@ public final class Utils {
     }
 
     public static NttPolynomial generateRandomErrorPolyNtt(PolynomialConfig pc, RandomCustom rc, ByteArrayWrapper seed) {
-        List<BigInteger> eCoeffs = new ArrayList<>(Collections.nCopies(pc.getN(), null));
-        rc.generateCbdCoefficients(eCoeffs, seed.getData());
+        List<BigInteger> eCoeffs = rc.generateCbdCoefficients(pc.getN(), seed.getData());
         return NttPolynomial.fromClassicalCoefficients(eCoeffs, pc);
     }
 
@@ -45,8 +44,7 @@ public final class Utils {
     }
 
     public static NttPolynomial generateUniformPolyNtt(PolynomialConfig pc, RandomCustom rc, ByteArrayWrapper seed) {
-        List<BigInteger> coeffs = new ArrayList<>(Collections.nCopies(pc.getN(), null));  // zvycajne iba cez add, netreba vytvorit a potom assignovat
-        rc.generateUniformCoefficients(coeffs, seed.getData());  // ma dostat n na vstupe a vratit list koeficientov (fcie dostanu na vstupe nieco co nemodifikuju a vratia novu vec cez navratovu hodnotu)
+        List<BigInteger> coeffs = rc.generateUniformCoefficients(pc.getN(), seed.getData());  // ma dostat n na vstupe a vratit list koeficientov (fcie dostanu na vstupe nieco co nemodifikuju a vratia novu vec cez navratovu hodnotu)
         return NttPolynomial.fromNttCoefficients(coeffs, pc);
     }
 

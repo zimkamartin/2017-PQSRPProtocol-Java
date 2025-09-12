@@ -5,7 +5,9 @@ import org.bouncycastle.crypto.digests.SHAKEDigest;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static java.math.RoundingMode.CEILING;
@@ -45,8 +47,10 @@ public class RandomCustomImple implements RandomCustom {
     }
 
     @Override
-    public void getRandomBytes(byte[] bytes) {
-        secureRandom.nextBytes(bytes);
+    public byte[] getRandomBytes(int n) {
+        byte[] byteArray = new byte[n];
+        secureRandom.nextBytes(byteArray);
+        return byteArray.clone();
     }
 
     @Override
@@ -91,7 +95,9 @@ public class RandomCustomImple implements RandomCustom {
     }
 
     @Override
-    public void generateUniformCoefficients(List<BigInteger> out, byte[] seed) {
+    public List<BigInteger> generateUniformCoefficients(int n, byte[] seed) {
+        List<BigInteger> out = new ArrayList<>(Collections.nCopies(n, null));  // zvycajne iba cez add, netreba vytvorit a potom assignovat
+
         int KyberGenerateMatrixNBlocks = computeKyberGenerateMatrixNBlocks();
 
         int k, ctr, off;
@@ -111,6 +117,8 @@ public class RandomCustomImple implements RandomCustom {
             xof.doOutput(buf, off, buflen - off);  // fill the rest of buf
             ctr += rejectionSampling(out, ctr, n - ctr, buf, buflen);
         }
+
+        return List.copyOf(out);
     }
 
     private int bitCountOfMUnusedBits(byte[] bytes, int byteIndex, int bitIndex, int m) {
@@ -121,7 +129,8 @@ public class RandomCustomImple implements RandomCustom {
     }
 
     @Override
-    public void generateCbdCoefficients(List<BigInteger> out, byte[] seed) {
+    public List<BigInteger> generateCbdCoefficients(int n, byte[] seed) {
+        List<BigInteger> out = new ArrayList<>(Collections.nCopies(n, null));
         byte[] buf = new byte[(int) Math.ceil((n * 2.0 * eta) / 8.0)];
         prf.update(seed, 0, seed.length);
         prf.doFinal(buf, 0, buf.length);
@@ -149,5 +158,7 @@ public class RandomCustomImple implements RandomCustom {
             }
             out.set(i, BigInteger.valueOf(a - b));
         }
+
+        return List.copyOf(out);
     }
 }

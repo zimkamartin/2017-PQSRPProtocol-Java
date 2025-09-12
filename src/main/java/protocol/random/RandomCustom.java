@@ -6,9 +6,9 @@ import java.util.List;
 public interface RandomCustom {
 
     /**
-     * @param bytes - byte array which will be filed by random bytes
+     * @param n - number of random bytes that should be returned
      */
-    void getRandomBytes(byte[] bytes);
+    byte[] getRandomBytes(int n);
 
     /**
      * @param bound - upper bound of the interval
@@ -17,14 +17,14 @@ public interface RandomCustom {
     int getRandomBit(int bound);
 
     /**
-     * @param out - list that will have coefficients sampled by uniform distribution. List can represent classical or ntt polynomial
+     * @param n - the size of the output list that will have coefficients sampled by uniform distribution. List can represent classical or ntt polynomial.
      * @param seed - seed for generating uniform data
      */
-    void generateUniformCoefficients(List<BigInteger> out, byte[] seed);
+    List<BigInteger> generateUniformCoefficients(int n, byte[] seed);
 
     /**
-     * @param out - list that will have coefficients sampled by centered binomial distribution. List can represent classical polynomial.
+     * @param n - the size of the output list that will have coefficients sampled by centered binomial distribution. List can represent classical polynomial.
      * @param seed - seed for generating uniform data later used to create centered binomial distribution (with param. eta)
      */
-    void generateCbdCoefficients(List<BigInteger> out, byte[] seed);
+    List<BigInteger> generateCbdCoefficients(int n, byte[] seed);
 }
