@@ -19,9 +19,9 @@ public class ByteArrayWrapper {
     }
 
     public ByteArrayWrapper(RandomCustom rc, int numOfBytes) {
-        byte[] saltBA = new byte[numOfBytes];
-        rc.getRandomBytes(saltBA);
-        this.data = saltBA.clone();
+        byte[] byteArray = new byte[numOfBytes];
+        rc.getRandomBytes(byteArray);
+        this.data = byteArray.clone();
     }
 
     public ByteArrayWrapper(List<Integer> dataList) {
@@ -72,7 +72,7 @@ public class ByteArrayWrapper {
         return new ByteArrayWrapper(result);
     }
 
-    public ByteArrayWrapper defensiveCopy() {
+    public ByteArrayWrapper defensiveCopy() {  // zmazat, kedze nikde nie je mutable getter
         return new ByteArrayWrapper(this.data.clone());
     }
 }
