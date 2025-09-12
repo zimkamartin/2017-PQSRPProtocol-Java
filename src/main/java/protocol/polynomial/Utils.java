@@ -41,9 +41,7 @@ public final class Utils {
     }
 
     public static NttPolynomial generateRandomErrorPolyNtt(PolynomialConfig pc, RandomCustom rc) {
-        byte[] eRandomSeed = new byte[34];
-        rc.getRandomBytes(eRandomSeed);
-        return generateRandomErrorPolyNtt(pc, rc, new ByteArrayWrapper(eRandomSeed));  // ByteArrayWrapper uz ma konstruktor s random
+        return generateRandomErrorPolyNtt(pc, rc, new ByteArrayWrapper(rc, 34));
     }
 
     public static NttPolynomial generateUniformPolyNtt(PolynomialConfig pc, RandomCustom rc, ByteArrayWrapper seed) {
