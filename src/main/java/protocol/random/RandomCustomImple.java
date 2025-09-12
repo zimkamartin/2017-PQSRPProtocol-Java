@@ -58,7 +58,7 @@ public class RandomCustomImple implements RandomCustom {
         return secureRandom.nextInt(bound);
     }
 
-    private int rejectionSampling(List<BigInteger> outputBuffer, int coeffOff, int len, byte[] inpBuf, int inpBufLen) {
+    private int rejectionSampling(List<BigInteger> outputBuffer, int len, byte[] inpBuf, int inpBufLen) {
         int ctr, pos;  // number of sampled coeffs and position in inpBuf
         BigInteger val;  // candidate for coefficient
         ctr = pos = 0;
@@ -68,7 +68,7 @@ public class RandomCustomImple implements RandomCustom {
             val = bufBI.and(unifMask);
             pos += unifNeededNumOfBytes;
             if (val.compareTo(q) < 0) {
-                outputBuffer.set(coeffOff + ctr, val);
+                outputBuffer.add(val);
                 ctr++;
             }
         }
@@ -96,7 +96,7 @@ public class RandomCustomImple implements RandomCustom {
 
     @Override
     public List<BigInteger> generateUniformCoefficients(int n, byte[] seed) {
-        List<BigInteger> out = new ArrayList<>(Collections.nCopies(n, null));  // zvycajne iba cez add, netreba vytvorit a potom assignovat
+        List<BigInteger> out = new ArrayList<>(n);
 
         int KyberGenerateMatrixNBlocks = computeKyberGenerateMatrixNBlocks();
 
@@ -107,7 +107,7 @@ public class RandomCustomImple implements RandomCustom {
         xof.update(seed, 0, seed.length);
         xof.doOutput(buf, 0, buflen);
 
-        ctr = rejectionSampling(out, 0, n, buf, buflen);  // number of sampled coefficients
+        ctr = rejectionSampling(out, n, buf, buflen);  // number of sampled coefficients
 
         while (ctr < n) {  // we did not sample enough coeffs
             off = buflen % unifNeededNumOfBytes;  // how many unused bytes is in buf?
@@ -115,7 +115,7 @@ public class RandomCustomImple implements RandomCustom {
                 buf[k] = buf[buflen - off + k];
             }
             xof.doOutput(buf, off, buflen - off);  // fill the rest of buf
-            ctr += rejectionSampling(out, ctr, n - ctr, buf, buflen);
+            ctr += rejectionSampling(out, n - ctr, buf, buflen);
         }
 
         return List.copyOf(out);
@@ -130,7 +130,7 @@ public class RandomCustomImple implements RandomCustom {
 
     @Override
     public List<BigInteger> generateCbdCoefficients(int n, byte[] seed) {
-        List<BigInteger> out = new ArrayList<>(Collections.nCopies(n, null));
+        List<BigInteger> out = new ArrayList<>(n);
         byte[] buf = new byte[(int) Math.ceil((n * 2.0 * eta) / 8.0)];
         prf.update(seed, 0, seed.length);
         prf.doFinal(buf, 0, buf.length);
@@ -156,7 +156,7 @@ public class RandomCustomImple implements RandomCustom {
                 byteIndex += (bitIndex + m == 8) ? 1 : 0;  // change byte and bit index accordingly
                 bitIndex = (bitIndex + m) % 8;
             }
-            out.set(i, BigInteger.valueOf(a - b));
+            out.add(BigInteger.valueOf(a - b));
         }
 
         return List.copyOf(out);

@@ -9,8 +9,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+// Porozmyslat ci Polynomial vobec potrebujem.
+// Zrusit base classu.
 public abstract class Polynomial<T extends Polynomial<T>> {
-
+// coeffs NTT != coeffs classical
     protected final List<BigInteger> coefficients;
     protected final PolynomialConfig pc;  // contains n and q
 
@@ -19,7 +21,7 @@ public abstract class Polynomial<T extends Polynomial<T>> {
         this.pc = pc;
     }
 
-    public List<BigInteger> getCoeffs() {
+    public List<BigInteger> getCoeffs() {  // nemusi tu znovu byt copyOf, kedze je v konstruktore
         return List.copyOf(coefficients);
     }
 
@@ -29,7 +31,7 @@ public abstract class Polynomial<T extends Polynomial<T>> {
 
     protected abstract T newInstance(List<BigInteger> coeffs, PolynomialConfig pc);
 
-    public T defensiveCopy() {
+    public T defensiveCopy() {  // pozriet si ci to potrebujem
         return newInstance(getCoeffs(), pc);
     }
 
@@ -48,9 +50,9 @@ public abstract class Polynomial<T extends Polynomial<T>> {
     }
 
     protected T negate() {
-        List<BigInteger> result = new ArrayList<>(Collections.nCopies(this.pc.getN(), BigInteger.ZERO));
+        List<BigInteger> result = new java.util.ArrayList<>(this.pc.getN());
         for (int i = 0; i < this.pc.getN(); i++) {
-            result.set(i, this.getCoeffs().get(i).negate().mod(this.pc.getQ()));
+            result.add(this.getCoeffs().get(i).negate().mod(this.pc.getQ()));
         }
         return newInstance(result, pc);
     }
