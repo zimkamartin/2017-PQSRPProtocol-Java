@@ -8,7 +8,7 @@ import java.math.BigInteger;
  * These polynomials are of the form X^powerX P (zeta_indexZeta)^powerZeta,
  * where P is plus if plus, else it is minus.
  * Attribute powerX does not need to be stored.
- * For more details see https://electricdusk.com/ntt.html
+ * For more details see <a href="https://electricdusk.com/ntt.html">nttBlog</a>
  * </p>
  */
 class ModuloPoly {

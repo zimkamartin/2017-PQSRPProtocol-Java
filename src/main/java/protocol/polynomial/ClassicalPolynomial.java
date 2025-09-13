@@ -4,7 +4,17 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClassicalPolynomial extends Polynomial<ClassicalPolynomial> {
+public class ClassicalPolynomial {
+
+    private final List<BigInteger> coefficients;
+
+    public ClassicalPolynomial(List<BigInteger> classicalCoeffs) {
+        this.coefficients = List.copyOf(classicalCoeffs);
+    }
+
+    public List<BigInteger> getCoefficients() {
+        return coefficients;
+    }
 
     private static List<BigInteger> convertFromNtt(List<BigInteger> nttCoeffs, PolynomialConfig pc) {
 
@@ -39,20 +49,7 @@ public class ClassicalPolynomial extends Polynomial<ClassicalPolynomial> {
         return coeffs;
     }
 
-    private ClassicalPolynomial(List<BigInteger> classicalCoeffs, PolynomialConfig pc) {
-        super(classicalCoeffs, pc);
-    }
-
-    public static ClassicalPolynomial fromClassicalCoefficients(List<BigInteger> classicalCoeffs, PolynomialConfig pc) {
-        return new ClassicalPolynomial(classicalCoeffs, pc);
-    }
-
-    public ClassicalPolynomial(NttPolynomial nttPoly, PolynomialConfig pc) {
-        super(convertFromNtt(nttPoly.getCoeffs(), pc), pc);
-    }
-
-    @Override
-    protected ClassicalPolynomial newInstance(List<BigInteger> classicalCoeffs, PolynomialConfig pc) {
-        return ClassicalPolynomial.fromClassicalCoefficients(classicalCoeffs, pc);
+    public ClassicalPolynomial(NttPolynomial nttPolynomial, PolynomialConfig pc) {
+        this(convertFromNtt(nttPolynomial.getCoefficients(), pc));
     }
 }

@@ -1,11 +1,27 @@
 package protocol.polynomial;
 
+import protocol.ByteArrayWrapper;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class NttPolynomial extends Polynomial<NttPolynomial> {
+public class NttPolynomial {
+
+    private final List<BigInteger> coefficients;
+    private final PolynomialConfig pc;
+
+    private NttPolynomial(List<BigInteger> nttCoeffs, PolynomialConfig pc) {
+        this.coefficients = List.copyOf(nttCoeffs);
+        this.pc = pc;
+    }
+
+    List<BigInteger> getCoefficients() {
+        return coefficients;
+    }
 
     private static List<BigInteger> convertToNtt(List<BigInteger> coeffs, PolynomialConfig pc) {
 
@@ -36,10 +52,6 @@ public class NttPolynomial extends Polynomial<NttPolynomial> {
         return nttCoeffs;
     }
 
-    private NttPolynomial(List<BigInteger> nttCoeffs, PolynomialConfig pc) {
-        super(nttCoeffs, pc);
-    }
-
     public static NttPolynomial fromNttCoefficients(List<BigInteger> nttCoeffs, PolynomialConfig pc) {
         return new NttPolynomial(nttCoeffs, pc);
     }
@@ -48,9 +60,36 @@ public class NttPolynomial extends Polynomial<NttPolynomial> {
         return new NttPolynomial(convertToNtt(classicalCoeffs, pc), pc);
     }
 
-    @Override
-    protected NttPolynomial newInstance(List<BigInteger> nttCoeffs, PolynomialConfig pc) {
-        return NttPolynomial.fromNttCoefficients(nttCoeffs, pc);
+    /**
+     * @param b - ntt polynomial that will be added to this ntt polynomial
+     * @return sum of this + b ntt polynomials
+     */
+    public NttPolynomial add(NttPolynomial b) {
+        pc.assertCompatibleWith(b.pc);
+
+        List<BigInteger> result = new java.util.ArrayList<>(this.pc.getN());
+        for (int i = 0; i < this.pc.getN(); i++) {
+            result.add(this.coefficients.get(i).add(b.coefficients.get(i)).mod(this.pc.getQ()));
+        }
+        return NttPolynomial.fromNttCoefficients(result, pc);
+    }
+
+    private NttPolynomial negate() {
+        List<BigInteger> result = new java.util.ArrayList<>(this.pc.getN());
+        for (int i = 0; i < this.pc.getN(); i++) {
+            result.add(this.coefficients.get(i).negate().mod(this.pc.getQ()));
+        }
+        return NttPolynomial.fromNttCoefficients(result, pc);
+    }
+
+    /**
+     * @param b - ntt polynomial that will be subtracted from this ntt polynomial
+     * @return subtraction of this - b ntt polynomials
+     */
+    public NttPolynomial subtract(NttPolynomial b) {
+        pc.assertCompatibleWith(b.pc);
+
+        return this.add(b.negate());
     }
 
     /**
@@ -58,11 +97,11 @@ public class NttPolynomial extends Polynomial<NttPolynomial> {
      * @return ntt form of a * b
      */
     public NttPolynomial multiply(NttPolynomial b) {
-        pc.assertCompatibleWith(b.getPc());
+        pc.assertCompatibleWith(b.pc);
 
         List<BigInteger> result = new ArrayList<>(this.pc.getN());
         for (int i = 0; i < this.pc.getN(); i++) {
-            result.add(this.getCoeffs().get(i).multiply(b.getCoeffs().get(i)).mod(this.pc.getQ()));
+            result.add(this.coefficients.get(i).multiply(b.coefficients.get(i)).mod(this.pc.getQ()));
         }
 
         return NttPolynomial.fromNttCoefficients(result, pc);
@@ -74,5 +113,34 @@ public class NttPolynomial extends Polynomial<NttPolynomial> {
     public static NttPolynomial constantTwoNtt(int n, PolynomialConfig pc) {
         List<BigInteger> nttCoeffs = Collections.nCopies(n, BigInteger.TWO);
         return NttPolynomial.fromNttCoefficients(nttCoeffs, pc);
+    }
+
+    /**
+     * @return byte array wrapped representing ntt polynomial's coefficients
+     */
+    public ByteArrayWrapper toByteArrayWrapper() {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            for (BigInteger coeff : this.coefficients) {
+                out.write(coeff.toByteArray());
+            }
+        } catch (IOException e) {
+            System.out.println("This should not have happened.");
+        }
+        return new ByteArrayWrapper(out.toByteArray());
+    }
+
+    /**
+     * @param b - ntt polynomial that will be concatenated to this ntt polynomial
+     * @return new ntt polynomial which coefficients will be concatenation this || b
+     */
+    public NttPolynomial concatWith(NttPolynomial b) {
+        pc.assertCompatibleWith(b.pc);
+
+        List<BigInteger> result = new ArrayList<>(2 * this.pc.getN());
+        result.addAll(this.coefficients);
+        result.addAll(b.coefficients);
+
+        return NttPolynomial.fromNttCoefficients(result, pc);
     }
 }

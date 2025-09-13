@@ -90,7 +90,7 @@ public class ClientImple {
         NttPolynomial sndBracket = svNtt.add(s1Ntt);
         ClassicalPolynomial ki = multiply3NttTuplesAndAddThemTogether(polynomialConfig, fstBracket, sndBracket, uNtt, vNtt, constantTwoPolyNtt, e1DoublePrimeNtt);
         // sigmai = Mod_2(ki, wj) //
-        List<Integer> sigmai = IntStream.range(0, n).mapToObj(i -> ding12.robustExtractor(ki.getCoeffs().get(i), wj.get(i))).toList();
+        List<Integer> sigmai = IntStream.range(0, n).mapToObj(i -> ding12.robustExtractor(ki.getCoefficients().get(i), wj.get(i))).toList();
         // ski = SHA3-256(sigmai) //
         //System.out.println(sigmai);
         ByteArrayWrapper ski = new ByteArrayWrapper(sigmai).hashWrapped();

@@ -67,9 +67,9 @@ public class ServerImple implements Server {
         NttPolynomial bracket = vNtt.add(piNtt);
         ClassicalPolynomial kj = multiply3NttTuplesAndAddThemTogether(polynomialConfig, bracket, s1PrimeNtt, uNtt, vNtt, constantTwoPolyNtt, e1TriplePrimeNtt);
         // wj = Cha(kj) //
-        List<Integer> wj = IntStream.range(0, n).mapToObj(i -> ding12.signalFunction(randomCustomImple, kj.getCoeffs().get(i))).toList();
+        List<Integer> wj = IntStream.range(0, n).mapToObj(i -> ding12.signalFunction(randomCustomImple, kj.getCoefficients().get(i))).toList();
         // sigmaj = Mod_2(kj, wj) //
-        List<Integer> sigmaj = IntStream.range(0, n).mapToObj(i -> ding12.robustExtractor(kj.getCoeffs().get(i), wj.get(i))).toList();
+        List<Integer> sigmaj = IntStream.range(0, n).mapToObj(i -> ding12.robustExtractor(kj.getCoefficients().get(i), wj.get(i))).toList();
         // skj = SHA3-256(sigmaj) //
         //System.out.println(sigmaj);
         ByteArrayWrapper skj = new ByteArrayWrapper(sigmaj).hashWrapped();
