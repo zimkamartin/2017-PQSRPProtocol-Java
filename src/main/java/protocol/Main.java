@@ -2,6 +2,7 @@ package protocol;
 
 import protocol.client.ClientImple;
 import protocol.client.ClientsKnowledge;
+import protocol.client.LoginResponse;
 import protocol.random.RandomCustomImple;
 import protocol.server.Server;
 import protocol.server.ServerImple;
@@ -31,8 +32,8 @@ public class Main {
         // Client decides to enroll //
         client.enroll(ck);
         // Client decides to log in //
-        ByteArrayWrapper clientsKey = client.login(ck);
-        String infoToTheConsole = (clientsKey == null) ? "Login FAILED." : Arrays.toString(clientsKey.getData());
+        LoginResponse loginResponse = client.login(ck);
+        String infoToTheConsole = loginResponse.getLoginOK() ? Arrays.toString(loginResponse.getSharedSecret().getData()) : "Login FAILED";
         System.out.println(infoToTheConsole);
     }
 }

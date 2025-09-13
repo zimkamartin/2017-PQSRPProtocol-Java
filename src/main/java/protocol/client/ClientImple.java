@@ -97,7 +97,7 @@ public class ClientImple {
         return new SessionConfigurationClient(piNtt, pjNtt, ski, serversResponseScs.getScs());
     }
 
-    private ByteArrayWrapper verifyEntities(SessionConfigurationClient scs) {
+    private LoginResponse verifyEntities(SessionConfigurationClient scs) {
         NttPolynomial piNtt = scs.getClientsEphPubKey();
         NttPolynomial pjNtt = scs.getServersEphPubKey();
         ByteArrayWrapper ski = scs.getSharedSecret();
@@ -106,8 +106,8 @@ public class ClientImple {
         // M2 = SHA3-256(pi || M1 || ski) //
         ByteArrayWrapper m2Prime = server.verifyEntities(scs.getServersSessionConfiguration(), m1);
         ByteArrayWrapper m2 = piNtt.toByteArrayWrapper().concatWith(m1).concatWith(ski).hashWrapped();
-        // VERIFY that M2 == M2'. If true, return key.
-        return m2.equals(m2Prime) ? ski : null;
+        // VERIFY that M2 == M2'.
+        return new LoginResponse(m2.equals(m2Prime), ski);
     }
 
     public void enroll(ClientsKnowledge ck) {
@@ -123,14 +123,13 @@ public class ClientImple {
         server.enrollClient(publicSeedForA, ck.getIdentity(), salt, vNtt);
     }
 
-    public ByteArrayWrapper login(ClientsKnowledge ck) {
+    public LoginResponse login(ClientsKnowledge ck) {
         // PHASE 1 //
         SessionConfigurationClient scc = computeSharedSecret(ck);
-        if (scc == null) {
-            return null;
+        if (scc == null) {  // When reply from the server was invalid.
+            return new LoginResponse(false, null);
         }
         // PHASE 2 //
         return verifyEntities(scc);
-        // FOR THE FUTURE pre klienta: Pripadne vratit loginResponse: kluc = byteArrayWrapper[], loginOk = boolin (aby to nebolo iba cez kluc = null)
     }
 }
