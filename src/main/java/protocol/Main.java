@@ -37,5 +37,3 @@ public class Main {
         System.out.println(infoToTheConsole);
     }
 }
-
-// Pre testovanie ci aj klient aj server ma to iste k: Vytvorit wrapper (triedu) na server, ktory vytiahne kluc, bude delegovat volania serveru, potom to skontroluje.
