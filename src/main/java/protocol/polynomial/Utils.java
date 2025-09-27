@@ -6,9 +6,27 @@ import protocol.random.RandomCustom;
 import java.math.BigInteger;
 import java.util.List;
 
-/**
- * Utils class for polynomials. All math related single-polynomial operations are in the class Polynomial,
- * remaining operations (NON-math single-polynomial or more than single-polynomial) are here.
+/** * The {@code Utils} class is utility class for polynomials in mostly NTT form.
+ * <p>All math related single-polynomial operations are in the class NttPolynomial. Here are:<\p>
+ *
+ * <ul>
+ *   <li>{@link #multiply2NttTuplesAddThemTogetherNtt(NttPolynomial, NttPolynomial, NttPolynomial, NttPolynomial)} –
+ *       multiplies two pairs of NTT polynomials and adds the results</li>
+ *   <li>{@link #multiply3NttTuplesAndAddThemTogether(PolynomialConfig, NttPolynomial, NttPolynomial,
+ *       NttPolynomial, NttPolynomial, NttPolynomial, NttPolynomial)} –
+ *       multiplies three pairs of NTT polynomials, adds the results and converts to standard form</li>
+ *   <li>{@link #generateRandomErrorPolyNtt(PolynomialConfig, RandomCustom, ByteArrayWrapper)} –
+ *       generates a random error polynomial (by Center Binomial Distribution) in NTT form using the given seed</li>
+ *   <li>{@link #generateRandomErrorPolyNtt(PolynomialConfig, RandomCustom)} –
+ *       generates a random error polynomial by creating a random seed and
+ *       delegating to the previous method</li>
+ *   <li>{@link #generateUniformPolyNtt(PolynomialConfig, RandomCustom, ByteArrayWrapper)} –
+ *       generates a random polynomial (by Uniform distribution) in NTT form</li>
+ *   <li>{@link #computeUNtt(PolynomialConfig, RandomCustom, NttPolynomial, NttPolynomial)} –
+ *       computes the parameter {@code u} as defined in the protocol</li>
+ * </ul>
+ *
+ * @author Martin Zimka
  */
 public final class Utils {
 

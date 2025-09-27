@@ -40,7 +40,7 @@ public class ServerImple implements Server {
 
     @Override
     public ServersResponseScs computeSharedSecret(ByteArrayWrapper I, NttPolynomial piNtt) {
-        NttPolynomial constantTwoPolyNtt = NttPolynomial.constantTwoNtt(n, polynomialConfig);
+        NttPolynomial constantTwoPolyNtt = NttPolynomial.constantTwoNtt(polynomialConfig);
         // Extract database. //
         if (!ServersDatabase.contains(I)) {
             return null;

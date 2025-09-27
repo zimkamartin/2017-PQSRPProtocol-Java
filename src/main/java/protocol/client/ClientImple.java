@@ -73,12 +73,12 @@ public class ClientImple {
         NttPolynomial svNtt = generateRandomErrorPolyNtt(polynomialConfig, randomCustomImple, seed1);
         NttPolynomial evNtt = generateRandomErrorPolyNtt(polynomialConfig, randomCustomImple, seed2);
         // Do all the math.
-        NttPolynomial constantTwoPolyNtt = NttPolynomial.constantTwoNtt(n, polynomialConfig);
+        NttPolynomial constantTwoPolyNtt = NttPolynomial.constantTwoNtt(polynomialConfig);
         return multiply2NttTuplesAddThemTogetherNtt(aNtt, svNtt, constantTwoPolyNtt, evNtt);
     }
 
     private SessionConfigurationClient computeSharedSecret(ClientsKnowledge ck) {
-        NttPolynomial constantTwoPolyNtt = NttPolynomial.constantTwoNtt(n, polynomialConfig);
+        NttPolynomial constantTwoPolyNtt = NttPolynomial.constantTwoNtt(polynomialConfig);
         // pi = as1 + 2e1 //
         // Create polynomial a from public seed.
         NttPolynomial aNtt = generateUniformPolyNtt(polynomialConfig, randomCustomImple, publicSeedForA);

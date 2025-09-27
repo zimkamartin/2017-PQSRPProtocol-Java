@@ -4,11 +4,33 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The {@code ClassicalPolynomial} class represents a polynomial in coefficient representation
+ * (also known as standard form). The polynomial is defined modulo {@code (X^N + 1)}, and all coefficients
+ * are reduced modulo {@code Q}.
+ *
+ * <p>This class has only one attribute:</p>
+ * <ul>
+ *   <li>{@code coefficients} – {@code List<BigInteger>}, the list of coefficients
+ *       ordered from the constant term up to the coefficient of {@code X^(N-1)}</li>
+ * </ul>
+ *
+ * <p>Instances of this class are created by
+ * {@link #ClassicalPolynomial(NttPolynomial, PolynomialConfig)}, which converts a polynomial from
+ * its NTT (Number Theoretic Transform) representation back to coefficient representation using
+ * the provided polynomial configuration:</p>
+ * <ul>
+ *   <li>{@code NttPolynomial} – the polynomial in NTT form</li>
+ *   <li>{@code PolynomialConfig} – the polynomial configuration required to perform the conversion</li>
+ * </ul>
+ *
+ * @author Martin Zimka
+ */
 public class ClassicalPolynomial {
 
     private final List<BigInteger> coefficients;
 
-    public ClassicalPolynomial(List<BigInteger> classicalCoeffs) {
+    private ClassicalPolynomial(List<BigInteger> classicalCoeffs) {
         this.coefficients = List.copyOf(classicalCoeffs);
     }
 

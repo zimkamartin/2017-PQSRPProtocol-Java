@@ -9,6 +9,47 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * The {@code NttPolynomial} class represents a polynomial in the NTT (Number Theoretic Transform) domain.
+ * The polynomial is defined modulo {@code (X^N + 1)}, and all coefficients are reduced modulo {@code Q}.
+ *
+ * <p>Polynomial represented in NTT form is just classical polynomial modulo (X^N + 1) represented as N remainders
+ * of polynomial modulo N polynomials of degree 1 of a form (X ± <integer>). Such representation uniquely
+ * represents one and only polynomial, thanks to the Chinese remainder theorem.</p>
+ *
+ * <p>This class has the following attributes:</p>
+ * <ul>
+ *   <li>{@code coefficients} – {@code List<BigInteger>}, the list of {@code N} remainders
+ *                              representing the polynomial in NTT form</li>
+ *   <li>{@code pc}           – {@code PolynomialConfig}, the configuration required for conversions
+ *                              and operations in the NTT domain</li>
+ * </ul>
+ *
+ * <p>Instances of this class are created using one of the following:</p>
+ * <ul>
+ *   <li>{@link #fromNttCoefficients(List, PolynomialConfig)} – creates an instance directly
+ *       from NTT coefficients and a configuration</li>
+ *   <li>{@link #fromClassicalCoefficients(List, PolynomialConfig)} – creates an instance
+ *       by converting coefficient representation into NTT form, using the given configuration</li>
+ * </ul>
+ *
+ * <p>This class provides arithmetic over NTT polynomials:</p>
+ * <ul>
+ *   <li>{@link #add(NttPolynomial)}</li>
+ *   <li>{@link #subtract(NttPolynomial)}</li>
+ *   <li>{@link #multiply(NttPolynomial)}</li>
+ * </ul>
+ *
+ * <p>Additional methods include:</p>
+ * <ul>
+ *   <li>{@link #constantTwoNtt(PolynomialConfig)} – generates the NTT representation
+ *                                                   of the constant polynomial {@code 2}</li>
+ *   <li>{@link #toByteArrayWrapper()}             – returns a {@code ByteArrayWrapper} representation</li>
+ *   <li>{@link #concatWith(NttPolynomial)}        – returns the NTT representation of {@code this * X^N + argument}</li>
+ * </ul>
+ *
+ * @author Martin Zimka
+ */
 public class NttPolynomial {
 
     private final List<BigInteger> coefficients;
@@ -110,8 +151,8 @@ public class NttPolynomial {
     /**
      * @return polynomial in Ntt form representing constant 2
      */
-    public static NttPolynomial constantTwoNtt(int n, PolynomialConfig pc) {
-        List<BigInteger> nttCoeffs = Collections.nCopies(n, BigInteger.TWO);
+    public static NttPolynomial constantTwoNtt(PolynomialConfig pc) {
+        List<BigInteger> nttCoeffs = Collections.nCopies(pc.getN(), BigInteger.TWO);
         return NttPolynomial.fromNttCoefficients(nttCoeffs, pc);
     }
 

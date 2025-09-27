@@ -17,8 +17,8 @@ import java.util.Arrays;
  *
  * <p>Protocol parameters and clients secrets are the following:</p>
  * <ul>
- *   <li>{@code N}   – {@code int}, maximal degree for polynomials (all polynomials are modulo (X^N + 1))</li>
- *   <li>{@code Q}   – {@code BigInteger}, maximal value of polynomial coefficients (all coefficients are modulo Q)</li>
+ *   <li>{@code N}   – {@code int}, all polynomials are of degree N-1 (they are reduced modulo (X^N + 1))</li>
+ *   <li>{@code Q}   – {@code BigInteger}, Q-1 is maximal value of polynomial coefficients (they are reduced modulo Q)</li>
  *   <li>{@code ETA} – {@code int}, bounds error polynomial values in range [-ETA, +ETA], sampled from a Centered
  *                                  Binomial Distribution</li>
  *   <li>{@code I}   – {@code ByteArrayWrapper}, represents client identity</li>

@@ -6,6 +6,31 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * The {@code PolynomialConfig} class defines the configuration parameters for polynomials used in NTT-based operations.
+ *
+ * <p>It consists of the following attributes:</p>
+ * <ul>
+ *   <li>{@code n}              – {@code int}, n-1 is the degree of the polynomial
+ *                                (coefficients are reduced modulo {@code X^n + 1})</li>
+ *   <li>{@code q}              – {@code BigInteger}, q-1 is the maximal value of polynomial coefficients
+ *                                (all coefficients are reduced modulo {@code q})</li>
+ *   <li>{@code zetas}          – {@code List<BigInteger>}, constants used for conversion
+ *                                from coefficient representation to NTT representation</li>
+ *   <li>{@code zetasInverted}  – {@code List<BigInteger>}, constants used for conversion
+ *                                from NTT representation back to coefficient representation</li>
+ *   <li>{@code moduloPolyTree} – internal structure used only to compute
+ *                                {@code zetas} and {@code zetasInverted}</li>
+ * </ul>
+ *
+ * <p>Apart from standard getters (although package-private), this class provides the method
+ * {@link #assertCompatibleWith(PolynomialConfig)}.
+ * It is used at the beginning of polynomial operations to verify that
+ * both polynomials share the same configuration.</p>
+ *
+ * @author Martin Zimka
+ */
+
 public class PolynomialConfig {
 
     private final int n;
@@ -14,7 +39,7 @@ public class PolynomialConfig {
     private final List<BigInteger> zetas;
     private final List<BigInteger> zetasInverted;
 
-    private final List<List<ModuloPoly>> nttTree;
+    private final List<List<ModuloPoly>> moduloPolyTree;
 
     /**
      * Computes tree of modulo polynomials. Everything from layer X^(n//2) to X^1.
@@ -25,14 +50,14 @@ public class PolynomialConfig {
         List<ModuloPoly> fstLayer = new ArrayList<>(2);
         fstLayer.add(new ModuloPoly(true, BigInteger.ONE, indexZeta));
         fstLayer.add(new ModuloPoly(false, BigInteger.ONE, indexZeta));
-        nttTree.add(fstLayer);
+        moduloPolyTree.add(fstLayer);
 
         while (powerX > 1) {
 
             powerX = powerX / 2;
             indexZeta = indexZeta.multiply(BigInteger.TWO);
 
-            List<ModuloPoly> lstLayer = nttTree.getLast();
+            List<ModuloPoly> lstLayer = moduloPolyTree.getLast();
             List<ModuloPoly> newLayer = new ArrayList<>(2 * lstLayer.size());
             for (ModuloPoly poly : lstLayer) {
                 BigInteger powerZeta = poly.getPowerZeta();
@@ -44,7 +69,7 @@ public class PolynomialConfig {
                 newLayer.add(plusPoly);
                 newLayer.add(minusPoly);
             }
-            nttTree.add(newLayer);
+            moduloPolyTree.add(newLayer);
         }
     }
 
@@ -54,7 +79,7 @@ public class PolynomialConfig {
      */
     private void generateArrays(BigInteger zeta) {
         BigInteger nRoot = BigInteger.TWO.multiply(BigInteger.valueOf(n));
-        for (List<ModuloPoly> layer: nttTree) {
+        for (List<ModuloPoly> layer: moduloPolyTree) {
             for (int i = 0; i < layer.size(); i = i + 2) {  // There is still + zeta, - zeta. So save it just as one zeta (the plus one).
                 ModuloPoly poly = layer.get(i);
                 BigInteger power = poly.getPowerZeta();
@@ -126,7 +151,7 @@ public class PolynomialConfig {
         this.q = q;
         this.zetas = new ArrayList<>(n - 1);
         this.zetasInverted = new ArrayList<>(n - 1);
-        this.nttTree = new ArrayList<>((int) (Math.log(n) / Math.log(2)));  // that is log_2(n)
+        this.moduloPolyTree = new ArrayList<>((int) (Math.log(n) / Math.log(2)));  // that is log_2(n)
         computeZetaArrays();
     }
 

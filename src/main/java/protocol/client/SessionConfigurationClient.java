@@ -9,7 +9,8 @@ import protocol.server.SessionConfigurationServer;
  *
  * <p>The session configuration consists of:</p>
  * <ul>
- *   <li>{@code piNtt} – {@code NttPolynomial}, the NTT representation of the client’s ephemeral public key</li>
+ *   <li>{@code piNtt} – {@code NttPolynomial}, the NTT (Number Theoretic Transform) representation of the client’s
+ *                                              ephemeral public key</li>
  *   <li>{@code pjNtt} – {@code NttPolynomial}, the NTT representation of the server’s ephemeral public key</li>
  *   <li>{@code ski}   – {@code ByteArrayWrapper}, the shared secret computed on the client’s side</li>
  *   <li>{@code scs}   – {@code SessionConfigurationServer}, the server’s corresponding session configuration</li>
