@@ -6,7 +6,33 @@ import protocol.ServersResponseScs;
 import protocol.polynomial.NttPolynomial;
 
 /**
- * Server from https://eprint.iacr.org/2017/1196.pdf
+ * The {@code Server} interface defines the server-side operations of the protocol
+ * described in <a href="https://eprint.iacr.org/2017/1196.pdf">ePrint 2017/1196</a>.
+ *
+ * <p>The interface provides the following methods:</p>
+ * <ul>
+ *   <li>{@link #getProtocolConfiguration()} – returns the protocol configuration: {@code n}, {@code q}, {@code eta}</li>
+ *   <li>{@link #enrollClient(ByteArrayWrapper, ByteArrayWrapper, ByteArrayWrapper, NttPolynomial)} –
+ *       stores a new client record in the server’s database, consisting of
+ *       the client’s identity, salt, public seed (for generating the public
+ *       polynomial {@code a}), and verifier in NTT form</li>
+ *   <li>{@link #computeSharedSecret(ByteArrayWrapper, NttPolynomial)} –
+ *       given a client’s identity and client's ephemeral public key (in NTT form),
+ *       computes and returns a {@link ServersResponseScs} object containing:
+ *       <ul>
+ *         <li>the client’s salt,</li>
+ *         <li>the server’s ephemeral public key (in NTT form), and</li>
+ *         <li>a polynomial encoding the output of the Signal function</li>
+ *       </ul>
+ *   </li>
+ *   <li>{@link #verifyEntities(SessionConfigurationServer, ByteArrayWrapper)} –
+ *       performs mutual authentication between the client and server by verifying
+ *       the client’s message {@code m1}, and returning the corresponding
+ *       server response. This ensures parties are authenticated and both have derived the same
+ *       shared secret.</li>
+ * </ul>
+ *
+ * @author Martin Zimka
  */
 public interface Server {
 

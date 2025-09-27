@@ -28,6 +28,8 @@ import java.util.Set;
  * It is used at the beginning of polynomial operations to verify that
  * both polynomials share the same configuration.</p>
  *
+ * Zetas and zetasInverted generation inspired by
+ * <a href="https://electricdusk.com/ntt.html">this blog post</a>.</p>
  * @author Martin Zimka
  */
 

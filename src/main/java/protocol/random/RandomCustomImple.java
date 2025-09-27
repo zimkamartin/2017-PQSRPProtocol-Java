@@ -15,9 +15,7 @@ import static java.math.RoundingMode.HALF_UP;
 /**
  * The {@code RandomCustomImple} class implements {@code RandomCustom} interface.
  *
- * <p>XOF, secureRandom and prf are inspired by
- * <a href="https://github.com/bcgit/bc-java/blob/main/core/src/main/java/org/bouncycastle/pqc/crypto/mlkem/Symmetric.java">mlkem/Symmetric.java</a>
- * Building blocks of functions generateUniformCoefficients and generateCbdCoefficients are heavily inspired by
+ * <p>Building blocks of functions generateUniformCoefficients and generateCbdCoefficients are heavily inspired by
  * <a href="https://github.com/bcgit/bc-java/blob/main/core/src/main/java/org/bouncycastle/pqc/crypto/mlkem/MLKEMIndCpa.java">mlkem/MLKEMIndCpa.java</a>
  * and
  * <a href="https://github.com/bcgit/bc-java/blob/main/core/src/main/java/org/bouncycastle/pqc/crypto/mlkem/CBD.java">mlkem/CBD.java</a>

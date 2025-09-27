@@ -48,6 +48,8 @@ import java.util.List;
  *   <li>{@link #concatWith(NttPolynomial)}        – returns the NTT representation of {@code this * X^N + argument}</li>
  * </ul>
  *
+ * <p>Conversion to NTT inspired by
+ * <a href="https://electricdusk.com/ntt.html">this blog post</a>.</p>
  * @author Martin Zimka
  */
 public class NttPolynomial {

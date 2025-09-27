@@ -1,17 +1,25 @@
 package protocol.server;
 
-import protocol.*;
+import protocol.ByteArrayWrapper;
+import protocol.Ding12Imple;
+import protocol.ProtocolConfiguration;
+import protocol.ServersResponseScs;
 import protocol.polynomial.ClassicalPolynomial;
 import protocol.polynomial.NttPolynomial;
 import protocol.polynomial.PolynomialConfig;
 import protocol.random.RandomCustom;
 
 import java.math.BigInteger;
-import java.util.*;
+import java.util.List;
 import java.util.stream.IntStream;
 
 import static protocol.polynomial.Utils.*;
 
+/**
+ * The {@code ServerImple} class implements {@code Server} interface.
+ *
+ * @author Martin Zimka
+ */
 public class ServerImple implements Server {
 
     private final int n;

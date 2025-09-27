@@ -12,8 +12,8 @@ import java.util.Arrays;
 
 /**
  * The {@code Main} class is the entry point of the application.
- * It configures protocol parameters and clients secrets. Also, if uncommented,
- * can invoke {@link #demo()} to demonstrate the protocol implemented in this project.
+ * It configures protocol parameters and clients secrets. Also, it invokes {@link #demo()}
+ * to demonstrate the protocol implemented in this project.
  *
  * <p>Protocol parameters and clients secrets are the following:</p>
  * <ul>
@@ -54,7 +54,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        //demo();
+        demo();
 
     }
 }

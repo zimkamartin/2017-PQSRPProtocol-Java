@@ -24,6 +24,8 @@ import java.util.List;
  *   <li>{@code PolynomialConfig} – the polynomial configuration required to perform the conversion</li>
  * </ul>
  *
+ * <p>Conversion from NTT inspired by
+ * <a href="https://electricdusk.com/ntt.html">this blog post</a>.</p>
  * @author Martin Zimka
  */
 public class ClassicalPolynomial {

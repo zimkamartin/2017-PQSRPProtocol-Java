@@ -6,12 +6,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * As name suggests, represents database located on the server's side.N and Q will be used to represent a polynomial modulo (X^N + 1) with all coefficients modulo Q.
+ * The {@code ServersDatabase} class represents the server-side client database.
  * <p>
- * It is database of clients.
- * The key is client's identity
- * and the value is seed for the public polynomial a, salt and verifier.
+ * It stores client records, keyed by client identity. Each record contains
+ * the public seed for {@code a}, salt, and verifier in NTT form.
  * </p>
+ *
+ * @author Martin Zimka
  */
 final class ServersDatabase {
 
