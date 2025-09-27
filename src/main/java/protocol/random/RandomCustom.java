@@ -3,6 +3,24 @@ package protocol.random;
 import java.math.BigInteger;
 import java.util.List;
 
+/**
+ * The {@code RandomCustom} interface defines an abstraction for all random operations
+ * used in the protocol.
+ *
+ * <p>It defines the following methods:</p>
+ * <ul>
+ *   <li>{@link #getRandomBytes(int)}                      – generates an array of {@code n} random bytes</li>
+ *   <li>{@link #getRandomBit(int)}                        – returns a random integer in the range
+ *                                                           {@code [0, bound)}</li>
+ *   <li>{@link #generateUniformCoefficients(int, byte[])} – produces {@code n} coefficients sampled uniformly,
+ *                                                           suitable for classical or Number Theoretic Transform
+ *                                                           polynomials</li>
+ *   <li>{@link #generateCbdCoefficients(int, byte[])}     – produces {@code n} coefficients (in standard form)
+ *                                                           sampled from Centred Binomial Distribution</li>
+ * </ul>
+ *
+ * @author Martin Zimka
+ */
 public interface RandomCustom {
 
     /**
