@@ -7,8 +7,16 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Wrapper for byte[] so that we can compare them and use them as keys in database.
- * SOURCE: ChatGPT.
+ * The {@code ByteArrayWrapper} class is an immutable wrapper around a {@code byte array}.
+ *
+ * <p>This wrapping a raw byte array provides the following advantages:</p>
+ * <ul>
+ *   <li>Supports proper equality checks via {@link #equals(Object)}</li>
+ *   <li>Ensures immutability by cloning input and output arrays</li>
+ *   <li>Provides utility methods such as hashing and concatenation</li>
+ * </ul>
+ *
+ * @author Martin Zimka
  */
 public class ByteArrayWrapper {
 
@@ -34,6 +42,7 @@ public class ByteArrayWrapper {
         return data.clone();
     }
 
+    // SOURCE: ChatGPT
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -42,6 +51,7 @@ public class ByteArrayWrapper {
         return Arrays.equals(data, that.data);
     }
 
+    // SOURCE: ChatGPT
     @Override
     public int hashCode() {
         return Arrays.hashCode(data);

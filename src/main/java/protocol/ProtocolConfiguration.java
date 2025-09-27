@@ -3,23 +3,27 @@ package protocol;
 import java.math.BigInteger;
 
 /**
- * N and Q will be used to represent a polynomial modulo (X^N + 1) with all coefficients modulo Q.
- * ETA is parameter in Central binomial distribution which is used for generating error polynomials.
+ * The {@code ProtocolConfiguration} represents protocols configuration.
+ *
+ * <p>That is:</p>
+ * <ul>
+ *   <li>{@code n}   – {@code int}, all polynomials are of degree n-1 (they are reduced modulo (X^n + 1)).
+ *                     Must be power of 2 because of Number Theoretic Transform (NTT)</li>
+ *   <li>{@code q}   – {@code BigInteger}, q-1 is maximal value of polynomial coefficients (they are reduced modulo q).
+ *                     Must hold q ≡ 1 mod 2n because of NTT.
+ *                     Must be prime so that generator exists, and we can compute n-root of one in NTT</li>
+ *   <li>{@code eta} – {@code int}, bounds error polynomial values in range [-eta, +eta], sampled from a Centered
+ *                                  Binomial Distribution</li>
+ * </ul>
+ *
+ * <p>These parameters are set at the beginning and everything in the protocol is set according to that setting.</p>
+ *
+ * @author Martin Zimka
  */
 public class ProtocolConfiguration {
 
-    /**
-     * Must be power of 2 because of NTT and must not overflow data type int.
-     */
     private final int n;
-    /**
-     * Must hold q ≡ 1 mod 2n because of NTT.
-     * Must be prime so that generator exists, and we can compute n-root of one in NTT.
-     */
     private final BigInteger q;
-    /**
-     * Must not overflow data type int.
-     */
     private final int eta;
 
     public ProtocolConfiguration(int n, BigInteger q, int eta) {

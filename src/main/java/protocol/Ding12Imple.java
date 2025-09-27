@@ -5,14 +5,14 @@ import protocol.random.RandomCustom;
 import java.math.BigInteger;
 
 /**
- * Represents all functions needed to secretly transform information to other party without intruder knowing.
- * <p>
- * Implements functions Hint function, Signal function and robust Extractor. All from the article
- * https://eprint.iacr.org/2017/1196.pdf
- * Also implements Symmetric modulo as defined in
- * https://youtu.be/h5pfTIE6slU?si=-EeOGTV0QD5QzbpY&t=543
- * although only for odd q, since q will be always odd (prime).
- * </p>
+ * The {@code Ding12Imple} class represents all functions needed to secretly transform information to other party
+ * without intruder knowing.
+ * <p>Implements functions Hint function, Signal function and robust Extractor. All from the article
+ * <a href="https://eprint.iacr.org/2017/1196.pdf">Ding</a><\p>
+ * <p>Also implements Symmetric modulo - modulo that results values from interval [-(q-1)/2, (q-1)/2],
+ * where q is odd modulus.</p>
+ *
+ * @author Martin Zimka
  */
 public class Ding12Imple {
 
