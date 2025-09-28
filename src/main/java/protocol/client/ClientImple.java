@@ -91,7 +91,7 @@ public class ClientImple {
         // Send identity and ephemeral public key pi in NTT form to the server. //
         // Receive salt, ephemeral public key pj in NTT form and wj. //
         ServersResponseScs serversResponseScs = server.computeSharedSecret(ck.getIdentity(), piNtt);
-        if (serversResponseScs == null) {
+        if (serversResponseScs == null) {  // Client was not found in the server's database.
             return null;
         }
         ByteArrayWrapper salt = serversResponseScs.getSalt();
@@ -113,7 +113,6 @@ public class ClientImple {
         // sigmai = Mod_2(ki, wj) //
         List<Integer> sigmai = IntStream.range(0, n).mapToObj(i -> ding12.robustExtractor(ki.getCoefficients().get(i), wj.get(i))).toList();
         // ski = SHA3-256(sigmai) //
-        //System.out.println(sigmai);
         ByteArrayWrapper ski = new ByteArrayWrapper(sigmai).hashWrapped();
         return new SessionConfigurationClient(piNtt, pjNtt, ski, serversResponseScs.getScs());
     }
@@ -131,6 +130,24 @@ public class ClientImple {
         return new LoginResponse(m2.equals(m2Prime), ski);
     }
 
+    /**
+     * Enrolls the client — Phase 0 of <a href="https://eprint.iacr.org/2017/1196.pdf">the protocol</a>.
+     *
+     * <p>During enrollment, the client computes a verifier {@code v} as:</p>
+     * {@code v = a·sv + 2·ev},
+     * where:
+     * <ul>
+     *   <li>{@code a} – public polynomial generated from a seed,</li>
+     *   <li>{@code sv} – secret polynomial derived from the client’s knowledge and salt,</li>
+     *   <li>{@code ev} – error polynomial derived from the client’s knowledge and salt.</li>
+     * </ul>
+     *
+     * <p>The verifier, together with the client’s identity, salt, and the public seed for {@code a},
+     * is then sent to the server.</p>
+     * <p> Verifier and salt are forgotten!</p>
+     *
+     * @param ck the client’s identity and password, encapsulated in a {@link ClientsKnowledge} object
+     */
     public void enroll(ClientsKnowledge ck) {
         // PHASE 0 //
         // v = asv + 2ev //
@@ -144,10 +161,44 @@ public class ClientImple {
         server.enrollClient(publicSeedForA, ck.getIdentity(), salt, vNtt);
     }
 
+    /**
+     * Performs the client login procedure — Phases 1 and 2 of
+     * <a href="https://eprint.iacr.org/2017/1196.pdf">the protocol</a>.
+     *
+     * <p><b>Phase 1 – Computing the shared secret</b></p>
+     * <ol>
+     *   <li>Compute the client’s ephemeral public key {@code pi}.</li>
+     *   <li>Send {@code pi} (in NTT form) to the server.</li>
+     *   <li>Receive from the server:
+     *     <ul>
+     *       <li>the client’s salt,</li>
+     *       <li>{@code pj} – the server’s ephemeral public key,</li>
+     *       <li>{@code wj} – coefficients resulting from the Signal function,</li>
+     *       <li>a server-side session configuration (allowing the server to continue with other clients).</li>
+     *     </ul>
+     *   </li>
+     *   <li>Compute key exchange material {@code ki}, which requires recomputing the verifier and
+     *       calculating {@code u}.</li>
+     *   <li>Hash secret {@code sigmai} extracted from {@code ki} and {@code wj}.</li>
+     * </ol>
+     *
+     * <p><b>Phase 2 – Verifying entities</b></p>
+     * <ol>
+     *   <li>Compute {@code M1} = hash(client’s ephemeral key, server’s ephemeral key, client’s shared secret).</li>
+     *   <li>Send {@code M1} along with the session configuration to the server.</li>
+     *   <li>Receive {@code M2} from the server (or {@code null} if authentication failed).</li>
+     *   <li>Locally compute {@code M2'} = hash(client’s ephemeral key, {@code M1}, client’s shared secret).</li>
+     *   <li>If {@code M2 = M2'}, the login succeeds and mutual authentication is established; otherwise,
+     *       the login fails.</li>
+     * </ol>
+     *
+     * @param ck the client’s identity and password, encapsulated in a {@link ClientsKnowledge} object
+     * @return a {@link LoginResponse} containing the login status and the computed shared secret
+     */
     public LoginResponse login(ClientsKnowledge ck) {
         // PHASE 1 //
         SessionConfigurationClient scc = computeSharedSecret(ck);
-        if (scc == null) {  // When reply from the server was invalid.
+        if (scc == null) {  // Client was not found in the server's database.
             return new LoginResponse(false, null);
         }
         // PHASE 2 //
