@@ -40,6 +40,20 @@ public class ClassicalPolynomial {
         return coefficients;
     }
 
+    /**
+     * Converts NTT representation of a polynomial coefficients to a standard representation of a polynomial coefficients.
+     *
+     * <p>This method performs the inverse NTT using the precomputed inverted
+     * 2N-th root-of-unity powers from List {@code zetasInverted} located in {@code PolynomialConfig}.
+     * It follows the same layer-wise butterfly structure as method {@code convertToNtt} in class {@code NttPolynomial},
+     * but in reverse order and with adjusted formulas.
+     *
+     * <p>At the end, each coefficient is scaled by the power of 2 modulo q.</p>
+     *
+     * @param nttCoeffs the polynomial coefficients in NTT domain
+     * @param pc - the polynomial configuration (modulus {@code q}, degree {@code n}, and precomputed constants)
+     * @return the polynomial coefficients in the standard domain
+     */
     private static List<BigInteger> convertFromNtt(List<BigInteger> nttCoeffs, PolynomialConfig pc) {
 
         int n = pc.getN();

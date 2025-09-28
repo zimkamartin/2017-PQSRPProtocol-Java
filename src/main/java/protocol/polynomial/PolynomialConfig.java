@@ -44,7 +44,20 @@ public class PolynomialConfig {
     private final List<List<ModuloPoly>> moduloPolyTree;
 
     /**
-     * Computes tree of modulo polynomials. Everything from layer X^(n//2) to X^1.
+     * Computes the tree of modulo polynomials, from the 2 roots at degree {@code X^(N/2)}
+     * down to the leaves at degree {@code X^1}.
+     *
+     * <p>Each polynomial of the form:</p>
+     * <ul>
+     *   <li>{@code (X^powerX + (ζ_indexZeta)^powerZeta)} is divided into
+     *       {@code (X^(powerX/2) + (ζ_(2*indexZeta))^(powerZeta + indexZeta/2))} and
+     *       {@code (X^(powerX/2) - (ζ_(2*indexZeta))^(powerZeta + indexZeta/2))}</li>
+     *   <li>{@code (X^powerX - (ζ_indexZeta)^powerZeta)} is divided into
+     *       {@code (X^(powerX/2) + (ζ_(2*indexZeta))^powerZeta)} and
+     *       {@code (X^(powerX/2) - (ζ_(2*indexZeta))^powerZeta)}</li>
+     * </ul>
+     *
+     * <p>The resulting polynomials are stored in the class attribute {@code moduloPolyTree}.</p>
      */
     private void computeNttTree() {
         int powerX = n / 2;
@@ -76,23 +89,39 @@ public class PolynomialConfig {
     }
 
     /**
-     * Generates arrays zetas and zetas inverted by exponentiating parameter zeta.
-     * @param zeta
+     * Computes the arrays {@code zetas} and {@code zetasInverted} by exponentiating the given 2N-th root of unity.
+     *
+     * <p>Traversal is done layer by layer from roots to leaves through {@code moduloPolyTree}.
+     * For each {@code ModuloPoly} object in a layer, this method generates the constant
+     * (ζ_indexZeta)^powerZeta, where ζ_{2N} is the provided 2N-th root of unity modulo q.
+     * The corresponding inverse of this constant is also generated.</p>
+     *
+     * @param rootOfUnity the 2N-th root of unity modulo q (ζ_{2N})
      */
-    private void generateArrays(BigInteger zeta) {
+    private void generateArrays(BigInteger rootOfUnity) {
         BigInteger nRoot = BigInteger.TWO.multiply(BigInteger.valueOf(n));
         for (List<ModuloPoly> layer: moduloPolyTree) {
             for (int i = 0; i < layer.size(); i = i + 2) {  // There is still + zeta, - zeta. So save it just as one zeta (the plus one).
                 ModuloPoly poly = layer.get(i);
                 BigInteger power = poly.getPowerZeta();
                 BigInteger index = poly.getIndexZeta();
-                BigInteger z = zeta.modPow(nRoot.divide(index), q).modPow(power, q);
+                BigInteger z = rootOfUnity.modPow(nRoot.divide(index), q).modPow(power, q);
                 BigInteger zInverted = z.modPow(BigInteger.valueOf(-1), q);
                 zetas.add(z);
                 zetasInverted.add(zInverted);
             }
         }
     }
+
+    /**
+     * Finds the prime factors of the given number.
+     *
+     * <p>Based on the approach described
+     * <a href="https://stackoverflow.com/questions/15347174/python-finding-prime-factors">here</a>.</p>
+     *
+     * @param x the number to be factored
+     * @return a set of {@code BigInteger} values representing the prime factors of {@code x}
+     */
 
     private Set<BigInteger> findPrimeFactors(BigInteger x) {
         BigInteger i = BigInteger.TWO;
@@ -112,13 +141,21 @@ public class PolynomialConfig {
     }
 
     /**
-     * Compute 2*n-th primitive root of one modulo q.
-     * <p>
-     * Find generator g of a group Z_q. Primitive root is then g ^ ((q - 1) / 2 * n).
-     * Firstly randomly incrementally choose possible g. Check that g ^ (q - 1) is congruent to 1 modulo q.
-     * Factorize (q - 1) and check, that there is no smoller exponent y s. t. g ^ y is congruent to 1 modulo q.
-     * If not, g is our generator. Compute primitive root and return it.
-     * </p>
+     * Computes a 2n-th primitive root of unity modulo q.
+     *
+     * <p>Algorithm outline:</p>
+     * <ul>
+     *   <li>Find a generator g of the group ℤ<sub>q</sub>.</li>
+     *   <li>The primitive root is then g^((q − 1) / (2n)).</li>
+     *   <li>To find g:
+     *     <ul>
+     *       <li>Randomly incrementally choose candidate values for g.</li>
+     *       <li>Check that g^(q − 1) ≡ 1 (mod q).</li>
+     *       <li>Factorize (q − 1) and ensure there is no smaller exponent y such that g^y ≡ 1 (mod q).</li>
+     *     </ul>
+     *   </li>
+     *   <li>If such g is found, compute the primitive root and return it.</li>
+     * </ul>
      */
     private BigInteger computePrimitiveRoot() {
         BigInteger exp = (q.subtract(BigInteger.ONE)).divide((BigInteger.TWO).multiply(BigInteger.valueOf(n)));
@@ -144,8 +181,8 @@ public class PolynomialConfig {
 
     private void computeZetaArrays() {
         computeNttTree();
-        BigInteger zeta = computePrimitiveRoot();
-        generateArrays(zeta);
+        BigInteger primitiveRoot = computePrimitiveRoot();
+        generateArrays(primitiveRoot);
     }
 
     public PolynomialConfig(int n, BigInteger q) {
@@ -173,6 +210,12 @@ public class PolynomialConfig {
         return List.copyOf(zetasInverted);
     }
 
+    /**
+     * Check that this and imputed polynomial are compatible.
+     *
+     * <p>Check that both polynomials are of the same degree (n-1) and their coefficients are modulo same constant (q).</p>
+     * @param b configuration of a polynomial that will be checked against this polynomial's configuration
+     */
     void assertCompatibleWith(PolynomialConfig b) {
         if (this.n != b.n) {
             throw new IllegalArgumentException("Polynomials must have the same degree n");

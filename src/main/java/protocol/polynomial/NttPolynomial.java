@@ -66,6 +66,36 @@ public class NttPolynomial {
         return coefficients;
     }
 
+    /**
+     * Converts a polynomial from its standard coefficient representation
+     * into the Number Theoretic Transform (NTT) representation.
+     *
+     * <p>This method performs the forward NTT using a layer-wise butterfly
+     * structure. At each layer, the polynomial is reduced modulo smaller
+     * factors of the polynomial (X^N + 1), while applying precomputed
+     * powers of a primitive 2N-th root of unity (from List {@code zetas}
+     * located in {@code PolynomialConfig}). The process is performed
+     * in-place on new coefficient list, and the transformed coefficients
+     * are returned.</p>
+     *
+     * <p><b>Implementation note:</b> The transform proceeds iteratively:
+     * in each layer the number of reduction polynomials doubles, their
+     * degree halves, and coefficients are updated accordingly. For example,
+     * applying modulo {@code (X^512 + ζ₀)} and {@code (X^512 - ζ₀)}
+     * to a polynomial modulo {@code (X^1024 + 1)} results in new coefficient vectors:</p>
+     *
+     * <pre>
+     * a_L = [a₀ − ζ₀·a₅₁₂, a₁ − ζ₀·a₅₁₃, …]
+     * a_R = [a₀ + ζ₀·a₅₁₂, a₁ + ζ₀·a₅₁₃, …]
+     * </pre>
+     *
+     * where {@code ζ₀} is the first root-of-unity constant,
+     * and {@code a₀, a₁, …} are the original coefficients.
+     *
+     * @param coeffs the polynomial coefficients in standard domain
+     * @param pc the polynomial configuration (degree {@code n}, modulus {@code q}, and precomputed constants {@code zetas})
+     * @return the polynomial coefficients in NTT domain
+     */
     private static List<BigInteger> convertToNtt(List<BigInteger> coeffs, PolynomialConfig pc) {
 
         int n = pc.getN();
@@ -104,8 +134,16 @@ public class NttPolynomial {
     }
 
     /**
-     * @param b - ntt polynomial that will be added to this ntt polynomial
-     * @return sum of this + b ntt polynomials
+     * Adds another NTT domain polynomial to this (NTT domain) one.
+     * <p>At the beginning checks whether polynomials are compatible (have same n and q).</p>
+     * <p>
+     * Since polynomial in NTT domain is just remainders modulo N degree-one polynomials,
+     * addition of two such polynomials is addition in each modulo domain, so component wise.
+     * </p>
+     *
+     * @param b the NTT polynomial to add to this polynomial
+     * @return a new {@code NttPolynomial} representing the sum {@code this + b}
+     * @throws IllegalArgumentException if {@code b} has incompatible configuration
      */
     public NttPolynomial add(NttPolynomial b) {
         pc.assertCompatibleWith(b.pc);
@@ -126,8 +164,15 @@ public class NttPolynomial {
     }
 
     /**
-     * @param b - ntt polynomial that will be subtracted from this ntt polynomial
-     * @return subtraction of this - b ntt polynomials
+     * Subtracts another NTT domain polynomial from this (NTT domain) one.
+     * <p>
+     * After checking compatibility of polynomials (they must have same n and same q)
+     * negates polynomial b and calls method {@link #add(NttPolynomial)} with negated polynomial.
+     * </p>
+     *
+     * @param b the NTT polynomial to subtract from this polynomial
+     * @return a new {@code NttPolynomial} representing the subtraction {@code this - b}
+     * @throws IllegalArgumentException if {@code b} has incompatible configuration
      */
     public NttPolynomial subtract(NttPolynomial b) {
         pc.assertCompatibleWith(b.pc);
@@ -136,8 +181,16 @@ public class NttPolynomial {
     }
 
     /**
-     * @param b - NTT polynomial
-     * @return ntt form of a * b
+     * Multiplies another NTT domain polynomial with this (NTT domain) one.
+     * <p>At the beginning checks whether polynomials are compatible (have same n and q).</p>
+     * <p>
+     * Since polynomial in NTT domain is just remainders modulo N degree-one polynomials,
+     * multiplication of two such polynomials is multiplication in each modulo domain, so component wise.
+     * </p>
+     *
+     * @param b the NTT polynomial to multiply with this polynomial
+     * @return a new {@code NttPolynomial} representing the multiplication {@code this * b}
+     * @throws IllegalArgumentException if {@code b} has incompatible configuration
      */
     public NttPolynomial multiply(NttPolynomial b) {
         pc.assertCompatibleWith(b.pc);
@@ -151,7 +204,9 @@ public class NttPolynomial {
     }
 
     /**
-     * @return polynomial in Ntt form representing constant 2
+     * Returns constant 2 polynomial in NTT domain.
+     *
+     * @return polynomial in NTT form representing constant 2
      */
     public static NttPolynomial constantTwoNtt(PolynomialConfig pc) {
         List<BigInteger> nttCoeffs = Collections.nCopies(pc.getN(), BigInteger.TWO);
@@ -159,7 +214,9 @@ public class NttPolynomial {
     }
 
     /**
-     * @return byte array wrapped representing ntt polynomial's coefficients
+     * Returns object of class ByteArrayWrapper representing coefficients of this NTT polynomial.
+     *
+     * @return ByteArrayWrapper representation of this NTT polynomial.
      */
     public ByteArrayWrapper toByteArrayWrapper() {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -174,8 +231,10 @@ public class NttPolynomial {
     }
 
     /**
-     * @param b - ntt polynomial that will be concatenated to this ntt polynomial
-     * @return new ntt polynomial which coefficients will be concatenation this || b
+     * Returns NTT representation of polynomial this * X^N + b.
+     *
+     * @param b - NTT polynomial that will be added (in other words concatenated) to this NTT polynomial
+     * @return new NTT polynomial of a form thisPolynomial * X^N + b
      */
     public NttPolynomial concatWith(NttPolynomial b) {
         pc.assertCompatibleWith(b.pc);

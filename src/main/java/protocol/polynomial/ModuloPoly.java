@@ -10,7 +10,7 @@ import java.math.BigInteger;
  * <pre>
  *   X^powerX ± (ζ_indexZeta)^powerZeta
  * </pre>
- * where {@code ζ} 2N-th root of unity.
+ * where (ζ_indexZeta)^powerZeta is indexZeta-th root-of-unity raised to powerZeta modulo q.
  *
  * <p>The components are represented as follows:</p>
  * <ul>
