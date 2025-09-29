@@ -32,7 +32,6 @@ import java.util.Set;
  * <a href="https://electricdusk.com/ntt.html">this blog post</a>.</p>
  * @author Martin Zimka
  */
-
 public class PolynomialConfig {
 
     private final int n;
@@ -144,18 +143,16 @@ public class PolynomialConfig {
      * Computes a 2n-th primitive root of unity modulo q.
      *
      * <p>Algorithm outline:</p>
-     * <ul>
+     * <ol>
      *   <li>Find a generator g of the group ℤ<sub>q</sub>.</li>
      *   <li>The primitive root is then g^((q − 1) / (2n)).</li>
-     *   <li>To find g:
-     *     <ul>
-     *       <li>Randomly incrementally choose candidate values for g.</li>
-     *       <li>Check that g^(q − 1) ≡ 1 (mod q).</li>
-     *       <li>Factorize (q − 1) and ensure there is no smaller exponent y such that g^y ≡ 1 (mod q).</li>
-     *     </ul>
-     *   </li>
-     *   <li>If such g is found, compute the primitive root and return it.</li>
-     * </ul>
+     * </ol>
+     * <p>To find g:</p>
+     * <ol>
+     *     <li>Randomly incrementally choose candidate values for g.</li>
+     *     <li>Check that g^(q − 1) ≡ 1 (mod q).</li>
+     *     <li>Factorize (q − 1) and ensure there is no smaller exponent y such that g^y ≡ 1 (mod q).</li>
+     * </ol>
      */
     private BigInteger computePrimitiveRoot() {
         BigInteger exp = (q.subtract(BigInteger.ONE)).divide((BigInteger.TWO).multiply(BigInteger.valueOf(n)));

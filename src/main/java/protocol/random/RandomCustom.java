@@ -10,7 +10,7 @@ import java.util.List;
  * <p>It defines the following methods:</p>
  * <ul>
  *   <li>{@link #getRandomBytes(int)}                      – generates an array of {@code n} random bytes</li>
- *   <li>{@link #getRandomBit(int)}                        – returns a random integer in the range
+ *   <li>{@link #getRandomInt(int)}                        – returns a random integer in the range
  *                                                           {@code [0, bound)}</li>
  *   <li>{@link #generateUniformCoefficients(int, byte[])} – produces {@code n} coefficients sampled uniformly,
  *                                                           suitable for classical or Number Theoretic Transform
@@ -24,25 +24,38 @@ import java.util.List;
 public interface RandomCustom {
 
     /**
+     * Generates n random bytes.
+     * 
      * @param n - number of random bytes that should be returned
      */
     byte[] getRandomBytes(int n);
 
     /**
-     * @param bound - upper bound of the interval
+     * Generates random Integer from interval [0; bound).
+     * 
+     * @param bound - upper (exclusive) bound of the interval
      * @return random int value between 0 (inclusive) and the specified value bound (exclusive)
      */
-    int getRandomBit(int bound);
+    int getRandomInt(int bound);
 
     /**
-     * @param n - the size of the output list that will have coefficients sampled by uniform distribution. List can represent classical or ntt polynomial.
+     * Samples a list of Uniformly distributed BigInteger values derived from the given seed.
+     *
+     * <p>This list can represent list of coefficients in standard or in NTT domain.</p>
+     *
+     * @param n - number of Uniformly sampled BigInteger values
      * @param seed - seed for generating uniform data
      */
     List<BigInteger> generateUniformCoefficients(int n, byte[] seed);
 
     /**
-     * @param n - the size of the output list that will have coefficients sampled by centered binomial distribution. List can represent classical polynomial.
-     * @param seed - seed for generating uniform data later used to create centered binomial distribution (with param. eta)
+     * Samples a list of BigInteger values from a Centered Binomial Distribution,
+     * deterministically derived from the given seed.
+     *
+     * <p>This list can represent list of coefficients in standard domain.</p>
+     *
+     * @param n - number of BigInteger values sampled using Center Binomial Distribution
+     * @param seed - seed for generating Centered Binomial Distribution data
      */
     List<BigInteger> generateCbdCoefficients(int n, byte[] seed);
 }

@@ -30,7 +30,7 @@ public class Ding12Imple {
     }
 
     public int signalFunction(RandomCustom rc, BigInteger y) {
-        int b = rc.getRandomBit(2);
+        int b = rc.getRandomInt(2);
         return hintFunction(y, b);
     }
 
