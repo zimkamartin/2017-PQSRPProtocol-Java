@@ -20,6 +20,9 @@ final class ServersDatabase {
 
     private ServersDatabase(){}
 
+    /**
+     * Throws an exception if client with the same identity already exist in the database!
+     */
     static void saveClient(ByteArrayWrapper identity, ClientRecord clientRecord) {
         if (database.containsKey(identity)){
             throw new IllegalArgumentException("Client already exists");
@@ -27,6 +30,9 @@ final class ServersDatabase {
         database.put(identity, clientRecord);
     }
 
+    /**
+     * Throws an exception if client with inputted identity does not exist in the database!
+     */
     static ClientRecord getClient(ByteArrayWrapper identity) {
         if (!database.containsKey(identity)){
             throw new IllegalArgumentException("Client does not exist");

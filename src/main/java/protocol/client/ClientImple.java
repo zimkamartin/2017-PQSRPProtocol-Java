@@ -117,14 +117,14 @@ public class ClientImple {
         return new SessionConfigurationClient(piNtt, pjNtt, ski, serversResponseScs.getScs());
     }
 
-    private LoginResponse verifyEntities(SessionConfigurationClient scs) {
+    private LoginResponse verifyKeysEntities(SessionConfigurationClient scs) {
         NttPolynomial piNtt = scs.getClientsEphPubKey();
         NttPolynomial pjNtt = scs.getServersEphPubKey();
         ByteArrayWrapper ski = scs.getSharedSecret();
         // M1 = SHA3-256(pi || pj || ski) //
         ByteArrayWrapper m1 = piNtt.concatWith(pjNtt).toByteArrayWrapper().concatWith(ski).hashWrapped();
         // M2 = SHA3-256(pi || M1 || ski) //
-        ByteArrayWrapper m2Prime = server.verifyEntities(scs.getServersSessionConfiguration(), m1);
+        ByteArrayWrapper m2Prime = server.verifyKeysEntities(scs.getServersSessionConfiguration(), m1);
         ByteArrayWrapper m2 = piNtt.toByteArrayWrapper().concatWith(m1).concatWith(ski).hashWrapped();
         // VERIFY that M2 == M2'.
         return new LoginResponse(m2.equals(m2Prime), ski);
@@ -182,14 +182,14 @@ public class ClientImple {
      *   <li>Hash secret {@code sigmai} extracted from {@code ki} and {@code wj}.</li>
      * </ol>
      *
-     * <p><b>Phase 2 – Verifying entities</b></p>
+     * <p><b>Phase 2 – Verifying keys and server's entity</b></p>
      * <ol>
      *   <li>Compute {@code M1} = hash(client’s ephemeral key, server’s ephemeral key, client’s shared secret).</li>
      *   <li>Send {@code M1} along with the session configuration to the server.</li>
      *   <li>Receive {@code M2} from the server (or {@code null} if authentication failed).</li>
      *   <li>Locally compute {@code M2'} = hash(client’s ephemeral key, {@code M1}, client’s shared secret).</li>
-     *   <li>If {@code M2 = M2'}, the login succeeds and mutual authentication is established; otherwise,
-     *       the login fails.</li>
+     *   <li>If {@code M2 = M2'}, key exchange was successful, server is authenticated, login was successful;
+     *   otherwise, the login failed.</li>
      * </ol>
      *
      * @param ck the client’s identity and password, encapsulated in a {@link ClientsKnowledge} object
@@ -202,6 +202,6 @@ public class ClientImple {
             return new LoginResponse(false, null);
         }
         // PHASE 2 //
-        return verifyEntities(scc);
+        return verifyKeysEntities(scc);
     }
 }

@@ -16,7 +16,7 @@ import java.util.stream.IntStream;
 import static protocol.polynomial.Utils.*;
 
 /**
- * The {@code ServerImple} class implements {@code Server} interface.
+ * The {@code ServerImple} class implements {@link Server} interface.
  *
  * @author Martin Zimka
  */
@@ -41,11 +41,28 @@ public class ServerImple implements Server {
         return protocolConfiguration;
     }
 
+    /**
+     * Under client's identity saves client's salt, verifier (in NTT form) and public seed for public polynomial a
+     * to the server's database.
+     *
+     * @param publicSeedForA - public seed that will be used to generate public polynomial a
+     * @param I - client's identity
+     * @param salt - client's salt
+     * @param vNtt- polynomial representing client's verifier in NTT form
+     */
     @Override
     public void enrollClient(ByteArrayWrapper publicSeedForA, ByteArrayWrapper I, ByteArrayWrapper salt, NttPolynomial vNtt) {
         ServersDatabase.saveClient(I, new ClientRecord(publicSeedForA, salt, vNtt));
     }
 
+    /**
+     * Based on client's identity and ephemeral public key, computes shared secret on server's side.
+     *
+     * @param I - client's identity
+     * @param piNtt - polynomial representing client's ephemeral public key in NTT form
+     * @return the client’s salt, the server’s ephemeral public key (in NTT form), a polynomial encoding the output
+     * of the Signal function applied to key exchange material and server's session configuration
+     */
     @Override
     public ServersResponseScs computeSharedSecret(ByteArrayWrapper I, NttPolynomial piNtt) {
         NttPolynomial constantTwoPolyNtt = NttPolynomial.constantTwoNtt(polynomialConfig);
@@ -79,13 +96,20 @@ public class ServerImple implements Server {
         // sigmaj = Mod_2(kj, wj) //
         List<Integer> sigmaj = IntStream.range(0, n).mapToObj(i -> ding12.robustExtractor(kj.getCoefficients().get(i), wj.get(i))).toList();
         // skj = SHA3-256(sigmaj) //
-        //System.out.println(sigmaj);
         ByteArrayWrapper skj = new ByteArrayWrapper(sigmaj).hashWrapped();
         return new ServersResponseScs(salt, pjNtt, wj, new SessionConfigurationServer(piNtt, pjNtt, skj));
     }
 
+    /**
+     * Verifies that both parties constructed the same key and authenticate client.
+     *
+     * @param sessionConfiguration - server's configuration of a session with the client
+     * @param m1 - hash of concatenated client's ephemeral key with server's ephemeral key and with client's shared secret key
+     * @return hash of concatenated client's ephemeral key with m1 with server's shared secret key
+     * or null if obtained attribute failed verification
+     */
     @Override
-    public ByteArrayWrapper verifyEntities(SessionConfigurationServer sessionConfiguration, ByteArrayWrapper m1) {
+    public ByteArrayWrapper verifyKeysEntities(SessionConfigurationServer sessionConfiguration, ByteArrayWrapper m1) {
         NttPolynomial piNtt = sessionConfiguration.getClientsEphPubKey();
         NttPolynomial pjNtt = sessionConfiguration.getServersEphPubKey();
         ByteArrayWrapper skj = sessionConfiguration.getSharedSecret();

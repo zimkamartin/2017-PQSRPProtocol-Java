@@ -33,9 +33,9 @@ public class TestServerWrapper implements Server {
     }
 
     @Override
-    public ByteArrayWrapper verifyEntities(SessionConfigurationServer scs, ByteArrayWrapper m1) {
+    public ByteArrayWrapper verifyKeysEntities(SessionConfigurationServer scs, ByteArrayWrapper m1) {
         capturedSkj = scs.getSharedSecret();
-        return delegate.verifyEntities(scs, m1);
+        return delegate.verifyKeysEntities(scs, m1);
     }
 
     public ByteArrayWrapper getCapturedSkj() {
