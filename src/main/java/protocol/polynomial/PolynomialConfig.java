@@ -16,9 +16,9 @@ import java.util.Set;
  *   <li>{@code q}              – {@code BigInteger}, q-1 is the maximal value of polynomial coefficients
  *                                (all coefficients are reduced modulo {@code q})</li>
  *   <li>{@code zetas}          – {@code List<BigInteger>}, constants used for conversion
- *                                from coefficient representation to NTT representation</li>
+ *                                from coefficient representation to NTT representation; immutable</li>
  *   <li>{@code zetasInverted}  – {@code List<BigInteger>}, constants used for conversion
- *                                from NTT representation back to coefficient representation</li>
+ *                                from NTT representation back to coefficient representation; immutable</li>
  *   <li>{@code moduloPolyTree} – internal structure used only to compute
  *                                {@code zetas} and {@code zetasInverted}</li>
  * </ul>

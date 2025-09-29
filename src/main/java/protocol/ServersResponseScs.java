@@ -41,7 +41,7 @@ public class ServersResponseScs {
     public ServersResponseScs(ByteArrayWrapper salt, NttPolynomial pjNtt, List<Integer> wj, SessionConfigurationServer scs) {
         this.salt = salt;
         this.pjNtt = pjNtt;
-        this.wj = List.copyOf(wj);
+        this.wj = List.copyOf(wj);  // make sure that it will not be changed after created
         this.scs = scs;
     }
 

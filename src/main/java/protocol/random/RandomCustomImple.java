@@ -55,7 +55,7 @@ public class RandomCustomImple implements RandomCustom {
     public byte[] getRandomBytes(int n) {
         byte[] byteArray = new byte[n];
         secureRandom.nextBytes(byteArray);
-        return byteArray.clone();
+        return byteArray;
     }
 
     @Override

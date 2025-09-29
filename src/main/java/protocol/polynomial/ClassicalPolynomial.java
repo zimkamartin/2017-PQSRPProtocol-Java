@@ -8,7 +8,7 @@ import java.util.List;
  * The {@code ClassicalPolynomial} class represents a polynomial in coefficient representation
  * (also known as standard form). The polynomial is defined modulo {@code (X^N + 1)}, and all coefficients
  * are reduced modulo {@code Q}.
- *
+ * <p>All coefficients are immutable.</p>
  * <p>This class has only one attribute:</p>
  * <ul>
  *   <li>{@code coefficients} – {@code List<BigInteger>}, the list of coefficients

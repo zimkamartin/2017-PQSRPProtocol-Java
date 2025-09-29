@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * The {@code NttPolynomial} class represents a polynomial in the NTT (Number Theoretic Transform) domain.
  * The polynomial is defined modulo {@code (X^N + 1)}, and all coefficients are reduced modulo {@code Q}.
- *
+ * <p>All coefficients are immutable.</p>
  * <p>Polynomial represented in NTT form is just classical polynomial modulo (X^N + 1) represented as N remainders
  * of polynomial modulo N polynomials of degree 1 of a form (X ± <integer>). Such representation uniquely
  * represents one and only polynomial, thanks to the Chinese remainder theorem.</p>
