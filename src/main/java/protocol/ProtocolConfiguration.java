@@ -12,7 +12,7 @@ import java.math.BigInteger;
  *   <li>{@code q}   – {@code BigInteger}, q-1 is maximal value of polynomial coefficients (they are reduced modulo q).
  *                     Must hold q ≡ 1 mod 2n because of NTT.
  *                     Must be prime so that generator exists, and we can compute n-root of one in NTT</li>
- *   <li>{@code eta} – {@code int}, bounds error polynomial values in range [-eta, +eta], sampled from a Centered
+ *   <li>{@code eta} – {@code int}, bounds error polynomial values in range [-eta; +eta], sampled from a Centered
  *                                  Binomial Distribution</li>
  * </ul>
  *

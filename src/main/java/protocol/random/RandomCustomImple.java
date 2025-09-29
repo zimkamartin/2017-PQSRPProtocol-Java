@@ -27,7 +27,7 @@ public class RandomCustomImple implements RandomCustom {
 
     private final int n;
     private final BigInteger q;
-    private final int eta;
+    private final int eta;  // CBD values will be sampled from interval [-eta; +eta]
 
     // XOF defined in the protocol && XOF used in BC for public a (uniform distribution) from seed
     private static final SHAKEDigest xof = new SHAKEDigest(128);
@@ -236,7 +236,8 @@ public class RandomCustomImple implements RandomCustom {
     }
 
     /**
-     * Samples a list of BigInteger values using the Centered Binomial Distribution, derived from the given seed.
+     * Samples a list of BigInteger values form interval [-eta; +eta] using the Centered Binomial Distribution,
+     * derived from the given seed.
      *
      * <p>Algorithm:</p>
      * <ol>

@@ -14,7 +14,8 @@ import java.util.List;
  *     <li>{@code salt}  – {@code ByteArrayWrapper}, client's salt</li>
  *     <li>{@code pjNtt} – {@code NttPolynomial}, server's ephemeral public key in NTT form</li>
  *     <li>{@code wj}    – {@code List<Integer>}, list of integers resulting from applying Signal function to polynomial kj
- *                         (for more information see protocol definition)</li>
+ *                         (for more information see <a href="https://eprint.iacr.org/2017/1196.pdf">protocol</a>
+ *                         definition)</li>
  *     <li>{@code scs}   - {@code SessionConfigurationServer}, server's session configuration</li>
  * </ul>
  *

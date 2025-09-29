@@ -27,6 +27,7 @@ public interface RandomCustom {
      * Generates n random bytes.
      * 
      * @param n - number of random bytes that should be returned
+     * @return n random bytes.
      */
     byte[] getRandomBytes(int n);
 
@@ -45,17 +46,19 @@ public interface RandomCustom {
      *
      * @param n - number of Uniformly sampled BigInteger values
      * @param seed - seed for generating uniform data
+     * @return list of Uniformly distributed BigInteger values derived from the given seed.
      */
     List<BigInteger> generateUniformCoefficients(int n, byte[] seed);
 
     /**
-     * Samples a list of BigInteger values from a Centered Binomial Distribution,
+     * Samples a list of BigInteger values from a Centered Binomial Distribution (CBD),
      * deterministically derived from the given seed.
      *
      * <p>This list can represent list of coefficients in standard domain.</p>
      *
      * @param n - number of BigInteger values sampled using Center Binomial Distribution
      * @param seed - seed for generating Centered Binomial Distribution data
+     * @return a list of BigInteger values from CBD, deterministically derived from the given seed.
      */
     List<BigInteger> generateCbdCoefficients(int n, byte[] seed);
 }

@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * The {@code ByteArrayWrapper} class is an immutable wrapper around a {@code byte array}.
  *
- * <p>This wrapping a raw byte array provides the following advantages:</p>
+ * <p>This wrapping of raw byte array provides the following advantages:</p>
  * <ul>
  *   <li>Supports proper equality checks via {@link #equals(Object)}</li>
  *   <li>Ensures immutability by cloning input and output arrays</li>
@@ -22,14 +22,30 @@ public class ByteArrayWrapper {
 
     private final byte[] data;
 
+    /**
+     * Perform most simple wrap around inputted data.
+     *
+     * @param data byte array
+     */
     public ByteArrayWrapper(byte[] data) {
         this.data = data.clone();
     }
 
+    /**
+     * Generate randomly {@code numOfBytes} bytes and wrap them.
+     *
+     * @param rc object of class {@link RandomCustom}
+     * @param numOfBytes number of bytes that should be randomly generated
+     */
     public ByteArrayWrapper(RandomCustom rc, int numOfBytes) {
         this.data = rc.getRandomBytes(numOfBytes);
     }
 
+    /**
+     * Convert list of integers of values [-128; 127] to byte array and wrap it.
+     *
+     * @param dataList list of Integer values from range [-128; 127]
+     */
     public ByteArrayWrapper(List<Integer> dataList) {
         byte[] dataBA = new byte[dataList.size()];
         for (int i = 0; i < dataList.size(); i++) {
@@ -42,7 +58,9 @@ public class ByteArrayWrapper {
         return data.clone();
     }
 
-    // SOURCE: ChatGPT
+    /**
+     * SOURCE: ChatGPT
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -51,12 +69,19 @@ public class ByteArrayWrapper {
         return Arrays.equals(data, that.data);
     }
 
-    // SOURCE: ChatGPT
+    /**
+     * SOURCE: ChatGPT
+     */
     @Override
     public int hashCode() {
         return Arrays.hashCode(data);
     }
 
+    /**
+     * Hash byte array data using Sha3-256 digest.
+     *
+     * @return hash as byte[] object
+     */
     public byte[] hash() {
         byte[] hash = new byte[32];
         SHA3Digest sha3Digest256 = new SHA3Digest(256);
@@ -65,11 +90,18 @@ public class ByteArrayWrapper {
         return hash;
     }
 
+    /**
+     * Hash byte array data using Sha3-256 digest.
+     *
+     * @return hash as wrapped byte[] object
+     */
     public ByteArrayWrapper hashWrapped() {
         return new ByteArrayWrapper(this.hash());
     }
 
     /**
+     * Concatenate data of this object with data of object b.
+     *
      * @param b - ByteArrayWrapper object which data will be concatenated to this ByteArrayWrapper object
      * @return new ByteArrayWrapper which data will be concatenation this || b
      */
