@@ -7,7 +7,6 @@ import protocol.client.LoginResponse;
 import protocol.random.PreSeededRandom;
 import protocol.random.RandomCustomImple;
 import protocol.server.Server;
-import protocol.server.ServerChangedEnrollingV;
 import protocol.server.ServerImple;
 import protocol.server.TestServerWrapper;
 
@@ -171,27 +170,6 @@ public class ProtocolTest {
         assertTrue(keys.contains(correctKey));
     }
 
-    /**
-     * Tests {@code NUMBEROFROUNDS}-times that login with incorrect verifier fails.
-     */
-    @Test
-    public void incorrectVFails() {
-
-        for (int i = 0; i < NUMBEROFROUNDS; i++) {
-
-            Server delegate = new ServerImple(new RandomCustomImple(N, Q, ETA), N, Q, ETA);
-            ServerChangedEnrollingV serverWrapper = new ServerChangedEnrollingV(delegate);
-
-            ClientsKnowledge ck = new ClientsKnowledge(I, PWD);
-            ClientImple client = new ClientImple(new RandomCustomImple(N, Q, ETA), serverWrapper);
-
-            client.enroll(ck);
-            LoginResponse loginResponse = client.login(ck);
-
-            assertFalse(loginResponse.getLoginOK());
-        }
-    }
-
     private ByteArrayWrapper generateSeededBAW(long seed) {
 
         Random random = new Random(seed);
@@ -200,6 +178,32 @@ public class ProtocolTest {
         random.nextBytes(byteArray);
 
         return new ByteArrayWrapper(byteArray);
+    }
+
+    /**
+     * Tests {@code NUMBEROFROUNDS}-times that login with incorrect verifier fails.
+     */
+    @Test
+    public void incorrectVFails() {
+
+        for (int i = 1; i < NUMBEROFROUNDS; i++) {
+
+            ByteArrayWrapper identity = generateSeededBAW(i);
+            ByteArrayWrapper passwordEnroll = generateSeededBAW(2L * i);
+            ByteArrayWrapper passwordLogin = generateSeededBAW(3L * i);
+
+            Server server = new ServerImple(new RandomCustomImple(N, Q, ETA), N, Q, ETA);
+
+            ClientsKnowledge ckEnroll = new ClientsKnowledge(identity, passwordEnroll);
+            ClientsKnowledge ckLogin = new ClientsKnowledge(identity, passwordLogin);
+
+            ClientImple client = new ClientImple(new RandomCustomImple(N, Q, ETA), server);
+
+            client.enroll(ckEnroll);
+            LoginResponse loginResponse = client.login(ckLogin);
+
+            assertFalse(loginResponse.getLoginOK());
+        }
     }
 
     /**
