@@ -45,6 +45,16 @@ public class ProtocolTest {
         return new ByteArrayWrapper(password);
     }
 
+    private ByteArrayWrapper generateSeededBAW(long seed) {
+
+        Random random = new Random(seed);
+
+        byte[] byteArray = new byte[123];  // randomly set value
+        random.nextBytes(byteArray);
+
+        return new ByteArrayWrapper(byteArray);
+    }
+
     /**
      * Tests {@code NUMBEROFROUNDS}-times that the same client with the (same) server will at the end have the same key.
      */
@@ -168,16 +178,6 @@ public class ProtocolTest {
 
         assertEquals(1, keys.size());
         assertTrue(keys.contains(correctKey));
-    }
-
-    private ByteArrayWrapper generateSeededBAW(long seed) {
-
-        Random random = new Random(seed);
-
-        byte[] byteArray = new byte[123];  // randomly set value
-        random.nextBytes(byteArray);
-
-        return new ByteArrayWrapper(byteArray);
     }
 
     /**
