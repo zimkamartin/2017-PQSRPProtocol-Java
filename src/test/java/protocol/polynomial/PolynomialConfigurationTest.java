@@ -7,7 +7,7 @@ import java.util.*;
 
 import static org.junit.Assert.*;
 
-public class ProtocolConfigurationTest {
+public class PolynomialConfigurationTest {
 
     private static final int NUMBEROFROUNDS = 111;
     private static final int MAXNEXPONENT = 10;  // huge = heap overflow
