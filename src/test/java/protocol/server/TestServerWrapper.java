@@ -5,9 +5,20 @@ import protocol.ProtocolConfiguration;
 import protocol.ServersResponseScs;
 import protocol.polynomial.NttPolynomial;
 
-
 import java.util.Objects;
 
+/**
+ * The {@code TestServerWrapper} class is a simple wrapper around an implementation of the {@link Server} interface,
+ * designed to provide access to the computed shared secret.
+ * <p>
+ * This class takes an implementation of {@link Server} as a constructor argument.
+ * All interface methods are delegated to the wrapped instance.
+ * In addition, it provides the method {@link #getCapturedSkj()} to retrieve the shared secret key
+ * captured during the {@code verifyKeysEntities(SessionConfigurationServer, ByteArrayWrapper)} call.
+ * </p>
+ *
+ * @author Ondrej Kollarik
+ */
 public class TestServerWrapper implements Server {
 
     private final Server delegate;
