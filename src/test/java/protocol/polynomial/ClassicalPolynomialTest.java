@@ -19,6 +19,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class ClassicalPolynomialTest {
 
+    // Number of rounds in tests.
     private static final int NUMBEROFROUNDS = 111;
 
     private static final int N = 4;
@@ -42,12 +43,12 @@ public class ClassicalPolynomialTest {
      * Tests {@code NUMBEROFROUNDS}-times constructor {@code ClassicalPolynomial(NttPolynomial, PolynomialConfig)}.
      * <p>
      * Tests that conversion from NTT domain to standard domain works. For N = 4, Q = 17, 8-th root of unity is 9
-     * (computed using our method). Array zetas is [13, 15, 9] and zetasInverted is [4, 8, 2].
+     * (computed using our method). Array zetasInverted is [4, 8, 2].
      * Polynomial [0, 16, 6, 2] in NTT domain corresponds to polynomial [0, 1, 2, 3] in standard domain.
      * </p>
      */
     @Test
-    public void ConvertFromNtt() {
+    public void convertFromNtt() {
         for (int i = 0; i < NUMBEROFROUNDS; i++) {
             List<BigInteger> nttCoefficients = Arrays.asList(BigInteger.valueOf(0), BigInteger.valueOf(16), BigInteger.valueOf(6), BigInteger.valueOf(12));
             NttPolynomial nttPolynomial = NttPolynomial.fromNttCoefficients(nttCoefficients, new PolynomialConfig(N, Q));
