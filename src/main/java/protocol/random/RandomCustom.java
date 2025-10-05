@@ -9,15 +9,18 @@ import java.util.List;
  *
  * <p>It defines the following methods:</p>
  * <ul>
- *   <li>{@link #getRandomBytes(int)}                      – generates an array of {@code n} random bytes</li>
- *   <li>{@link #getRandomInt(int)}                        – returns a random integer in the range
- *                                                           {@code [0, bound)}</li>
- *   <li>{@link #generateUniformCoefficients(int, byte[])} – produces {@code n} coefficients sampled uniformly,
- *                                                           suitable for classical or Number Theoretic Transform
- *                                                           polynomials</li>
- *   <li>{@link #generateCbdCoefficients(int, byte[])}     – produces {@code n} coefficients (in standard form)
- *                                                           sampled from Centred Binomial Distribution</li>
+ *   <li>{@link #getRandomBytes(int)}                 – generates an array of {@code n} random bytes</li>
+ *   <li>{@link #getRandomInt(int)}                   – returns a random integer in the range
+ *                                                      {@code [0, bound)}</li>
+ *   <li>{@link #generateUniformCoefficients(byte[])} – produces n coefficients sampled uniformly,
+ *                                                      suitable for classical or Number Theoretic Transform
+ *                                                      polynomials</li>
+ *   <li>{@link #generateCbdCoefficients(byte[])}     – produces n coefficients (in standard form)
+ *                                                      sampled from Centred Binomial Distribution (parametrized by eta)</li>
  * </ul>
+ * <p>
+ * Parameters {@code n}, {@code q}, and {@code eta} for the last two methods are attributes of the implementing class.
+ * </p>
  *
  * @author Martin Zimka
  */
@@ -44,11 +47,10 @@ public interface RandomCustom {
      *
      * <p>This list can represent list of coefficients in standard or in NTT domain.</p>
      *
-     * @param n - number of Uniformly sampled BigInteger values
      * @param seed - seed for generating uniform data
      * @return list of Uniformly distributed BigInteger values derived from the given seed.
      */
-    List<BigInteger> generateUniformCoefficients(int n, byte[] seed);
+    List<BigInteger> generateUniformCoefficients(byte[] seed);
 
     /**
      * Samples a list of BigInteger values from a Centered Binomial Distribution (CBD),
@@ -56,9 +58,8 @@ public interface RandomCustom {
      *
      * <p>This list can represent list of coefficients in standard domain.</p>
      *
-     * @param n - number of BigInteger values sampled using Center Binomial Distribution
      * @param seed - seed for generating Centered Binomial Distribution data
      * @return a list of BigInteger values from CBD, deterministically derived from the given seed.
      */
-    List<BigInteger> generateCbdCoefficients(int n, byte[] seed);
+    List<BigInteger> generateCbdCoefficients(byte[] seed);
 }

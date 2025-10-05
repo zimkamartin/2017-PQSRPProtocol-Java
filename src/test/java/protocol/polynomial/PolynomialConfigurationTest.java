@@ -89,7 +89,6 @@ public class PolynomialConfigurationTest {
         for (int i = 0; i < NUMBEROFROUNDS; i++) {
             PolynomialConfig pc1 = generateCorrectPolynomialConfig();
             pc1.assertCompatibleWith(pc1);
-            System.out.println(i);
         }
     }
 

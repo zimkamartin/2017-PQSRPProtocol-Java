@@ -90,7 +90,7 @@ public class TestPreSeededRandom implements RandomCustom {
     }
 
     @Override
-    public List<BigInteger> generateUniformCoefficients(int n, byte[] seed) {
+    public List<BigInteger> generateUniformCoefficients(byte[] seed) {
         List<BigInteger> out = new ArrayList<>(n);
 
         int KyberGenerateMatrixNBlocks = computeKyberGenerateMatrixNBlocks();
@@ -138,7 +138,7 @@ public class TestPreSeededRandom implements RandomCustom {
     }
 
     @Override
-    public List<BigInteger> generateCbdCoefficients(int n, byte[] seed) {
+    public List<BigInteger> generateCbdCoefficients(byte[] seed) {
         List<BigInteger> out = new ArrayList<>(n);
         byte[] buf = new byte[(int) Math.ceil((n * 2.0 * eta) / 8.0)];
         prf.update(seed, 0, seed.length);

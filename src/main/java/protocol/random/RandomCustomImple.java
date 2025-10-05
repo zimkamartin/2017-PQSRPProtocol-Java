@@ -106,7 +106,7 @@ public class RandomCustomImple implements RandomCustom {
      * {@code n} coefficients modulo {@code q} via rejection sampling. The formula is:</p>
      *
      * <pre>
-     *     ((unifNeededNumOfBytes) * (probOfCorrCoeffSampled) ^ -1 + xBB) / xBB     *
+     *     ((unifNeededNumOfBytes) * (probOfCorrCoeffSampled) ^ -1 + xBB) / xBB
      * </pre>
      *
      * where:
@@ -150,12 +150,11 @@ public class RandomCustomImple implements RandomCustom {
      *   </li>
      * </ol>
      *
-     * @param n    number of uniformly sampled {@link BigInteger} values to produce
      * @param seed seed used to generate the uniform data
      * @return a list of {@code n} sampled values, suitable as polynomial coefficients (in either standard or NTT domain)
      */
     @Override
-    public List<BigInteger> generateUniformCoefficients(int n, byte[] seed) {
+    public List<BigInteger> generateUniformCoefficients(byte[] seed) {
         List<BigInteger> out = new ArrayList<>(n);
 
         int KyberGenerateMatrixNBlocks = computeKyberGenerateMatrixNBlocks();
@@ -252,12 +251,11 @@ public class RandomCustomImple implements RandomCustom {
      *   </ol>
      * </ol>
      *
-     * @param n    number of coefficients to sample
      * @param seed seed for generating buffer for Centered Binomial Distribution data
      * @return a list of {@code n} sampled values, suitable as polynomial coefficients in the standard domain
      */
     @Override
-    public List<BigInteger> generateCbdCoefficients(int n, byte[] seed) {
+    public List<BigInteger> generateCbdCoefficients(byte[] seed) {
         List<BigInteger> out = new ArrayList<>(n);
         byte[] buf = new byte[(int) Math.ceil((n * 2.0 * eta) / 8.0)];
         prf.update(seed, 0, seed.length);
