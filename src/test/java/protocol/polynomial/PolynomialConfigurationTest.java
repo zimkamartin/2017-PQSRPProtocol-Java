@@ -3,21 +3,43 @@ package protocol.polynomial;
 import org.junit.Test;
 
 import java.math.BigInteger;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
+/**
+ * The {@code PolynomialConfigurationTest} class tests the following methods in the class {@code PolynomialConfiguration}:
+ * <ul>
+ *     <li>{@code computeZetaArrays()}</li>
+ *     <li>{@code assertCompatibleWith(PolynomialConfig)}</li>
+ * </ul>
+ *
+ * @author Martin Zimka
+ */
 public class PolynomialConfigurationTest {
 
+    // Number of rounds in tests.
     private static final int NUMBEROFROUNDS = 111;
-    private static final int MAXNEXPONENT = 10;  // huge = heap overflow
+    // Maximal exponent for N when generating correct PolynomialConfig. !Huge value equals heap overflow!
+    private static final int MAXNEXPONENT = 10;
 
     private static final int N = 4;
     private static final BigInteger Q = BigInteger.valueOf(17);
 
     Random random = new Random();
 
-    // SOURCE: ChatGPT
+    /**
+     * Generates correct instance of class {@code PolynomialConfig}.
+     * <p>
+     * n must be power of two, q must be prime and {@code q ≡ 1 mod 2n} must hold.
+     * </p>
+     * <p>SOURCE: ChatGPT.</p>
+     *
+     * @return generated correct instance of a class {@code PolynomialConfig}.
+     */
     private PolynomialConfig generateCorrectPolynomialConfig() {
         int exp = 1 + random.nextInt(MAXNEXPONENT); // exponent in [1, 10], so n in [2, 1024]
         int n = 1 << exp; // n = 2^exp
@@ -36,11 +58,14 @@ public class PolynomialConfigurationTest {
     }
 
     /**
-     * Tests {@code NUMBEROFROUNDS}-times that lists zetas and zetasInverted are generated correctly.
+     * Tests {@code NUMBEROFROUNDS}-times method {@code computeZetaArrays()}.
+     * <p>
+     * Tests that correct arrays zetas and zetasInverted are generated. For N = 4, Q = 17, 8-th root of unity is 9
+     * (computed using our method). Array zetas is [13, 15, 9] and array zetasInverted is [4, 8, 2].
+     * </p>
      */
     @Test
     public void computeZetaArrays() {
-
         for (int i = 0; i < NUMBEROFROUNDS; i++) {
 
             PolynomialConfig pc = new PolynomialConfig(N, Q);
@@ -53,6 +78,12 @@ public class PolynomialConfigurationTest {
         }
     }
 
+    /**
+     * Tests {@code NUMBEROFROUNDS}-times that method {@code assertCompatibleWith(PolynomialConfig)} ends with success.
+     * <p>
+     * Tests polynomial configs with same n and q tuples. Nothing special should happen.
+     * </p>
+     */
     @Test
     public void assertCompatibleWithCorrect() {
         for (int i = 0; i < NUMBEROFROUNDS; i++) {
@@ -62,6 +93,12 @@ public class PolynomialConfigurationTest {
         }
     }
 
+    /**
+     * Tests {@code NUMBEROFROUNDS}-times that method {@code assertCompatibleWith(PolynomialConfig)} ends with failure.
+     * <p>
+     * Tests polynomial configs with different n and q tuples. Method should throw IllegalArgumentException.
+     * </p>
+     */
     @Test
     public void assertCompatibleWithIncorrect() {
         for (int i = 0; i < NUMBEROFROUNDS; i++) {
