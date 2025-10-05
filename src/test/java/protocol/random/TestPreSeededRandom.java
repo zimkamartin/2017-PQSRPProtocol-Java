@@ -12,7 +12,7 @@ import java.util.Random;
 import static java.math.RoundingMode.CEILING;
 import static java.math.RoundingMode.HALF_UP;
 
-public class PreSeededRandom implements RandomCustom {
+public class TestPreSeededRandom implements RandomCustom {
 
     private final int n;
     private final BigInteger q;
@@ -30,7 +30,7 @@ public class PreSeededRandom implements RandomCustom {
     private final int unifNeededNumOfBytes;
     private final BigInteger unifMask;
 
-    public PreSeededRandom(int n, BigInteger q, int eta, long seed) {
+    public TestPreSeededRandom(int n, BigInteger q, int eta, long seed) {
         this.n = n;
         this.q = q;
         this.eta = eta;
@@ -124,7 +124,7 @@ public class PreSeededRandom implements RandomCustom {
             int m = Math.min(eta - count, 8 - bc.getBitIndex());  // how many bits will we take from the byte
             ones += bitCountOfMUnusedBits(buf[bc.getByteIndex()], bc.getBitIndex(), m);
             count += m;  // update number of bits that we already have
-            bc.updateBitByteIndices(m);
+            bc.updateIndices(m);
         }
 
         return ones;

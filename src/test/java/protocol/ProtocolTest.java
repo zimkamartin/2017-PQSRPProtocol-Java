@@ -4,7 +4,7 @@ import org.junit.Test;
 import protocol.client.ClientImple;
 import protocol.client.ClientsKnowledge;
 import protocol.client.LoginResponse;
-import protocol.random.PreSeededRandom;
+import protocol.random.TestPreSeededRandom;
 import protocol.random.RandomCustomImple;
 import protocol.server.Server;
 import protocol.server.ServerImple;
@@ -164,10 +164,10 @@ public class ProtocolTest {
 
         for (int i = 0; i < NUMBEROFROUNDS; i++) {
 
-            Server server = new ServerImple(new PreSeededRandom(N, Q, ETA, 123), N, Q, ETA);
+            Server server = new ServerImple(new TestPreSeededRandom(N, Q, ETA, 123), N, Q, ETA);
 
             ClientsKnowledge ck = new ClientsKnowledge(I, PWD);
-            ClientImple client = new ClientImple(new PreSeededRandom(N, Q, ETA, 456), server);
+            ClientImple client = new ClientImple(new TestPreSeededRandom(N, Q, ETA, 456), server);
 
             client.enroll(ck);
             LoginResponse loginResponse = client.login(ck);

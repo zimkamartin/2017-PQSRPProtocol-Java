@@ -10,7 +10,7 @@ package protocol.random;
  * </ul>
  *
  * <p>Apart from standard getters (although package-private), this class provides the method
- * {@link #updateBitByteIndices(int)}, which updates both indices according to the number of read bits.</p>
+ * {@link #updateIndices(int)}, which updates both indices according to the number of read bits.</p>
  *
  * @author Martin Zimka
  */
@@ -34,7 +34,7 @@ class BitCursor {
      *
      * @param count number of bits read
      */
-    void updateBitByteIndices(int count) {
+    void updateIndices(int count) {
         byteIndex += (bitIndex + count == 8) ? 1 : 0;
         bitIndex = (bitIndex + count) % 8;
     }
