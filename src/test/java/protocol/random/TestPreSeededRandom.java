@@ -13,7 +13,7 @@ import static java.math.RoundingMode.CEILING;
 import static java.math.RoundingMode.HALF_UP;
 
 /**
- * Class {@code TestPreSeededRandom} is identical with the class {@link RandomCustomImple}
+ * The {@code TestPreSeededRandom} class is identical with the class {@link RandomCustomImple}
  * (implementing interface {@link RandomCustom}), only instead of {@code SecureRandom},
  * preseeded (argument in constructor) {@code Random} is used.
  *

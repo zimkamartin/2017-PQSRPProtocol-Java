@@ -11,14 +11,36 @@ import protocol.server.ServerImple;
 import protocol.server.TestServerWrapper;
 
 import java.math.BigInteger;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
+/**
+ * The {@code ProtocolTest} class tests the protocol as a complete system.
+ *
+ * <p>The following aspects are verified:</p>
+ * <ul>
+ *     <li>the client and server derive the same shared secret key</li>
+ *     <li>different clients derive different shared secret keys</li>
+ *     <li>multiple logins after the same enrollment produce distinct shared secret keys</li>
+ *     <li>the protocol’s deterministic components results in the same and correct shared secret key</li>
+ *     <li>login fails when using an incorrect verifier</li>
+ *     <li>multiple parties can enroll and log in concurrently without interference</li>
+ * </ul>
+ *
+ * @author Martin Zimka
+ */
 public class ProtocolTest {
 
+    // Number of rounds in tests.
     private static final int NUMBEROFROUNDS = 111;
+    // Size of randomly generated identity.
     private static final int RANDOMISIZE = 11;
+    // Size of randomly generated password.
     private static final int RANDOMPWDSIZE = 11;
 
     private static final int N = 1024;
@@ -30,7 +52,7 @@ public class ProtocolTest {
     private static final ByteArrayWrapper PWD = new ByteArrayWrapper("password123".getBytes());
     // THIS IS NOT HOW TO DO IT !!! THIS IS JUST FOR PROOF-OF-CONCEPT !!! THIS IS NOT HOW TO DO IT !!!
 
-    // Generate random bytes to generate random identity or random password
+    // Generate random bytes to generate random identity or random password.
     Random random = new Random();
 
     private ByteArrayWrapper generateRandomI() {
@@ -45,6 +67,12 @@ public class ProtocolTest {
         return new ByteArrayWrapper(password);
     }
 
+    /**
+     * Generates {@code pseudo-random} byte[] object wrapped in class {@code ByteArrayWrapper}.
+     *
+     * @param seed seed for random generator
+     * @return ByteArrayWrapper object with pseudo-random byte[] data
+     */
     private ByteArrayWrapper generateSeededBAW(long seed) {
 
         Random random = new Random(seed);
