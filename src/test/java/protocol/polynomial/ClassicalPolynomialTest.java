@@ -3,10 +3,20 @@ package protocol.polynomial;
 import org.junit.Test;
 
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
+/**
+ * The {@code ClassicalPolynomialTest} class tests the following methods in the class {@code ClassicalPolynomial}:
+ * <ul>
+ *     <li>constructor {@code ClassicalPolynomial(NttPolynomial, PolynomialConfig)}</li>
+ * </ul>
+ *
+ * @author Martin Zimka
+ */
 public class ClassicalPolynomialTest {
 
     private static final int NUMBEROFROUNDS = 111;
@@ -14,7 +24,12 @@ public class ClassicalPolynomialTest {
     private static final int N = 4;
     private static final BigInteger Q = BigInteger.valueOf(17);
 
-    // Be sure that N < Q.
+    /**
+     * Generates incrementing list of BigIntegers from value 0 to value N-1.
+     *
+     * <p>If this list is used as coefficients, N < Q must hold!</p>
+     * @return List of BigInteger values 0, 1, ..., N-1.
+     */
     private List<BigInteger> generateIncrementingList() {
         List<BigInteger> result = new ArrayList<>(N);
         for (int i = 0; i < N; i++) {
@@ -23,6 +38,14 @@ public class ClassicalPolynomialTest {
         return result;
     }
 
+    /**
+     * Tests {@code NUMBEROFROUNDS}-times constructor {@code ClassicalPolynomial(NttPolynomial, PolynomialConfig)}.
+     * <p>
+     * Tests that conversion from NTT domain to standard domain works. For N = 4, Q = 17, 8-th root of unity is 9
+     * (computed using our method). Array zetas is [13, 15, 9] and zetasInverted is [4, 8, 2].
+     * Polynomial [0, 16, 6, 2] in NTT domain corresponds to polynomial [0, 1, 2, 3] in standard domain.
+     * </p>
+     */
     @Test
     public void ConvertFromNtt() {
         for (int i = 0; i < NUMBEROFROUNDS; i++) {
