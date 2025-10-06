@@ -162,7 +162,7 @@ public class RandomCustomImple implements RandomCustom {
         int k, ctr, off;
         int buflen = KyberGenerateMatrixNBlocks * XOFBLOCKBYTES;
         byte[] buf = new byte[buflen];
-        xof.reset();
+        xof.reset();  // needed since doOutput does not call reset internally
         xof.update(seed, 0, seed.length);
         xof.doOutput(buf, 0, buflen);
 
@@ -258,15 +258,15 @@ public class RandomCustomImple implements RandomCustom {
     public List<BigInteger> generateCbdCoefficients(byte[] seed) {
         List<BigInteger> out = new ArrayList<>(n);
         byte[] buf = new byte[(int) Math.ceil((n * 2.0 * eta) / 8.0)];
+        prf.reset();  // not really needed since .doFinal calls .reset internally.
+        // This is just to be sure in case smth happens with prf before calling generateCbdCoefficients.
         prf.update(seed, 0, seed.length);
-        prf.doFinal(buf, 0, buf.length);  // OK
+        prf.doFinal(buf, 0, buf.length);
 
         BitCursor bc = new BitCursor();
         for (int i = 0; i < n; i++) {
             int a = readEtaBits(bc, buf, eta);
             int b = readEtaBits(bc, buf, eta);
-            System.out.println(a);
-            System.out.println(b);
             out.add(BigInteger.valueOf(a - b));
         }
 
