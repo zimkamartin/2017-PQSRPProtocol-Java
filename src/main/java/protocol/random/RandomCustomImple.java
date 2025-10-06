@@ -186,8 +186,8 @@ public class RandomCustomImple implements RandomCustom {
      * <p>Algorithm:</p>
      * <ol>
      *   <li>Convert the byte to its unsigned integer representation</li>
-     *   <li>Shift left by {@code bitIndex} positions to discard already used bits</li>
-     *   <li>Create a mask covering the next {@code m} bits</li>
+     *   <li>Shift the byte right so that the desired bit range occupies the {@code m} least significant bits</li>
+     *   <li>Create a mask covering those {@code m} bits</li>
      *   <li>Apply the mask and count the set bits using {@link Integer#bitCount(int)}</li>
      * </ol>
      *
@@ -198,7 +198,7 @@ public class RandomCustomImple implements RandomCustom {
      */
     private int bitCountOfMUnusedBits(byte b, int bitIndex, int m) {
         int inp = b & 0xFF;  // get the unsigned value of a byte
-        int shifted = inp << bitIndex;  // get rid of already used bits
+        int shifted = inp >> (8 - (bitIndex + m));  // shift wanted bits to the m least-significant positions
         int mask = (1 << m) - 1;  // create mask for m bits
         return Integer.bitCount(shifted & mask);  // add to a number of bits 1 in masked result
     }
@@ -259,12 +259,14 @@ public class RandomCustomImple implements RandomCustom {
         List<BigInteger> out = new ArrayList<>(n);
         byte[] buf = new byte[(int) Math.ceil((n * 2.0 * eta) / 8.0)];
         prf.update(seed, 0, seed.length);
-        prf.doFinal(buf, 0, buf.length);
+        prf.doFinal(buf, 0, buf.length);  // OK
 
         BitCursor bc = new BitCursor();
         for (int i = 0; i < n; i++) {
             int a = readEtaBits(bc, buf, eta);
             int b = readEtaBits(bc, buf, eta);
+            System.out.println(a);
+            System.out.println(b);
             out.add(BigInteger.valueOf(a - b));
         }
 
