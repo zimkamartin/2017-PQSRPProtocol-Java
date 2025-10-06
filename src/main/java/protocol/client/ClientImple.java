@@ -36,8 +36,8 @@ import static protocol.polynomial.Utils.*;
  */
 public class ClientImple {
 
-    private static final int PUBLICSEEDFORASIZE = 34;  // Size could be changed however you wish.
-    private static final int SALTSIZE = 34;  // Size could be changed however you wish.
+    private static final int PUBLICSEEDFORASIZE = 32;  // Size could be changed however you wish.
+    private static final int SALTSIZE = 32;  // Size could be changed however you wish.
 
     private final Server server;
     private final RandomCustom randomCustomImple;

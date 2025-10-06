@@ -187,8 +187,8 @@ public class ProtocolTest {
     public void determinismOneCorrectKey() {
 
         Set<ByteArrayWrapper> keys = new HashSet<>();
-        ByteArrayWrapper correctKey = new ByteArrayWrapper(new byte[] {31, 41, -100, -114, 89, 36, -83, -10, 50, 119,
-                -102, -11, -78, -21, -75, -110, -95, -64, 16, 106, 16, -70, 89, -111, 118, -102, 89, -42, 104, 95, -88, 2});
+        ByteArrayWrapper correctKey = new ByteArrayWrapper(new byte[] {67, -49, -9, 37, -10, 69, -64, 115, -46, 89, 95,
+                10, 82, -11, 102, 107, -100, -6, 83, 84, 54, -102, 107, 57, -115, 83, -12, -25, 20, 76, -32, -65});
 
         for (int i = 0; i < NUMBEROFROUNDS; i++) {
 
