@@ -42,7 +42,7 @@ public class RandomCustomImpleTest {
      * <pre>= [4, 7, 10, 11, 3].</pre>
      */
     @Test
-    public void generateUniformCoefficientsTest() {
+    public void generateUniformCoefficients() {
 
         List<BigInteger> expectedResult = Arrays.asList(BigInteger.valueOf(4), BigInteger.valueOf(7), BigInteger.valueOf(10), BigInteger.valueOf(11), BigInteger.valueOf(3));
 
@@ -66,7 +66,7 @@ public class RandomCustomImpleTest {
      * <p>Sadly it does not look like CBD, however in my opinion the algorithm is correct.</p>
      */
     @Test
-    public void generateCbdCoefficientsTest() {
+    public void generateCbdCoefficients() {
 
         List<BigInteger> expectedResult = Arrays.asList(BigInteger.valueOf(1), BigInteger.valueOf(1), BigInteger.valueOf(0), BigInteger.valueOf(2), BigInteger.valueOf(1));
 
