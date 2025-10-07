@@ -47,6 +47,7 @@ import static org.junit.Assert.assertEquals;
  * This covers all four numbers (2 close to the 0 and 2 close to the half of the q) where half of them will not
  * be converted by applying symmetric modulo and the other half will be converted by applying symmetric modulo.
  * </p>
+ * <p>Each test is provided {@code NUMBEROFROUNDS}-times.</p>
  *
  * @author Martin Zimka
  */
@@ -57,12 +58,6 @@ public class Ding12ImpleTest {
 
     private static final BigInteger Q = BigInteger.valueOf(17);
 
-    /**
-     * Tests {@code NUMBEROFROUNDS}-times constructor {@code ByteArrayWrapper(List<Integer>)}.
-     * <p>
-     * Tests that conversion from list of Integers to byte[] object work.
-     * </p>
-     */
     @Test
     public void hintFunction00L() {
         for (int i = 0; i < NUMBEROFROUNDS; i++) {
