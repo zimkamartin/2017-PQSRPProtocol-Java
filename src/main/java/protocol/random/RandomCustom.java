@@ -12,10 +12,10 @@ import java.util.List;
  *   <li>{@link #getRandomBytes(int)}                 – generates an array of {@code n} random bytes</li>
  *   <li>{@link #getRandomInt(int)}                   – returns a random integer in the range
  *                                                      {@code [0, bound)}</li>
- *   <li>{@link #generateUniformCoefficients(byte[])} – produces n coefficients sampled uniformly,
+ *   <li>{@link #generateUniformCoefficients(byte[])} – produces n Rq coefficients sampled uniformly,
  *                                                      suitable for classical or Number Theoretic Transform
  *                                                      polynomials</li>
- *   <li>{@link #generateCbdCoefficients(byte[])}     – produces n coefficients (in standard form)
+ *   <li>{@link #generateCbdCoefficients(byte[])}     – produces n Rq coefficients (in standard form)
  *                                                      sampled from Centred Binomial Distribution (parametrized by eta)</li>
  * </ul>
  * <p>
@@ -43,7 +43,7 @@ public interface RandomCustom {
     int getRandomInt(int bound);
 
     /**
-     * Samples a list of Uniformly distributed BigInteger values derived from the given seed.
+     * Samples a list of uniformly distributed Rq BigInteger values derived from the given seed.
      *
      * <p>This list can represent list of coefficients in standard or in NTT domain.</p>
      *
@@ -53,8 +53,8 @@ public interface RandomCustom {
     List<BigInteger> generateUniformCoefficients(byte[] seed);
 
     /**
-     * Samples a list of BigInteger values from a Centered Binomial Distribution (CBD),
-     * deterministically derived from the given seed.
+     * Samples Rq representation of a list of BigInteger values form interval [-eta; +eta] using the Centered Binomial
+     * Distribution, derived from the given seed.
      *
      * <p>This list can represent list of coefficients in standard domain.</p>
      *

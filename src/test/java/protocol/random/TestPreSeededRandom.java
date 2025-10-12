@@ -148,7 +148,7 @@ public class TestPreSeededRandom implements RandomCustom {
         for (int i = 0; i < n; i++) {
             int a = readEtaBits(bc, buf, eta);
             int b = readEtaBits(bc, buf, eta);
-            out.add(BigInteger.valueOf(a - b));
+            out.add(BigInteger.valueOf(a - b).mod(q));
         }
 
         return out;

@@ -133,7 +133,7 @@ public class RandomCustomImple implements RandomCustom {
     }
 
     /**
-     * Samples a list of uniformly distributed BigInteger values derived from the given seed.
+     * Samples a list of uniformly distributed Rq BigInteger values derived from the given seed.
      *
      * <p>Algorithm:</p>
      * <ol>
@@ -235,8 +235,8 @@ public class RandomCustomImple implements RandomCustom {
     }
 
     /**
-     * Samples a list of BigInteger values form interval [-eta; +eta] using the Centered Binomial Distribution,
-     * derived from the given seed.
+     * Samples Rq representation of a list of BigInteger values form interval [-eta; +eta] using the Centered Binomial
+     * Distribution, derived from the given seed.
      *
      * <p>Algorithm:</p>
      * <ol>
@@ -247,7 +247,7 @@ public class RandomCustomImple implements RandomCustom {
      *       <li>Advance the {@link protocol.random.BitCursor} accordingly</li>
      *       <li>Count {@code b}, the number of set bits (1s) in the next {@code eta} bits</li>
      *       <li>Advance the {@link protocol.random.BitCursor} accordingly</li>
-     *       <li>Compute the coefficient as {@code a - b}</li>
+     *       <li>Compute the coefficient as {@code a - b} and apply modulo to have final value in Rq</li>
      *   </ol>
      * </ol>
      *
@@ -267,7 +267,7 @@ public class RandomCustomImple implements RandomCustom {
         for (int i = 0; i < n; i++) {
             int a = readEtaBits(bc, buf, eta);
             int b = readEtaBits(bc, buf, eta);
-            out.add(BigInteger.valueOf(a - b));
+            out.add(BigInteger.valueOf(a - b).mod(q));
         }
 
         return out;
