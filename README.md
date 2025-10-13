@@ -81,7 +81,7 @@ Additional helper classes:
 
 ## References
 
-1. [Post-Quantum Secure Remote Password Protocol from RLWE Problem](https://eprint.iacr.org/2017/1196.pdf)
+1. [Post-Quantum Secure Remote Password Protocol from RLWE Problem](https://doi.org/10.1007/978-3-319-75160-3_8)
 2. [Post-Quantum Secure Remote Password Protocol (Master’s Thesis, 2025)](https://is.muni.cz/th/tbd/)
 
 ---

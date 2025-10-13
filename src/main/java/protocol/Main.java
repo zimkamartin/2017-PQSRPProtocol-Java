@@ -13,7 +13,7 @@ import java.util.Arrays;
 /**
  * The {@code Main} class is the entry point of the application.
  * It configures protocol parameters and clients secrets. Also, it invokes {@link #demo()}
- * to demonstrate <a href="https://eprint.iacr.org/2017/1196.pdf">the protocol</a> implemented in this project.
+ * to demonstrate <a href="https://doi.org/10.1007/978-3-319-75160-3_8">the protocol</a> implemented in this project.
  *
  * <p>Protocol parameters and clients secrets are the following:</p>
  * <ul>
@@ -39,7 +39,7 @@ public class Main {
     // THIS IS NOT HOW TO DO IT !!! THIS IS JUST FOR PROOF-OF-CONCEPT !!! THIS IS NOT HOW TO DO IT !!!
 
     /**
-     * Demonstrates a simple <a href="https://eprint.iacr.org/2017/1196.pdf">protocol</a> flow from the client's perspective:
+     * Demonstrates a simple <a href="https://doi.org/10.1007/978-3-319-75160-3_8">protocol</a> flow from the client's perspective:
      * enrollment followed by login with the server.
      *
      * <p>The demonstration proceeds as follows:</p>

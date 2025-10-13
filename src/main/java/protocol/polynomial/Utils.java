@@ -102,7 +102,7 @@ public final class Utils {
     }
 
     /**
-     * Computes variable u from <a href="https://eprint.iacr.org/2017/1196.pdf">the protocol</a>.
+     * Computes variable u from <a href="https://doi.org/10.1007/978-3-319-75160-3_8">the protocol</a>.
      *
      * <p>u = XOF(H(pi || pj))</p>
      * <p>XOF will be seed to the Uniform NTT polynomial generator.</p>

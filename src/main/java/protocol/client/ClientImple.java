@@ -131,7 +131,7 @@ public class ClientImple {
     }
 
     /**
-     * Enrolls the client — Phase 0 of <a href="https://eprint.iacr.org/2017/1196.pdf">the protocol</a>.
+     * Enrolls the client — Phase 0 of <a href="https://doi.org/10.1007/978-3-319-75160-3_8">the protocol</a>.
      *
      * <p>During enrollment, the client computes a verifier {@code v} as:</p>
      * {@code v = a·sv + 2·ev},
@@ -163,7 +163,7 @@ public class ClientImple {
 
     /**
      * Performs the client login procedure — Phases 1 and 2 of
-     * <a href="https://eprint.iacr.org/2017/1196.pdf">the protocol</a>.
+     * <a href="https://doi.org/10.1007/978-3-319-75160-3_8">the protocol</a>.
      *
      * <p><b>Phase 1 – Computing the shared secret</b></p>
      * <ol>

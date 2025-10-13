@@ -7,7 +7,7 @@ import protocol.polynomial.NttPolynomial;
 
 /**
  * The {@code Server} interface defines the server-side operations of the protocol
- * described in <a href="https://eprint.iacr.org/2017/1196.pdf">the protocol</a>.
+ * described in <a href="https://doi.org/10.1007/978-3-319-75160-3_8">the protocol</a>.
  *
  * <p>The interface provides the following methods:</p>
  * <ul>
