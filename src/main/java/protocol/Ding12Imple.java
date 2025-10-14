@@ -49,7 +49,7 @@ public class Ding12Imple {
     }
 
     /**
-     * Applies so-called Symmetric modulo to an odd value in Z_q.
+     * Applies so-called Symmetric modulo to value in Z_q. Modulus q is an odd value.
      *
      * @param r BigInteger input value in Z_q
      * @return r transformed to interval [-(q-1) / 2; +(q-1) / 2]
