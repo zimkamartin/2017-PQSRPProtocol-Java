@@ -106,7 +106,7 @@ public class RandomCustomImple implements RandomCustom {
      * {@code n} coefficients modulo {@code q} via rejection sampling. The formula is:</p>
      *
      * <pre>
-     *     ((unifNeededNumOfBytes) * (probOfCorrCoeffSampled) ^ -1 + xBB) / xBB
+     *     (n * (unifNeededNumOfBytes) * (probOfCorrCoeffSampled) ^ -1 + xBB) / xBB
      * </pre>
      *
      * where:

@@ -31,7 +31,7 @@ public class Main {
 
     private static final int N = 1024;
     private static final BigInteger Q = BigInteger.valueOf(1073479681);
-    private static final int ETA = 3;
+    private static final int ETA = 20;
 
     // THIS IS NOT HOW TO DO IT !!! THIS IS JUST FOR PROOF-OF-CONCEPT !!! THIS IS NOT HOW TO DO IT !!!
     private static final ByteArrayWrapper I = new ByteArrayWrapper("identity123".getBytes());
