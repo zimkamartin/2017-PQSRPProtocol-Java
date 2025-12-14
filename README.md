@@ -5,7 +5,7 @@ It is the **practical part of Martin Zimka’s master’s thesis** [2].
 
 > ⚠️ **DISCLAIMER:**  
 > This code is a proof-of-concept and **must not be used in production**.  
-> Constant-time operation guarantees and known attacks on the protocol require further study.
+> Constant-time guarantees, resistance to side-channel attacks, and the selection of a secure and efficient protocol parameter set require further study.
 > The author is not responsible for any consequences arising from the use of this code in practice.
 
 The protocol is implemented in a way that parameters:
